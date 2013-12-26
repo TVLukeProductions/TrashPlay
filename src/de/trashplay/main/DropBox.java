@@ -123,6 +123,7 @@ public class DropBox
 	    	    		}
 	    	    		else
 	    	    		{
+	    	    			//TODO: theoretically a file could be deleted while it is played. that would most certainly crash the app.
 	    	    			Log.d(TAG, "DELETE"+files.get(i).getName());
 	    	    			files.get(i).delete();
 	    	    		}
