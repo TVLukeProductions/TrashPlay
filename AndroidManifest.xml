@@ -6,6 +6,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
  	<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+ 	<uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+	<uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -46,6 +48,12 @@
 		  android:label="Dropbox Sync" />
          <service android:name="TrashPlayService">
         </service>
+        <receiver android:name="de.trashplay.main.MyBroadcastReceiver" >
+            <intent-filter>
+                <action android:name="android.net.wifi.supplicant.CONNECTION_CHANGE" />
+                <action android:name="android.net.wifi.STATE_CHANGE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

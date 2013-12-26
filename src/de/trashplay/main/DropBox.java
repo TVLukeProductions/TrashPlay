@@ -44,9 +44,18 @@ public class DropBox
 	    	    	{ 
 	    	    		//Log.d(TAG, "try");
 	    	    		//ArrayList<String> folderName=new ArrayList<String>();
-
-	    	    		Entry dropboxDir1 = mApi.metadata("/DropBoxTrashPlaylistDerHoelle", 0, null, true, null);    
-	    	    		if (dropboxDir1.isDir) 
+	    	    		Entry dropboxDir1=null;
+	    	    		try
+	    	    		{
+	    	    			dropboxDir1 = mApi.metadata("/DropBoxTrashPlaylistDerHoelle", 0, null, true, null);    
+	    	    		}
+	    	    		catch(DropboxException ex)
+	    	    		{
+	    	    			Log.e(TAG, "->"+ex.getMessage());
+	    	    			mApi.createFolder("/DropBoxTrashPlaylistDerHoelle");
+	    	    			dropboxDir1 = mApi.metadata("/DropBoxTrashPlaylistDerHoelle", 0, null, true, null); 
+	    	    		}
+	    	    		if (dropboxDir1!=null && dropboxDir1.isDir) 
 	    	    		{ 
 	    	    			List<Entry> contents1 = dropboxDir1.contents;
 	    	    		    if (contents1 != null) 
@@ -68,16 +77,24 @@ public class DropBox
 		    	    		            		fileNames.add(e.fileName());
 		    	    		            		if(!e.modified.equals(settings.getString("lastchange"+e.fileName(), "")))//last change has changed
 	   	    		            				{
-		    	    		            			Editor edit = settings.edit();
-		    	    		            			File file = new File(Environment.getExternalStorageDirectory().getPath() + "/Music/TrashPlay/"+e.fileName());
-			    	    		            		Log.d(TAG, "have new file");
-			    	    		            		outputStream = new FileOutputStream(file);
-			    	    		            		Log.d(TAG, "have output stream for the file");
-			    	    		            		Log.d(TAG, "String->"+dropboxDir1.fileName()+"/"+e.fileName());
-			    	    		            		mApi.getFile(dropboxDir1.fileName()+"/"+e.fileName(), null, outputStream, null);
-			    	    		            		Log.d("clock", "stuff with stuff");
-		    	    		            			edit.putString("lastchange"+e.fileName(), e.modified);
-		    	    		            			edit.commit();
+		    	    		            			if(TrashPlayService.wifi)
+		    	    		            			{
+		    	    		            				Log.d(TAG, "wifi is");
+			    	    		            			Editor edit = settings.edit();
+			    	    		            			File file = new File(Environment.getExternalStorageDirectory().getPath() + "/Music/TrashPlay/"+e.fileName());
+				    	    		            		Log.d(TAG, "have new file");
+				    	    		            		outputStream = new FileOutputStream(file);
+				    	    		            		Log.d(TAG, "have output stream for the file");
+				    	    		            		Log.d(TAG, "String->"+dropboxDir1.fileName()+"/"+e.fileName());
+				    	    		            		mApi.getFile(dropboxDir1.fileName()+"/"+e.fileName(), null, outputStream, null);
+				    	    		            		Log.d("clock", "stuff with stuff");
+			    	    		            			edit.putString("lastchange"+e.fileName(), e.modified);
+			    	    		            			edit.commit();
+		    	    		            			}
+		    	    		            			else
+		    	    		            			{
+		    	    		            				Log.d(TAG, "no wifi");
+		    	    		            			}
 	   	    		            				}	    	    		            		
 		    	    		            	} 
 	    	    		            		catch (Exception em) 
@@ -109,6 +126,7 @@ public class DropBox
 	    	    	{
 	    	    		Log.e(TAG, "ERROR in the DropBox Class");
 	    	    		Log.e(TAG, "->"+ex.getMessage());
+	    	    		
 		    	    	syncinprogress=false;
 		    	    	return;
 	    	    	}
@@ -126,6 +144,9 @@ public class DropBox
 	    	    			//TODO: theoretically a file could be deleted while it is played. that would most certainly crash the app.
 	    	    			Log.d(TAG, "DELETE"+files.get(i).getName());
 	    	    			files.get(i).delete();
+	    	    			Editor edit = settings.edit();
+	            			edit.putString("lastchange"+files.get(i).getName(), "");
+	            			edit.commit();
 	    	    		}
 	    	    	}
 	    	    	syncinprogress=false;

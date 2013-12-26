@@ -12,13 +12,17 @@ import com.dropbox.client2.session.Session.AccessType;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -37,8 +41,9 @@ public class TrashPlayService extends Service implements OnPreparedListener
     private MediaPlayer mp = new MediaPlayer();
     private int randomsongnumber;
 	
-    // In the class declaration section:
+    private Updater updater;
     public static DropboxAPI<AndroidAuthSession> mDBApi;
+	public static boolean wifi=false;
     final static private AccessType ACCESS_TYPE = AccessType.DROPBOX;
 
 	public class LocalBinder extends Binder 
@@ -89,7 +94,21 @@ public class TrashPlayService extends Service implements OnPreparedListener
 		
 		startForeground(5646, note);
 		Log.d(TAG, "notification should have been shown");
+		ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+ 		NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+ 		if (mWifi.isConnected()) 
+ 		{
+	    	wifi=true;
+	    } 
+	    else 
+	    {
+	      wifi=false;
+	    }
 		getDropboxAPI();
+
+		updater= new Updater();
+        updater.run();
 	}
 	
 	@Override
@@ -239,4 +258,32 @@ public class TrashPlayService extends Service implements OnPreparedListener
 	    mDBApi.getSession().setAccessTokenPair(access);
 	    return mDBApi;
 	}
+	
+	private class  Updater implements Runnable
+    {
+		 private Handler handler = new Handler();
+         public static final int delay= 300000;//5 min
+         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+         @Override
+         public void run() 
+         {
+        	 if(wifi)
+        	 {
+        		 DropBox.syncFiles(settings);
+        	 }
+             handler.removeCallbacks(this); // remove the old callback
+             handler.postDelayed(this, delay); // register a new one
+         }
+         
+         public void onPause()
+	     {
+	         handler.removeCallbacks(this); // stop the map from updating
+	     }
+            
+         public void onResume()
+         {
+         handler.removeCallbacks(this); // remove the old callback
+         handler.postDelayed(this, delay); // register a new one
+         }
+    }
 }

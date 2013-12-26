@@ -225,8 +225,12 @@ public class MainActivity extends Activity
  				ImageView wifi = (ImageView) findViewById(R.id.imageView3);
  				wifi.setVisibility(View.VISIBLE);
  			    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-
- 				DropBox.syncFiles(settings);
+ 			    //TrashPlayService.wifi=true;
+ 			
+ 			}
+ 			else
+ 			{
+ 				//TrashPlayService.wifi=false;
  			}
  			if(DropBox.syncinprogress)
  			{
