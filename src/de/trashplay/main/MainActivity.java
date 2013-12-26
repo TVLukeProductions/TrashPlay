@@ -94,7 +94,7 @@ public class MainActivity extends Activity
 			{
 				if(!settings.getString("DB_KEY", "").equals(""))
 				{
-					Log.d(TAG, "click dddp");
+					Log.d(TAG, "click dp");
 					Editor edit = settings.edit();
 					edit.putString("DB_KEY", "");
 					edit.putString("DB_SECRET", "");
@@ -102,7 +102,7 @@ public class MainActivity extends Activity
 				}
 				else
 				{
-					Log.d(TAG, "click dddp");
+					Log.d(TAG, "click dp");
 					TrashPlayService.mDBApi.getSession().startAuthentication(MainActivity.this);
 				}
 			}
