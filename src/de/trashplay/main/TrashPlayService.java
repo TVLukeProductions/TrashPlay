@@ -27,7 +27,7 @@ import android.util.Log;
  * @author lukas
  *
  */
-public class TrashPlayService extends Service implements Runnable, OnPreparedListener
+public class TrashPlayService extends Service implements OnPreparedListener
 {
 
 	public static boolean playing=false;
@@ -40,28 +40,6 @@ public class TrashPlayService extends Service implements Runnable, OnPreparedLis
     // In the class declaration section:
     public static DropboxAPI<AndroidAuthSession> mDBApi;
     final static private AccessType ACCESS_TYPE = AccessType.DROPBOX;
-    
-	@Override
-	public void run() 
-	{
-		boolean run=true;
-		while(run)
-		{
-			try 
-			{
-				Thread.sleep(5000);
-			} 
-			catch (InterruptedException e) 
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if(playing)
-			{
-				Log.d(TAG, "run");
-			}
-		}
-	}
 
 	public class LocalBinder extends Binder 
     {
@@ -93,6 +71,7 @@ public class TrashPlayService extends Service implements Runnable, OnPreparedLis
 	{
 		super.onCreate();
 		int icon = R.drawable.recopen; 
+		Log.d(TAG, "on create Service");
 		 Notification note=new Notification(icon, "TrashPlayer", System.currentTimeMillis());
 		 Intent i=new Intent(this, MainActivity.class);
 
@@ -105,10 +84,11 @@ public class TrashPlayService extends Service implements Runnable, OnPreparedLis
 		note.setLatestEventInfo(this, "TrashPlayer",
 				"...running",
 				pi);
-		note.flags|=Notification.FLAG_AUTO_CANCEL;
+		note.flags |= Notification.FLAG_ONGOING_EVENT
+				| Notification.FLAG_NO_CLEAR;
 		
 		startForeground(5646, note);
-		
+		Log.d(TAG, "notification should have been shown");
 		getDropboxAPI();
 	}
 	

@@ -45,7 +45,7 @@ public class DropBox
 	    	    		//Log.d(TAG, "try");
 	    	    		//ArrayList<String> folderName=new ArrayList<String>();
 
-	    	    		Entry dropboxDir1 = mApi.metadata("/adressbooks", 0, null, true, null);    
+	    	    		Entry dropboxDir1 = mApi.metadata("/DropBoxTrashPlaylistDerHoelle", 0, null, true, null);    
 	    	    		if (dropboxDir1.isDir) 
 	    	    		{ 
 	    	    			List<Entry> contents1 = dropboxDir1.contents;

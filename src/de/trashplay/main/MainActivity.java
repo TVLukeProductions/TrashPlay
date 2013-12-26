@@ -210,6 +210,12 @@ public class MainActivity extends Activity
 	        		 
 	      		 dropbox.setImageResource(R.drawable.dropbox2);
 	  		  }
+        	 else
+        	 {
+        		 ImageView dropbox = (ImageView) findViewById(R.id.imageView4);
+	        		
+        		 dropbox.setImageResource(R.drawable.dropbox);
+        	 }
         	 
         	 ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
  			 NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
