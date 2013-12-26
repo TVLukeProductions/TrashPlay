@@ -86,13 +86,24 @@ public class MainActivity extends Activity
 			}
 			
 		});
+        final SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 		dropbox.setOnClickListener(new OnClickListener(){
 
 			@Override
 			public void onClick(View v) 
 			{
-				Log.d(TAG, "click dp");
-				TrashPlayService.mDBApi.getSession().startAuthentication(MainActivity.this);
+				if(!settings.getString("DB_KEY", "").equals(""))
+				{
+					Log.d(TAG, "click dp");
+					Editor edit = settings.edit();
+					edit.putString("DB_KEY", "");
+					edit.putString("DB_SECRET", "");
+					edit.commit();
+				}
+				else
+				{
+					TrashPlayService.mDBApi.getSession().startAuthentication(MainActivity.this);
+				}
 			}
 			
 		});
