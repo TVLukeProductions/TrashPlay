@@ -56,7 +56,7 @@ public class MainActivity extends Activity
 			@Override
 			public void onClick(View v) 
 			{
-				Log.d(TAG, "click ");
+				Log.d(TAG, "click");
 				if(TrashPlayService.playing)
 				{
 					if(mService!=null)
