@@ -87,7 +87,7 @@ public class DropBox
 				    	    		            		Log.d(TAG, "have output stream for the file");
 				    	    		            		Log.d(TAG, "String->"+dropboxDir1.fileName()+"/"+e.fileName());
 				    	    		            		mApi.getFile(dropboxDir1.fileName()+"/"+e.fileName(), null, outputStream, null);
-				    	    		            		Log.d("clock", "stuff with stuff");
+				    	    		            		Log.d(TAG, "stuff with stuff");
 			    	    		            			edit.putString("lastchange"+e.fileName(), e.modified);
 			    	    		            			edit.commit();
 		    	    		            			}
@@ -152,6 +152,10 @@ public class DropBox
 	    	    	syncinprogress=false;
 	    	    }
 	    	}).start();
+		}
+		else
+		{
+			Log.d(TAG, "not syncing, because syn in progress");
 		}
     }
     

@@ -44,6 +44,7 @@ public class MainActivity extends Activity
 		ImageView sync = (ImageView) findViewById(R.id.imageView2);
 		ImageView wifi = (ImageView) findViewById(R.id.imageView3);
 		ImageView dropbox = (ImageView) findViewById(R.id.imageView4);
+		final ImageView lastfm = (ImageView) findViewById(R.id.imageView5);
 		sync.setVisibility(View.GONE);
 		wifi.setVisibility(View.GONE);
 		playpause.setVisibility(View.GONE);
@@ -63,7 +64,6 @@ public class MainActivity extends Activity
 					{
 						mService.stop();
 						playpause.setImageResource(R.drawable.play);
-						mService.stopSelf();
 						MainActivity.this.finish();
 					}
 					else
@@ -104,6 +104,36 @@ public class MainActivity extends Activity
 				{
 					Log.d(TAG, "click dp");
 					TrashPlayService.mDBApi.getSession().startAuthentication(MainActivity.this);
+				}
+			}
+			
+		});
+		final boolean lastfmactive = settings.getBoolean("lastfmactive", false);
+		if(lastfmactive)
+		{
+			lastfm.setImageResource(R.drawable.lastfmlogoyes);
+		}
+		
+		lastfm.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) 
+			{
+				final boolean lfma = settings.getBoolean("lastfmactive", false);
+				Log.d(TAG, "click lfm");
+				if(lfma)
+				{
+					lastfm.setImageResource(R.drawable.lastfmlogono);
+					Editor edit = settings.edit();
+					edit.putBoolean("lastfmactive", false);
+					edit.commit();
+				}
+				else
+				{
+					lastfm.setImageResource(R.drawable.lastfmlogoyes);
+					Editor edit = settings.edit();
+					edit.putBoolean("lastfmactive", true);
+					edit.commit();
 				}
 			}
 			
