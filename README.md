@@ -1,3 +1,4 @@
+![Logo](https://raw.github.com/TVLuke/TrashPlay/master/res/drawable-hdpi/ic_launcher.png)
 ## TrashPlay
 
 [Download current version](https://www.dropbox.com/s/g0jf9bbckhkohtk/TrasPlay_0.1.roflcopter.apk)

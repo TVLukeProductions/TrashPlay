@@ -274,18 +274,26 @@ public class MainActivity extends Activity
         	 if(!TrashPlayService.file.equals(""))
         	 {
         		File f = new File(TrashPlayService.file);
-        		String[] metadata = TrashPlayService.getMetaData(f);
-        		String newdisplay="";
-        		if(!metadata[0].equals("") && !metadata[1].equals(""))
- 				{
-        			 newdisplay=metadata[0]+" - "+metadata[1];
- 				}
+        		if(TrashPlayService.file.equals(display))
+        		{
+
+        		}
         		else
         		{
-        			newdisplay=f.getName();
+        			display=TrashPlayService.file;
+	        		String[] metadata = TrashPlayService.getMetaData(f);
+	        		String newdisplay="";
+	        		if(!metadata[0].equals("") && !metadata[1].equals(""))
+	 				{
+	        			 newdisplay=metadata[0]+" - "+metadata[1];
+	 				}
+	        		else
+	        		{
+	        			newdisplay=f.getName();
+	        		}
+	        		TextView textView1 = (TextView) findViewById(R.id.textView1);
+	        		textView1.setText(newdisplay);
         		}
-        		TextView textView1 = (TextView) findViewById(R.id.textView1);
-        		textView1.setText(newdisplay);
         	 }
         	 ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
  			 NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
