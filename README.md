@@ -19,8 +19,9 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 
 ## Next Up (version 0.1.dayum)
 * Better UI
-* Some Work On The Code
-
+* **Bug Fixes**
+* Some minor fixes for convenience
+* Checking if files are changed or deleted before playing (this used to get the app into some hickups)
 ## Ideas for Future Releases (0.2.hundimbuero)**
 
 * Since Trash-Playlists are a social thing, this app will, in the near future, be a server, connecting to phones in its environment, as clients, who can in some way (to be determined) the playlist or the experience for other users of the TrashPlay. This will be exiting, and strange. And I have no Idea yet how it will work. 
