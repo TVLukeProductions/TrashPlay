@@ -5,15 +5,17 @@
 
 [Download current version](https://www.dropbox.com/s/g0jf9bbckhkohtk/TrasPlay_0.1.roflcopter.apk)
 
-TrashPlay is a simple music player to use during car trips and other events that need a Trash Playlist (for reasons). It offers only one button. Play. There is no skipping and no pausing. Ever.
+TrashPlay is a simple music player for Android (3.x and 4.x) phones and tablets to use during car trips and other events that need a Trash Playlist (for reasons). It offers only one button. Play. There is no skipping and no pausing. Ever.
 
 The player takes its music from the Dropbox, using a folder called _DropBoxTrashPlaylistDerHoelle_. You should share that folder with all the people who will be on the car ride to put music in. TrashPlay will not use any other folder. Ever.
 
-The player is nice to your band width and synchronizes only when you are in a Wifi. So, don't forget to sync before traveling. The music in your Dropbox folder will be put on your phone. Music that isn't in the Dropbox folder will not stay on the phone. Ever.
+The player is nice to your bandwidth and synchronizes only when you are in a Wifi. So, don't forget to sync before traveling. The music in your Dropbox folder will be put on your phone. Music that isn't in the Dropbox folder will not stay on the phone. Ever.
 
 If you enable last.fm (that is, when the last.fm button is grey) it scrobbles the music you listen to a [specific last.fm account](http://www.lastfm.de/user/TrashPlayList). This last.fm-account represents the record of all music played on any TrashPlay App. Ever.
 
-If you turn down the volume of the phone, it will, after a few graceful minutes, turn back up. You cannot silence the trash. Ever.
+If you turn down the volume of the phone, it will turn back up. You cannot silence the trash. Ever.
+
+If you stop the app TrashPlay will resume with the song played when you stoped the app. There is no skipping with Trash. Ever.
 
 ## Next Up (version 0.1.dayum)
 * Better UI
@@ -34,6 +36,7 @@ If you turn down the volume of the phone, it will, after a few graceful minutes,
 * Shut down on stop
 * Display title of the current track
 * Dropbox connection possible
+* Creates _DropBoxTrashPlaylistDerHoelle_ folder if it does not exist.
 * Syncing with the _DropBoxTrashPlaylistDerHoelle_ folder
 * stops syncing when you leave the Wifi
 * only show play button if play is actually an option
@@ -56,3 +59,6 @@ If you turn down the volume of the phone, it will, after a few graceful minutes,
 * only show play button if play is actually an option
 * Scrobbling to last.fm
 * No Silence. Music will be turned up again after a few minutes.
+
+##License
+(CC-BY-NC)[http://creativecommons.org/licenses/by-nc/4.0/]
