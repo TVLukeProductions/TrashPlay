@@ -146,10 +146,13 @@ public class DropBox
 	    	    		{
 	    	    			//TODO: theoretically a file could be deleted while it is played. that would most certainly crash the app.
 	    	    			Log.d(TAG, "DELETE"+files.get(i).getName());
-	    	    			files.get(i).delete();
-	    	    			Editor edit = settings.edit();
-	            			edit.putString("lastchange"+files.get(i).getName(), "");
-	            			edit.commit();
+	    	    			if(!TrashPlayService.file.contains(files.get(i).getName()))//do not delet the file that is currently played plz
+	    	    			{
+		    	    			files.get(i).delete();
+		    	    			Editor edit = settings.edit();
+		            			edit.putString("lastchange"+files.get(i).getName(), "");
+		            			edit.commit();
+	    	    			}
 	    	    		}
 	    	    	}
 	    	    	syncinprogress=false;

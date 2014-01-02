@@ -64,7 +64,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
 
     String oldartist="";
     String oldtitle="";
-    static String file=""; 
+    public static String file=""; 
     
 	 AudioManager audio;
     
@@ -197,7 +197,6 @@ public class TrashPlayService extends Service implements OnPreparedListener
 				{
 					oldartist=metadata[0];
 					oldtitle=metadata[1];
-					LastFM.playNow( oldartist, oldtitle);
 				}
 				try 
 				{
@@ -313,7 +312,6 @@ public class TrashPlayService extends Service implements OnPreparedListener
 					metadata[0]=metadata[0].trim();
 					Log.d(TAG, "----------->ARTIST():"+spl[0]);
 					Log.d(TAG, "----------->SONG():"+spl[1]);
-					LastFM.playNow(spl[0], spl[1]);
 				}
 			}
 		}
@@ -432,7 +430,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
          {
         	 //check for the volume
         	 int volume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
-        	 Log.d(TAG, "volume= "+volume);
+        	 //Log.d(TAG, "volume= "+volume);
         	 if(volume<5)
         	 {
         		 fadein();

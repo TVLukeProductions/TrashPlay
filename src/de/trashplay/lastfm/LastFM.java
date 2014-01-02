@@ -31,22 +31,6 @@ public class LastFM
     	}).start();
 	}
 	
-	public static void playNow(final String artist, final String song)
-	{
-	    new Thread(new Runnable() 
-    	{
-    	    public void run() 
-    	    {
-				Session session=getSession();
-				if(session!=null)
-				{
-					ScrobbleResult result = Track.updateNowPlaying(artist, song, session);
-					result = Track.updateNowPlaying(artist, song, session);
-				}
-			}
-    	}).start();
-	}
-	
 	private static Session getSession()
 	{
 		try
@@ -56,7 +40,7 @@ public class LastFM
 		}
 		catch(Exception e)
 		{
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, ""+e.getMessage());
 		}
 		return null;
 	}
