@@ -1,4 +1,7 @@
 ## TrashPlay
+
+[Download current version](https://www.dropbox.com/s/g0jf9bbckhkohtk/TrasPlay_0.1.roflcopter.apk)
+
 TrashPlay is a simple music player to play during car trips and other events that need a Trash Playlist (for reasons). It offers only one button. Play. There is no skipping and no pausing. Ever.
 
 The player takes its music from the Dropbox, using a folder called _DropBoxTrashPlaylistDerHoelle_. You should share that folder with all the people who will be on the car ride to put music in. TrashPlay will not use any other folder. Ever.
@@ -20,7 +23,7 @@ If you turn down the volume of the phone, it will, after a few graceful minutes,
 * Geofencing feature. Certain Songs that get palyed when entering or exiting specific locations. Possibly as a global feature...
 
 ## Release History
-### v 0.1.roflcopter (02.01.2014)
+### v 0.1.roflcopter (02.01.2014) [Download](https://www.dropbox.com/s/g0jf9bbckhkohtk/TrasPlay_0.1.roflcopter.apk)
 * Play music
 * Shut down on stop
 * Display title of the current track
