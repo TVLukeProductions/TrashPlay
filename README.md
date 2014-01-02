@@ -31,6 +31,7 @@ If you turn down the volume of the phone, it will, after a few graceful minutes,
 * Scrobbling to last.fm
 * No Silence. Music will be turned up again at once.
 * Remember last song and continue with that song when restarted
+
 ### v 0.1.deinemudda (31.12.2013)
 * Play music
 * Shut down on stop
