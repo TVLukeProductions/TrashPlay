@@ -1,0 +1,1 @@
+This Program is given under Creative Commons 4.0 Non-Commercial Atribution (CC-BY-NC): http://creativecommons.org/licenses/by-nc/4.0/deed.de
