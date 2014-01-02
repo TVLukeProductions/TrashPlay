@@ -245,6 +245,29 @@ public class TrashPlayService extends Service implements OnPreparedListener
 		}
 		else
 		{
+			//first check if the first songs in the list still exist... this is basically the only way to not listen to a file is to change the filename
+			for(int i=0; i<2; i++)
+			{
+				String x = settings.getString("nextSong"+i, "");
+				Log.d(TAG, x);
+				boolean exist = false;
+				for(int j=0; j<filelist.size(); j++)
+				{
+					if(filelist.get(j).getAbsolutePath().equals(x))
+					{
+						Log.d(TAG, "all good, the file "+i+" still exists");
+						exist=true;
+					}
+				}
+				if(!exist)
+				{
+					Log.d(TAG, "Fuck, the file "+i+" has been renamed since... at some... well, anyway, choose a new one");
+					int randomsongnumber = (int) (Math.random() * (filelist.size()));
+					String olol = filelist.get(randomsongnumber).getAbsolutePath();
+					edit.putString("nextSong"+i, olol);
+					edit.commit();
+				}
+			}
 			//make nextsSong1 to nextSong2 and so on and then select a new nextSong9
 			Log.d(TAG, "we have a list of like 10 songs, so we take the first one...");
 			for(int i=0; i<10; i++)
