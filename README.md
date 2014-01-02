@@ -60,5 +60,10 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 * Scrobbling to last.fm
 * No Silence. Music will be turned up again after a few minutes.
 
-##License
-(CC-BY-NC)[http://creativecommons.org/licenses/by-nc/4.0/]
+## This App uses:
+* [Dropbox android SDK](https://www.dropbox.com/developers/core/sdks/android)
+* [lastfm-java](https://code.google.com/p/lastfm-java/)
+* [Java ID3 Tag Library](http://javamusictag.sourceforge.net/)
+
+## License
+[CC-BY-NC](http://creativecommons.org/licenses/by-nc/4.0/)
