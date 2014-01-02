@@ -2,6 +2,7 @@ package de.trashplay.main;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.farng.mp3.MP3File;
 import org.farng.mp3.TagException;
@@ -13,6 +14,9 @@ import com.dropbox.client2.session.AccessTokenPair;
 import com.dropbox.client2.session.AppKeyPair;
 import com.dropbox.client2.session.Session.AccessType;
 
+import de.trashplay.dropbox.DropBox;
+import de.trashplay.dropbox.DropBoxConstants;
+import de.trashplay.lastfm.LastFM;
 import de.trashplay.lastfm.LastFMConstants;
 import de.umass.lastfm.Authenticator;
 import de.umass.lastfm.Caller;
@@ -27,6 +31,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -52,7 +57,6 @@ public class TrashPlayService extends Service implements OnPreparedListener
 	public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 	
     private MediaPlayer mp = new MediaPlayer();
-    private int randomsongnumber;
 	
     private Updater updater;
     public static DropboxAPI<AndroidAuthSession> mDBApi;
@@ -61,6 +65,9 @@ public class TrashPlayService extends Service implements OnPreparedListener
 
     String oldartist="";
     String oldtitle="";
+    static String file=""; 
+    
+	 AudioManager audio;
     
 	public class LocalBinder extends Binder 
     {
@@ -102,14 +109,8 @@ public class TrashPlayService extends Service implements OnPreparedListener
 				| Notification.FLAG_NO_CLEAR;
 		
 		startForeground(5646, note);
-		return START_STICKY;
-    }
+		getDropboxAPI();
 
-	@Override
-	public void onCreate() 
-	{
-		super.onCreate();
-		Log.d(TAG, "notification should have been shown");
 		ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
  		NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 
@@ -121,10 +122,23 @@ public class TrashPlayService extends Service implements OnPreparedListener
 	    {
 	      wifi=false;
 	    }
-		getDropboxAPI();
+ 		file="";
 
+        audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        
 		updater= new Updater();
         updater.run();
+        
+        
+		return START_STICKY;
+    }
+
+	@Override
+	public void onCreate() 
+	{
+		super.onCreate();
+		Log.d(TAG, "notification should have been shown");
+
 	}
 	
 	@Override
@@ -140,131 +154,208 @@ public class TrashPlayService extends Service implements OnPreparedListener
         stopForeground(true);
     }
 	
-	private void goplaymp3()
+	private void playmp3()
 	{
 		Log.d(TAG, "go play mp3");
 		boolean mExternalStorageAvailable = false;
-		boolean mExternalStorageWriteable = false;
 		String state = Environment.getExternalStorageState();
-
 		if (Environment.MEDIA_MOUNTED.equals(state)) 
 		{
 		    // We can read and write the media
-		    mExternalStorageAvailable = mExternalStorageWriteable = true;
+		    mExternalStorageAvailable = true;
 		} 
-		else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+		else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state))
+		{
 		    // We can only read the media
 		    mExternalStorageAvailable = true;
-		    mExternalStorageWriteable = false;
 		} 
 		else 
 		{
 		    // Something else is wrong. It may be one of many other states, but all we need
 		    //  to know is we can neither read nor write
-		    mExternalStorageAvailable = mExternalStorageWriteable = false;
+		    mExternalStorageAvailable = false;
 		}
-		if( mExternalStorageAvailable)
+		if(mExternalStorageAvailable)
 		{
-			Log.i(TAG, "state: "+Environment.getExternalStorageState());
 			File filesystem = Environment.getExternalStorageDirectory();
-			String path = filesystem.getAbsolutePath();
-			File[] filelist = filesystem.listFiles();
-			for(int i=0; i<filelist.length; i++)
+			ArrayList<File> filelist = getTrashMusicFiles(filesystem);	
+			if(filelist!=null)
 			{
-				//Log.i(TAG, filelist[i].getName());
-				if(filelist[i].getName().equals("Music"))
+				String nextSongFilePath = selectNextSong(filelist);
+				final SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+				boolean lastfmactive = settings.getBoolean("lastfmactive", false);
+				if(lastfmactive)
 				{
-					//Log.i(TAG, "found the music folder");
-					File[] filelist2 = filelist[i].listFiles();
-					for(int j=0; j<filelist2.length; j++)
+					if(!oldtitle.equals(""))
 					{
-						//Log.i(TAG, filelist2[j].getName());
-						if(filelist2[j].getName().equals("TrashPlay"))
-						{
-							//Log.i(TAG, "found the trashplay folder");
-							File[] filelist3 = filelist2[j].listFiles();
-							randomsongnumber = (int) (Math.random() * (filelist3.length));
-							Log.d(TAG, "found "+filelist3.length+" files. PLaying "+randomsongnumber);
-							String musicpath = filelist3[randomsongnumber].getAbsolutePath();
-							File f = new File(musicpath);
-							String artist="";
-							String song="";
-							try 
-							{
-								final SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-								boolean lastfmactive = settings.getBoolean("lastfmactive", false);
-								if(lastfmactive)
-								{
-									if(!oldtitle.equals(""))
-									{
-										scrobble(oldartist, oldtitle);
-									}
-									oldtitle="";
-									oldartist="";
-									MP3File mp3 = new MP3File(f);
-									ID3v1 id3 = mp3.getID3v1Tag();
-									artist = id3.getArtist();
-									oldartist=artist;
-									Log.d(TAG, "----------->ARTIST:"+artist);
-									song = id3.getSongTitle();
-									Log.d(TAG, "----------->SONG:"+song);
-									oldtitle=song;
-									playNow(artist, song);
-								}
-							} 
-							catch (IOException e1) 
-							{
-								e1.printStackTrace();
-							} 
-							catch (TagException e1) 
-							{
-								e1.printStackTrace();
-							}
-							catch(Exception ex)
-							{
-								Log.e(TAG, "There has been an exception while extracting ID3 Tag Information from the MP3");
-								String fn = f.getName();
-								if(fn.contains("-") && fn.endsWith("mp3"))
-								{
-									fn=fn.replace(".mp3", "");
-									String[] spl = fn.split("-");
-									if(spl.length==2)
-									{
-										oldartist=spl[0];
-										oldtitle=spl[1];
-										playNow(spl[0], spl[1]);
-									}
-								}
-							}
-							try 
-							{
-								mp = new MediaPlayer();
-								mp.setDataSource(musicpath);
-								mp.setLooping(false);
-						        mp.setVolume(0.99f, 0.99f);
-						        mp.setOnPreparedListener(this);
-						        mp.prepareAsync();
-							} 
-							catch (IllegalArgumentException e) 
-							{
-								e.printStackTrace();
-							} 
-							catch (IllegalStateException e) 
-							{
-								e.printStackTrace();
-							} 
-							catch (IOException e) 
-							{
-								e.printStackTrace();
-							}
-
-						}
+						LastFM.scrobble(oldartist, oldtitle);
 					}
+					oldartist="";
+					oldtitle="";
+				}
+				String[] metadata = getMetaData(new File(nextSongFilePath));
+				if(!metadata[0].equals("") && !metadata[1].equals(""))
+				{
+					oldartist=metadata[0];
+					oldtitle=metadata[1];
+					LastFM.playNow( oldartist, oldtitle);
+				}
+				try 
+				{
+					file=nextSongFilePath;//static variable to show which file is playing. 
+					mp = new MediaPlayer();
+					mp.setDataSource(nextSongFilePath);
+					mp.setLooping(false);
+					mp.setVolume(0.99f, 0.99f);
+					mp.setOnPreparedListener(this);
+					mp.prepareAsync();
+				} 
+				catch (IllegalArgumentException e) 
+				{
+					e.printStackTrace();
+				} 
+				catch (IllegalStateException e) 
+				{
+					e.printStackTrace();
+				} 
+				catch (IOException e) 
+				{
+					e.printStackTrace();
 				}
 			}
 		}
 	}
 	
+	private String selectNextSong(ArrayList<File> filelist) 
+	{
+		Log.d(TAG, "found "+filelist.size()+" files.");
+		final SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+		String nextSong0 = settings.getString("nextSong0", "");
+		String musicpath = "";
+		Editor edit = settings.edit();
+		if(nextSong0.equals(""))
+		{
+			//fill nextSong0 to nextSong9 with 10 songs to play next
+			Log.d(TAG, "nextSong0 was totally nothing so we initiallize");
+			for(int i=0; i<10; i++)
+			{
+				int randomsongnumber = (int) (Math.random() * (filelist.size()));
+				String olol = filelist.get(randomsongnumber).getAbsolutePath();
+				edit.putString("nextSong"+i, olol);	
+				Log.d(TAG, olol);
+			}
+		}
+		else
+		{
+			//make nextsSong1 to nextSong2 and so on and then select a new nextSong9
+			Log.d(TAG, "we have a list of like 10 songs, so we take the first one...");
+			for(int i=0; i<10; i++)
+			{
+				Log.d(TAG, settings.getString("nextSong"+i, ""));
+			}
+			musicpath = settings.getString("nextSong0", "");
+			if(file.equals(musicpath))
+			{
+				musicpath = settings.getString("nextSong1", "");
+				for(int i=0; i<9; i++)
+				{
+					edit.putString("nextSong"+i, settings.getString("nextSong"+(i+1), ""));
+				}
+				int randomsongnumber = (int) (Math.random() * (filelist.size()));
+				String olol = filelist.get(randomsongnumber).getAbsolutePath();
+				edit.putString("nextSong9", olol);
+			}
+			Log.d(TAG, "its"+musicpath);
+			
+			
+		}
+		edit.commit();
+		musicpath = settings.getString("nextSong0", "");
+		return musicpath;
+		
+	}
+
+	public static String[] getMetaData(File file) 
+	{
+		String[] metadata = new String[2];
+		metadata[0]="";
+		metadata[1]="";
+		try 
+		{
+			MP3File mp3 = new MP3File(file);
+			ID3v1 id3 = mp3.getID3v1Tag();
+			metadata[0] = id3.getArtist();
+			Log.d(TAG, "----------->ARTIST:"+metadata[0]);
+			metadata[1] = id3.getSongTitle();
+			Log.d(TAG, "----------->SONG:"+metadata[1]);
+		} 
+		catch (IOException e1) 
+		{
+			e1.printStackTrace();
+		} 
+		catch (TagException e1) 
+		{
+			e1.printStackTrace();
+		}
+		catch(Exception ex)
+		{
+			Log.e(TAG, "There has been an exception while extracting ID3 Tag Information from the MP3");
+			String fn = file.getName();
+			fn.replace("–", "-"); //wired symbols that look alike
+			if(fn.contains("-") && fn.endsWith("mp3"))
+			{
+				fn=fn.replace(".mp3", "");
+				String[] spl = fn.split("-");
+				if(spl.length==2)
+				{
+					metadata[0]=spl[0];
+					metadata[0]=metadata[0].trim();
+					metadata[0]=spl[1];
+					metadata[0]=metadata[0].trim();
+					Log.d(TAG, "----------->ARTIST():"+spl[0]);
+					Log.d(TAG, "----------->SONG():"+spl[1]);
+					LastFM.playNow(spl[0], spl[1]);
+				}
+			}
+		}
+		return metadata;
+	}
+	
+	/**
+	 * This method fetches the files from the 
+	 * @param filesystem
+	 * @return
+	 */
+	private ArrayList<File> getTrashMusicFiles(File filesystem) 
+	{
+		File[] filelist = filesystem.listFiles();
+		ArrayList<File> fl = new ArrayList<File>();
+		for(int i=0; i<filelist.length; i++)
+		{
+			//Log.i(TAG, filelist[i].getName());
+			if(filelist[i].getName().equals("Music"))
+			{
+				//Log.i(TAG, "found the music folder");
+				File[] filelist2 = filelist[i].listFiles();
+				for(int j=0; j<filelist2.length; j++)
+				{
+					//Log.i(TAG, filelist2[j].getName());
+					if(filelist2[j].getName().equals("TrashPlay"))
+					{
+						//Log.i(TAG, "found the trashplay folder");
+						File[] filelist3 = filelist2[j].listFiles();
+						for(int k=0; k<filelist3.length; k++)
+						{
+							fl.add(filelist3[k]);
+						}
+						return fl;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 	@Override
 	public void onPrepared(MediaPlayer mpx) 
 	{
@@ -273,7 +364,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
 			@Override
 			public void onCompletion(MediaPlayer mpx) 
 			{
-				goplaymp3();
+				playmp3();
 			}
 			
 		});
@@ -293,6 +384,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
 			
 		}
 		playing=false;
+		updater.onPause();
 		onDestroy();
 	}
 
@@ -302,7 +394,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
 		playing=true;
 		try
 		{
-			goplaymp3();
+			playmp3();
 		}
 		catch(Exception e)
 		{
@@ -313,11 +405,6 @@ public class TrashPlayService extends Service implements OnPreparedListener
 
 	private DropboxAPI <AndroidAuthSession> getDropboxAPI()
 	{
-		//AppKeyPair appKeys = new AppKeyPair(DropBoxConstants.appKey, DropBoxConstants.appSecret);
-		//AndroidAuthSession session = new AndroidAuthSession(appKeys, ACCESS_TYPE);
-		//mDBApi = new DropboxAPI<AndroidAuthSession>(session);	
-	
-		
 	    AppKeyPair appKeys = new AppKeyPair(DropBoxConstants.appKey, DropBoxConstants.appSecret);
 	    AndroidAuthSession session = new AndroidAuthSession(appKeys, ACCESS_TYPE);
 	    mDBApi = new DropboxAPI<AndroidAuthSession>(session);
@@ -330,27 +417,38 @@ public class TrashPlayService extends Service implements OnPreparedListener
 	    return mDBApi;
 	}
 	
+	/*
+	 * This private class is a runnable which is basically in charge of checking fome values and instrucing some updates
+	 * It checks the volume (and turns it up if its low)
+	 * It checks wether we are in a wifi and if so, syncs the Dropbox
+	 */
 	private class  Updater implements Runnable
     {
 		 private Handler handler = new Handler();
-         public static final int delay= 300000;//5 min
+         public static final int delay= 5000;//5 sec
          SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+         long counter=0;
          @Override
          public void run() 
          {
-        	 Log.d(TAG, "----------");
-        	 final AudioManager audio;
-        	 audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        	 //check for the volume
         	 int volume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
         	 Log.d(TAG, "volume= "+volume);
         	 if(volume<5)
         	 {
         		 fadein();
         	 }
-        	 if(wifi)
+        	 //every 60 cicles (5 minutes) check if wifi and if so, dropbox sync
+        	 if(counter%60==0) //every 5 minutes
         	 {
-        		 DropBox.syncFiles(settings);
+	        	 if(wifi)
+	        	 {
+	        		 DropBox.syncFiles(settings);
+	        	 }
         	 }
+        	 //counter
+        	 counter++;
+        	 //call the handler again
              handler.removeCallbacks(this); // remove the old callback
              handler.postDelayed(this, delay); // register a new one
          }
@@ -362,75 +460,12 @@ public class TrashPlayService extends Service implements OnPreparedListener
             
          public void onResume()
          {
-         handler.removeCallbacks(this); // remove the old callback
-         handler.postDelayed(this, delay); // register a new one
+        	 handler.removeCallbacks(this); // remove the old callback
+        	 handler.postDelayed(this, delay); // register a new one
          }
     }
 	
-	private void scrobble(final String artist, final String song)
-	{
-	    new Thread(new Runnable() 
-    	{
-    	    public void run() 
-    	    {
-				SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-			    String lastfmusername = LastFMConstants.user;
-			    String lastfmpassword = LastFMConstants.password;
-				if(!lastfmusername.equals(""))
-				{
-					Session session=null;
-					try
-					{
-						Caller.getInstance().setCache(null);
-						session = Authenticator.getMobileSession(lastfmusername, lastfmpassword, LastFMConstants.key, LastFMConstants.secret);
-					}
-					catch(Exception e)
-					{
-						Log.e(TAG, e.getMessage());
-					}
-					if(session!=null)
-					{
-						int now = (int) (System.currentTimeMillis() / 1000);
-						ScrobbleResult result = Track.updateNowPlaying(artist, song, session);
-						result = Track.scrobble(artist, song, now, session);
-					}
-				}
-    	    }
-    	}).start();
-	}
-	
-	private void playNow(final String artist, final String song)
-	{
-	    new Thread(new Runnable() 
-    	{
-    	    public void run() 
-    	    {
-				SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-			    String lastfmusername = LastFMConstants.user;
-			    String lastfmpassword = LastFMConstants.password;
-				if(!lastfmusername.equals(""))
-				{
-					Session session=null;
-					try
-					{
-						Caller.getInstance().setCache(null);
-						session = Authenticator.getMobileSession(lastfmusername, lastfmpassword, LastFMConstants.key, LastFMConstants.secret);
-					}
-					catch(Exception e)
-					{
-						Log.e(TAG, e.getMessage());
-					}
-					if(session!=null)
-					{
-						int now = (int) (System.currentTimeMillis() / 1000);
-						ScrobbleResult result = Track.updateNowPlaying(artist, song, session);
-						result = Track.updateNowPlaying(artist, song, session);
-					}
-				}
-    	    }
-    	}).start();
-	}
-	
+
 	private void fadein()
 	{
 		final AudioManager audio;
@@ -444,7 +479,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
     				audio.setStreamVolume(AudioManager.STREAM_MUSIC, x, AudioManager.FLAG_VIBRATE);
     				try
     		    	{
-    		    		  Thread.currentThread().sleep(1500);
+    		    		  Thread.currentThread().sleep(500);
     		    	}
     		    	catch(Exception ie)
     		    	{

@@ -1,12 +1,16 @@
 package de.trashplay.main;
 
+import java.io.File;
+
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AccessTokenPair;
 
+import de.trashplay.dropbox.DropBox;
 import de.trashplay.main.TrashPlayService.LocalBinder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.app.Activity;
@@ -21,6 +25,8 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity
 {
@@ -31,6 +37,7 @@ public class MainActivity extends Activity
     boolean mBound = false;
     long mStartTime;
     private UIUpdater updater;
+    String display="";
     
     private static final int REQUEST_LINK_TO_DBX = 56;
     
@@ -47,7 +54,7 @@ public class MainActivity extends Activity
 		final ImageView lastfm = (ImageView) findViewById(R.id.imageView5);
 		sync.setVisibility(View.GONE);
 		wifi.setVisibility(View.GONE);
-		playpause.setVisibility(View.GONE);
+		//playpause.setVisibility(View.GONE);
 		getApplicationContext().startService(new Intent(this, TrashPlayService.class));
 		Intent i = new Intent(this, TrashPlayService.class);		
 		getApplicationContext().bindService(i, mConnection, Context.BIND_AUTO_CREATE);
@@ -63,7 +70,7 @@ public class MainActivity extends Activity
 					if(mService!=null)
 					{
 						mService.stop();
-						playpause.setImageResource(R.drawable.play);
+						//playpause.setImageResource(R.drawable.play);
 						MainActivity.this.finish();
 					}
 					else
@@ -86,6 +93,7 @@ public class MainActivity extends Activity
 			}
 			
 		});
+		playpause.setClickable(false);
         final SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 		dropbox.setOnClickListener(new OnClickListener(){
 
@@ -99,11 +107,13 @@ public class MainActivity extends Activity
 					edit.putString("DB_KEY", "");
 					edit.putString("DB_SECRET", "");
 					edit.commit();
+					toast("Disconnected from Dropbox");
 				}
 				else
 				{
 					Log.d(TAG, "click dp");
 					TrashPlayService.mDBApi.getSession().startAuthentication(MainActivity.this);
+					toast("Connecting to Dropbox");
 				}
 			}
 			
@@ -127,6 +137,7 @@ public class MainActivity extends Activity
 					Editor edit = settings.edit();
 					edit.putBoolean("lastfmactive", false);
 					edit.commit();
+					toast("Disconnected from Last.fm");
 				}
 				else
 				{
@@ -134,6 +145,7 @@ public class MainActivity extends Activity
 					Editor edit = settings.edit();
 					edit.putBoolean("lastfmactive", true);
 					edit.commit();
+					toast("Connected to Last.fm");
 				}
 			}
 			
@@ -181,6 +193,9 @@ public class MainActivity extends Activity
 	@Override
 	protected void onResume()
 	{
+		Log.d(TAG, "on Resume Main Activity");
+    	SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        DropBox.syncFiles(settings);
 		updater.onResume();
 		if(TrashPlayService.mDBApi!=null)
 		{
@@ -226,12 +241,22 @@ public class MainActivity extends Activity
          @Override
          public void run() 
          {
+        	 File folder = new File(Environment.getExternalStorageDirectory().getPath() + "/Music/TrashPlay");
         	 if(mService!=null)
         	 {
         		 if(TrashPlayService.mDBApi!=null && !settings.getString("DB_KEY", "").equals(""))
         		 {
         			ImageView playpause = (ImageView) findViewById(R.id.imageView1);
-        			playpause.setVisibility(View.VISIBLE);
+        			String[] x = folder.list();
+        			if(!playpause.isClickable())
+        			{
+	        			if(x.length>10)
+	        			{
+	        				playpause.setImageResource(R.drawable.play);
+	        				//playpause.setVisibility(View.VISIBLE);
+	        				playpause.setClickable(true);
+	        			}
+        			}
         		 }
         	 }
         	 if(TrashPlayService.mDBApi!=null && !settings.getString("DB_KEY", "").equals(""))
@@ -246,7 +271,22 @@ public class MainActivity extends Activity
 	        		
         		 dropbox.setImageResource(R.drawable.dropbox);
         	 }
-        	 
+        	 if(!TrashPlayService.file.equals(""))
+        	 {
+        		File f = new File(TrashPlayService.file);
+        		String[] metadata = TrashPlayService.getMetaData(f);
+        		String newdisplay="";
+        		if(!metadata[0].equals("") && !metadata[1].equals(""))
+ 				{
+        			 newdisplay=metadata[0]+" - "+metadata[1];
+ 				}
+        		else
+        		{
+        			newdisplay=f.getName();
+        		}
+        		TextView textView1 = (TextView) findViewById(R.id.textView1);
+        		textView1.setText(newdisplay);
+        	 }
         	 ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
  			 NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 
@@ -296,7 +336,9 @@ public class MainActivity extends Activity
 	        {
 	            if (resultCode == Activity.RESULT_OK) 
 	            {
-	                //doDropboxTest();
+	            	SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+	                DropBox.syncFiles(settings);
+	                toast("now syncing dropbox files. Please wait.");
 	            } 
 	            else 
 	            {
@@ -307,5 +349,15 @@ public class MainActivity extends Activity
 	            super.onActivityResult(requestCode, resultCode, data);
 	        }
 	    }
+	   
+	   private void toast(String t)
+	   {
+		   Context context = getApplicationContext();
+		   CharSequence text = t;
+		   int duration = Toast.LENGTH_SHORT;
+
+		   Toast toast = Toast.makeText(context, text, duration);
+		   toast.show();
+	   }
 
 }

@@ -1,4 +1,4 @@
-package de.trashplay.main;
+package de.trashplay.dropbox;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,6 +11,9 @@ import com.dropbox.client2.DropboxAPI.Entry;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.Session.AccessType;
+
+import de.trashplay.main.TrashPlayConstants;
+import de.trashplay.main.TrashPlayService;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
