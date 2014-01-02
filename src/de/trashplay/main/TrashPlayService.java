@@ -280,12 +280,19 @@ public class TrashPlayService extends Service implements OnPreparedListener
 		metadata[1]="";
 		try 
 		{
+			Log.d(TAG, "md1");
 			MP3File mp3 = new MP3File(file);
+			Log.d(TAG, "md2");
 			ID3v1 id3 = mp3.getID3v1Tag();
+			Log.d(TAG, "md3");
+			Log.d(TAG, "md3d");
 			metadata[0] = id3.getArtist();
+			Log.d(TAG, "md4");
 			Log.d(TAG, "----------->ARTIST:"+metadata[0]);
 			metadata[1] = id3.getSongTitle();
+			Log.d(TAG, "md5");
 			Log.d(TAG, "----------->SONG:"+metadata[1]);
+			Log.d(TAG, "md6");
 		} 
 		catch (IOException e1) 
 		{
@@ -308,8 +315,8 @@ public class TrashPlayService extends Service implements OnPreparedListener
 				{
 					metadata[0]=spl[0];
 					metadata[0]=metadata[0].trim();
-					metadata[0]=spl[1];
-					metadata[0]=metadata[0].trim();
+					metadata[1]=spl[1];
+					metadata[1]=metadata[1].trim();
 					Log.d(TAG, "----------->ARTIST():"+spl[0]);
 					Log.d(TAG, "----------->SONG():"+spl[1]);
 				}
