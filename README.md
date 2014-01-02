@@ -1,5 +1,5 @@
 <p align="center">
-![Logo](https://raw.github.com/TVLuke/TrashPlay/master/res/drawable-hdpi/ic_launcher.png)
+<img src="https://raw.github.com/TVLuke/TrashPlay/master/res/drawable-hdpi/ic_launcher.png" alt="Logo"/>
 </p>
 ## TrashPlay
 
@@ -40,9 +40,11 @@ If you turn down the volume of the phone, it will, after a few graceful minutes,
 * Scrobbling to last.fm
 * No Silence. Music will be turned up again at once.
 * Remember last song and continue with that song when restarted
+<p align="center">
+<img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191841.png" alt="Screenshot 1"/>
+<img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191103.png" alt="Screenshot 2"/>
 
-![Screen1](https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191841.png) ![Screen2](https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191103.png)
-
+</p>
 ### Older Versions
 
 #### v 0.1.deinemudda (31.12.2013)
