@@ -1,15 +1,17 @@
+<p align="center">
 ![Logo](https://raw.github.com/TVLuke/TrashPlay/master/res/drawable-hdpi/ic_launcher.png)
+</p>
 ## TrashPlay
 
 [Download current version](https://www.dropbox.com/s/g0jf9bbckhkohtk/TrasPlay_0.1.roflcopter.apk)
 
-TrashPlay is a simple music player to play during car trips and other events that need a Trash Playlist (for reasons). It offers only one button. Play. There is no skipping and no pausing. Ever.
+TrashPlay is a simple music player to use during car trips and other events that need a Trash Playlist (for reasons). It offers only one button. Play. There is no skipping and no pausing. Ever.
 
 The player takes its music from the Dropbox, using a folder called _DropBoxTrashPlaylistDerHoelle_. You should share that folder with all the people who will be on the car ride to put music in. TrashPlay will not use any other folder. Ever.
 
-The player is nice to your band width and synchronizes only when you are in a Wifi. The music in your Dropbox folder will be put on your phone. Music that isn't in the folder will not stay on the phone. Ever.
+The player is nice to your band width and synchronizes only when you are in a Wifi. So, don't forget to sync before traveling. The music in your Dropbox folder will be put on your phone. Music that isn't in the Dropbox folder will not stay on the phone. Ever.
 
-If you enable last.fm (that is, when the last.fm button is grey) it scrobbles the music you listen to a specific last.fm account. This last.fm-account represents the record of all music played on any TrashPlayer. Ever.
+If you enable last.fm (that is, when the last.fm button is grey) it scrobbles the music you listen to a [specific last.fm account](http://www.lastfm.de/user/TrashPlayList). This last.fm-account represents the record of all music played on any TrashPlay App. Ever.
 
 If you turn down the volume of the phone, it will, after a few graceful minutes, turn back up. You cannot silence the trash. Ever.
 
@@ -24,7 +26,10 @@ If you turn down the volume of the phone, it will, after a few graceful minutes,
 * Geofencing feature. Certain Songs that get palyed when entering or exiting specific locations. Possibly as a global feature...
 
 ## Release History
-### v 0.1.roflcopter (02.01.2014) [Download](https://www.dropbox.com/s/g0jf9bbckhkohtk/TrasPlay_0.1.roflcopter.apk)
+
+### Current
+
+#### v 0.1.roflcopter (02.01.2014) [Download](https://www.dropbox.com/s/g0jf9bbckhkohtk/TrasPlay_0.1.roflcopter.apk)
 * Play music
 * Shut down on stop
 * Display title of the current track
@@ -38,7 +43,9 @@ If you turn down the volume of the phone, it will, after a few graceful minutes,
 
 ![Screen1](https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191841.png) ![Screen2](https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191103.png)
 
-### v 0.1.deinemudda (31.12.2013)
+### Older Versions
+
+#### v 0.1.deinemudda (31.12.2013)
 * Play music
 * Shut down on stop
 * Dropbox connection possible
