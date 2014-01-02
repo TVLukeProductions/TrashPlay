@@ -36,6 +36,8 @@ If you turn down the volume of the phone, it will, after a few graceful minutes,
 * No Silence. Music will be turned up again at once.
 * Remember last song and continue with that song when restarted
 
+![Screen1](https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191841.png) ![Screen2](https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191103.png)
+
 ### v 0.1.deinemudda (31.12.2013)
 * Play music
 * Shut down on stop
