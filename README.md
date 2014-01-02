@@ -9,9 +9,9 @@ If you enable last.fm (that is, when the last.fm button is grey) it scrobbles th
 
 If you turn down the volume of the phone, it will, after a few graceful minutes, turn back up. You cannot silence the trash. Ever.
 
-## Next Features (0.1.roflcopter)
-* **Persistent Randomness.** Right now, by turning of the app and turning it back on one can escape a song. This is not what trash playlists are made for. Thus, the next release will feature persistence. I intent to even put in a little list, lets say the next 5 or 10 tracks, so you know what is coming (and cannot do anything about it at all)
-* **No Silence. [at all](http://www.youtube.com/watch?v=4Z2Z23SAFVA)** Right now the process checking for loudness only runs every 5 minutes, giving you the possibility of turning the volume down for way more than most tracks are long. This is in no way acceptable. If you listen to the playlist, you listen to the playlist.
+## Next Up (version 0.1.dayum)
+* Better UI
+* Some Work On The Code
 
 ## Ideas for Future Releases (0.2.hundimbuero)**
 
