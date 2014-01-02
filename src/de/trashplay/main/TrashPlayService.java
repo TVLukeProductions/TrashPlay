@@ -14,8 +14,7 @@ import com.dropbox.client2.session.AccessTokenPair;
 import com.dropbox.client2.session.AppKeyPair;
 import com.dropbox.client2.session.Session.AccessType;
 
-import de.trashplay.dropbox.DropBox;
-import de.trashplay.dropbox.DropBoxConstants;
+import de.trashplay.dropbox.*;
 import de.trashplay.lastfm.LastFM;
 import de.trashplay.lastfm.LastFMConstants;
 import de.umass.lastfm.Authenticator;
@@ -405,7 +404,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
 
 	private DropboxAPI <AndroidAuthSession> getDropboxAPI()
 	{
-	    AppKeyPair appKeys = new AppKeyPair(DropBoxConstants.appKey, DropBoxConstants.appSecret);
+	    AppKeyPair appKeys = new AppKeyPair(DBConstants.appKey, DBConstants.appSecret);
 	    AndroidAuthSession session = new AndroidAuthSession(appKeys, ACCESS_TYPE);
 	    mDBApi = new DropboxAPI<AndroidAuthSession>(session);
 		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
