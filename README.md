@@ -4,6 +4,7 @@
 ## TrashPlay
 
 [Download current version](https://www.dropbox.com/s/g0jf9bbckhkohtk/TrasPlay_0.1.roflcopter.apk)
+(This thing is totally Beta. So report Bugs, Questions and Feature Requests [here](https://github.com/TVLuke/TrashPlay/issues) and check from time to time if there is an update.)
 
 TrashPlay is a simple music player for Android (3.x and 4.x) phones and tablets to use during car trips and other events that need a Trash Playlist (for reasons). It offers only one button. Play. There is no skipping and no pausing. Ever.
 

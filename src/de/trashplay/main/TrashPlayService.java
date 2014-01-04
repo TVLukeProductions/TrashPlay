@@ -65,8 +65,13 @@ public class TrashPlayService extends Service implements OnPreparedListener
     String oldartist="";
     String oldtitle="";
     public static String file=""; 
+    private int startId=0;
     
 	 AudioManager audio;
+	 
+	 public static TrashPlayService ctx;
+	 
+	    private final IBinder mBinder = new LocalBinder();
     
 	public class LocalBinder extends Binder 
     {
@@ -76,9 +81,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
             return TrashPlayService.this;
         }
     }
-    
-    private final IBinder mBinder = new LocalBinder();
-    
+   
     
 	@Override
 	public IBinder onBind(Intent intent) 
@@ -92,6 +95,8 @@ public class TrashPlayService extends Service implements OnPreparedListener
 		//Start foreground is another way to make sure the app does not stop...
 		int icon = R.drawable.recopen; 
 		Log.d(TAG, "on create Service");
+		ctx=this;
+		this.startId = startId;
 		 Notification note=new Notification(icon, "TrashPlayer", System.currentTimeMillis());
 		 Intent i=new Intent(this, MainActivity.class);
 
@@ -108,6 +113,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
 				| Notification.FLAG_NO_CLEAR;
 		
 		startForeground(5646, note);
+		
 		getDropboxAPI();
 
 		ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -143,14 +149,14 @@ public class TrashPlayService extends Service implements OnPreparedListener
 	@Override
     public void onDestroy() 
     {
-		Log.i(TAG, "onDestroy!");
         super.onDestroy();
+		Log.i(TAG, "onDestroy!");
+		stopForeground(true);
         NotificationManager notificationManager = (NotificationManager) 
         		  getSystemService(NOTIFICATION_SERVICE); 
         notificationManager.cancel(5646);
-        updater.onPause();
-        mp.release();
-        stopForeground(true);
+        updater=null;
+        Log.d(TAG, "bye!");
     }
 	
 	private void playmp3()
@@ -386,6 +392,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
 	@Override
 	public void onPrepared(MediaPlayer mpx) 
 	{
+		Log.d(TAG, "on Prepared");
 		mpx.setOnCompletionListener(new OnCompletionListener(){
 
 			@Override
@@ -400,24 +407,26 @@ public class TrashPlayService extends Service implements OnPreparedListener
 
 	public void stop() 
 	{
-		Log.d(TAG, "stop");
+		Log.d(TAG, "Service player stop");
+		playing=false;
+		updater.onPause();
 		try
 		{
 			mp.stop();
 			mp.release();
+			mp=null;
 		}
 		catch(Exception e)
 		{
-			
+			Log.e(TAG, "stop() had a problem when stoping the player... and that menas other stuff did not stop.");
+			playing=false;
 		}
-		playing=false;
-		updater.onPause();
-		onDestroy();
+		stopSelf(startId);
 	}
 
 	public void start() 
 	{
-		Log.d(TAG, "start");
+		Log.d(TAG, "Service Player start");
 		playing=true;
 		try
 		{
@@ -429,9 +438,15 @@ public class TrashPlayService extends Service implements OnPreparedListener
 			Log.e(TAG, e.getMessage());
 		}
 	}
+	
+	public static TrashPlayService getService()
+	{
+		return ctx;
+	}
 
 	private DropboxAPI <AndroidAuthSession> getDropboxAPI()
 	{
+		Log.d(TAG, "getDPAPI");
 	    AppKeyPair appKeys = new AppKeyPair(DBConstants.appKey, DBConstants.appSecret);
 	    AndroidAuthSession session = new AndroidAuthSession(appKeys, ACCESS_TYPE);
 	    mDBApi = new DropboxAPI<AndroidAuthSession>(session);
@@ -460,7 +475,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
          {
         	 //check for the volume
         	 int volume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
-        	 //Log.d(TAG, "volume= "+volume);
+        	 Log.d(TAG, "volume= "+volume);
         	 if(volume<5)
         	 {
         		 fadein();
@@ -482,14 +497,9 @@ public class TrashPlayService extends Service implements OnPreparedListener
          
          public void onPause()
 	     {
+        	 Log.d(TAG, "updater on Pause in Service");
 	         handler.removeCallbacks(this); // stop the map from updating
 	     }
-            
-         public void onResume()
-         {
-        	 handler.removeCallbacks(this); // remove the old callback
-        	 handler.postDelayed(this, delay); // register a new one
-         }
     }
 	
 
@@ -501,8 +511,9 @@ public class TrashPlayService extends Service implements OnPreparedListener
     	{
     	    public void run() 
     	    {
-    			for(int x=0; x<16; x++)
+    			for(int x=5; x<16; x++)
     			{
+    				Log.d(TAG, "v up");
     				audio.setStreamVolume(AudioManager.STREAM_MUSIC, x, AudioManager.FLAG_VIBRATE);
     				try
     		    	{

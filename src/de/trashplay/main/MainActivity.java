@@ -33,11 +33,10 @@ public class MainActivity extends Activity
 
 	public static final String TAG = TrashPlayConstants.TAG;
 	public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
-    TrashPlayService mService;
-    boolean mBound = false;
-    long mStartTime;
-    private UIUpdater updater;
+
+	private UIUpdater updater;
     String display="";
+    Activity ctx;
     
     private static final int REQUEST_LINK_TO_DBX = 56;
     
@@ -46,6 +45,7 @@ public class MainActivity extends Activity
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		ctx=this;
 		//start the trashPlayService
 		final ImageView playpause = (ImageView) findViewById(R.id.imageView1);
 		ImageView sync = (ImageView) findViewById(R.id.imageView2);
@@ -55,9 +55,8 @@ public class MainActivity extends Activity
 		sync.setVisibility(View.GONE);
 		wifi.setVisibility(View.GONE);
 		//playpause.setVisibility(View.GONE);
-		getApplicationContext().startService(new Intent(this, TrashPlayService.class));
-		Intent i = new Intent(this, TrashPlayService.class);		
-		getApplicationContext().bindService(i, mConnection, Context.BIND_AUTO_CREATE);
+		startService(new Intent(this, TrashPlayService.class));
+		
 		
 		playpause.setOnClickListener(new OnClickListener(){
 
@@ -67,28 +66,20 @@ public class MainActivity extends Activity
 				Log.d(TAG, "click");
 				if(TrashPlayService.playing)
 				{
-					if(mService!=null)
+					if(TrashPlayService.ctx!=null)
 					{
-						mService.stop();
-						//playpause.setImageResource(R.drawable.play);
-						MainActivity.this.finish();
+						TrashPlayService.ctx.stop();
 					}
-					else
-					{
-						Log.d(TAG, "mService==null");
-					}
+					ctx.stopService(new Intent(ctx, TrashPlayService.class));
+					MainActivity.this.finish();
 				}
 				else
 				{
-					if(mService!=null)
+					if(TrashPlayService.ctx!=null)
 					{
-						mService.start();
-						playpause.setImageResource(R.drawable.pause);
+						TrashPlayService.ctx.start();
 					}
-					else
-					{
-						Log.d(TAG, "mService==null");
-					}
+					playpause.setImageResource(R.drawable.pause);
 				}
 			}
 			
@@ -154,27 +145,6 @@ public class MainActivity extends Activity
         updater.run();
 	}
 	
-	/** Defines callbacks for service binding, passed to bindService() */
-    private ServiceConnection mConnection = new ServiceConnection() 
-    {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) 
-        {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-        	Log.d(TAG, "bind stuff");
-        	LocalBinder binder = (LocalBinder) service;
-            mService = binder.getService();
-            mBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) 
-        {
-        	mService=null;
-            mBound = false;
-        }
-    };
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) 
 	{
@@ -186,13 +156,29 @@ public class MainActivity extends Activity
 	@Override
 	protected void onPause() 
 	{
-		updater.onPause();
 		super.onPause();
+		Log.d(TAG, "on Pause in Activity called");
+		updater.onPause();
+	}
+	
+	@Override
+	protected void onStop()
+	{
+		 super.onStop();
+		 Log.d(TAG, "on Stop in Activity called");
+	}
+
+	@Override
+	protected void onDestroy()
+	{	
+		super.onDestroy();
+		Log.d(TAG, "on Destroy in Activity called");
 	}
 	
 	@Override
 	protected void onResume()
 	{
+		super.onResume();
 		Log.d(TAG, "on Resume Main Activity");
     	SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         DropBox.syncFiles(settings);
@@ -219,7 +205,6 @@ public class MainActivity extends Activity
 		        }
 		    }
 		}
-		super.onResume();
 	}
 	
 	public void storeKeys(String key, String secret) 
@@ -241,23 +226,21 @@ public class MainActivity extends Activity
          @Override
          public void run() 
          {
+        	 //Log.d(TAG, "run");
         	 File folder = new File(Environment.getExternalStorageDirectory().getPath() + "/Music/TrashPlay");
-        	 if(mService!=null)
-        	 {
-        		 if(TrashPlayService.mDBApi!=null && !settings.getString("DB_KEY", "").equals(""))
-        		 {
-        			ImageView playpause = (ImageView) findViewById(R.id.imageView1);
-        			String[] x = folder.list();
-        			if(!playpause.isClickable())
+       		 if(TrashPlayService.mDBApi!=null && !settings.getString("DB_KEY", "").equals(""))
+       		 {
+       			ImageView playpause = (ImageView) findViewById(R.id.imageView1);
+       			String[] x = folder.list();
+       			if(!playpause.isClickable())
+       			{
+        			if(x.length>10)
         			{
-	        			if(x.length>10)
-	        			{
-	        				playpause.setImageResource(R.drawable.play);
-	        				//playpause.setVisibility(View.VISIBLE);
-	        				playpause.setClickable(true);
-	        			}
+        				playpause.setImageResource(R.drawable.play);
+        				//playpause.setVisibility(View.VISIBLE);
+        				playpause.setClickable(true);
         			}
-        		 }
+       			}
         	 }
         	 if(TrashPlayService.mDBApi!=null && !settings.getString("DB_KEY", "").equals(""))
     		 {
@@ -326,13 +309,14 @@ public class MainActivity extends Activity
          
          public void onPause()
 	     {
+        	 Log.d(TAG, "Activity update on Pause");
 	         handler.removeCallbacks(this); // stop the map from updating
 	     }
             
          public void onResume()
          {
-         handler.removeCallbacks(this); // remove the old callback
-         handler.postDelayed(this, delay); // register a new one
+	         handler.removeCallbacks(this); // remove the old callback
+	         handler.postDelayed(this, delay); // register a new one
          }
     }
 	

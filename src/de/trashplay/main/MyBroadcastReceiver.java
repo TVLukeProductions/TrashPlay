@@ -17,8 +17,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent) 
     {
-            Log.d(TAG, "onReceive");
-        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+       Log.d(TAG, "onReceive");
 
         NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
         if (networkInfo != null) 
