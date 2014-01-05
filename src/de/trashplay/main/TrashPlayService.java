@@ -418,7 +418,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
 		}
 		catch(Exception e)
 		{
-			Log.e(TAG, "stop() had a problem when stoping the player... and that menas other stuff did not stop.");
+			Log.e(TAG, "stop() had a problem when stoping the player....");
 			playing=false;
 		}
 		stopSelf(startId);
@@ -470,6 +470,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
          public static final int delay= 5000;//5 sec
          SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
          long counter=0;
+         boolean onpause=false;
          @Override
          public void run() 
          {

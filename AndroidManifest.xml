@@ -46,7 +46,9 @@
 		  android:enabled="true"
 		  android:exported="false"
 		  android:label="Dropbox Sync" />
-         <service android:name="TrashPlayService">
+        <service android:name="TrashPlayService">
+        </service>
+        <service android:name="de.trashplay.social.WifiDirectServic">
         </service>
         <receiver android:name="de.trashplay.main.MyBroadcastReceiver" >
             <intent-filter>

@@ -10,7 +10,6 @@ import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.DropboxAPI.Entry;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
-import com.dropbox.client2.session.Session.AccessType;
 
 import de.trashplay.main.TrashPlayConstants;
 import de.trashplay.main.TrashPlayService;
@@ -24,7 +23,6 @@ public class DropBox
 {
 	public static final String TAG = TrashPlayConstants.TAG;
 
-	 final static private AccessType ACCESS_TYPE = AccessType.DROPBOX;
 	 public static ArrayList<String> folders = new ArrayList<String>();
 	 public static boolean syncinprogress=false;
 	 
@@ -67,7 +65,6 @@ public class DropBox
 	    	    		        for (int i = 0; i < contents1.size(); i++) 
 	    	    		        {
 	    	    		        	Entry e = contents1.get(i);
-	    	    		            String a = e.fileName();  
 	    	    		            if(!e.isDir)
 	    	    		            {
 	    	    		            	//Log.d(TAG, e.fileName());
