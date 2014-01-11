@@ -125,7 +125,7 @@ public class DropBox
 	    	    	catch (Exception ex) 
 	    	    	{
 	    	    		Log.e(TAG, "ERROR in the DropBox Class");
-	    	    		Log.e(TAG, "->"+ex.getMessage());
+	    	    		Log.e(TAG, "->"+ex.getMessage()+"");
 	    	    		
 		    	    	syncinprogress=false;
 		    	    	return;

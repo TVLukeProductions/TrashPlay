@@ -477,7 +477,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
         	 //check for the volume
         	 int volume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
         	 Log.d(TAG, "volume= "+volume);
-        	 if(volume<5)
+        	 if(volume<1)
         	 {
         		 fadein();
         	 }
@@ -512,7 +512,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
     	{
     	    public void run() 
     	    {
-    			for(int x=5; x<16; x++)
+    			for(int x=0; x<2; x++)
     			{
     				Log.d(TAG, "v up");
     				audio.setStreamVolume(AudioManager.STREAM_MUSIC, x, AudioManager.FLAG_VIBRATE);

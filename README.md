@@ -18,11 +18,10 @@ If you turn down the volume of the phone, it will turn back up. You cannot silen
 
 If you stop the app TrashPlay will resume with the song played when you stoped the app. There is no skipping with Trash. Ever.
 
-## Next Up (version 0.1.dayum)
-* Better UI
-* **Bug Fixes**
-* Some minor fixes for convenience
-* Checking if files are changed or deleted before playing (this used to get the app into some hickups)
+## Next Up (version 0.1.Freezer)
+* Check to keep some storrage on the device
+* Partymode (connect via Wifi/CoaP and somehow influence the playlist)
+* NextUp (A preview of comming attarctions)
 ## Ideas for Future Releases (0.2.hundimbuero)**
 
 * Since Trash-Playlists are a social thing, this app will, in the near future, be a server, connecting to phones in its environment, as clients, who can in some way (to be determined) the playlist or the experience for other users of the TrashPlay. This will be exiting, and strange. And I have no Idea yet how it will work. 
@@ -32,7 +31,11 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 ## Release History
 
 ### Current
-
+#### v 0.1.dayum (11.01.2014) [Download]()
+* The volume control is now only turing up to 10% if the loudness was done to 0%. The previous strategy turned out to suck for headphone users.
+* **Bug Fixes**
+* Some minor fixes for convenience
+* Checking if files are changed or deleted before playing (this used to get the app into some hickups)
 #### v 0.1.roflcopter (02.01.2014) [Download](https://www.dropbox.com/s/g0jf9bbckhkohtk/TrasPlay_0.1.roflcopter.apk)
 * Play music
 * Shut down on stop
