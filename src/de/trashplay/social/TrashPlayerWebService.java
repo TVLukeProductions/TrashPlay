@@ -13,7 +13,7 @@ import android.util.Log;
 import com.google.common.util.concurrent.SettableFuture;
 
 import de.trashplay.main.TrashPlayConstants;
-import de.trashplay.main.TrashPlayService;
+import de.trashplay.main.TrashPlayServerService;
 import de.uniluebeck.itm.ncoap.application.server.webservice.MediaTypeNotSupportedException;
 import de.uniluebeck.itm.ncoap.application.server.webservice.ObservableWebService;
 import de.uniluebeck.itm.ncoap.message.CoapRequest;
@@ -35,7 +35,7 @@ public class TrashPlayerWebService extends ObservableWebService<String>
 	private String songinfoStr="";
 	private int updateintervall=60000;
 	
-	protected TrashPlayerWebService(String path, String initialStatus, TrashPlayService tps) 
+	protected TrashPlayerWebService(String path, String initialStatus, TrashPlayServerService tps) 
 	{
 		super(path, initialStatus);
 		tps.registerForUpdates(this);

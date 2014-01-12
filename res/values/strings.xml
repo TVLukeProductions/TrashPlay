@@ -4,5 +4,7 @@
     <string name="app_name">TrashPlay</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="dropbox">Dropbox</string>
+    <string name="lastfm">Last.fm</string>
 
 </resources>

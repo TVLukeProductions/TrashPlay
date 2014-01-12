@@ -1,12 +1,14 @@
 package de.trashplay.main;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AccessTokenPair;
 
 import de.trashplay.dropbox.DropBox;
-import de.trashplay.main.TrashPlayService.LocalBinder;
+import de.trashplay.lastfm.LastFM;
+import de.trashplay.main.TrashPlayServerService.LocalBinder;
 import de.trashplay.social.ContentManager;
 import de.trashplay.social.NDSService;
 import android.net.ConnectivityManager;
@@ -22,11 +24,16 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,9 +43,17 @@ public class MainActivity extends Activity
 	public static final String TAG = TrashPlayConstants.TAG;
 	public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 
+	private Menu menu = null;
+	
 	private UIUpdater updater;
     String display="";
     Activity ctx;
+    
+    ArrayList<File> nexts = new ArrayList<File>();
+    ArrayList<String> listItems = new ArrayList<String>();
+    ArrayAdapter<String> adapter;
+    
+    int counter=0;
     
     private static final int REQUEST_LINK_TO_DBX = 56;
     
@@ -52,13 +67,10 @@ public class MainActivity extends Activity
 		final ImageView playpause = (ImageView) findViewById(R.id.imageView1);
 		ImageView sync = (ImageView) findViewById(R.id.imageView2);
 		ImageView wifi = (ImageView) findViewById(R.id.imageView3);
-		ImageView dropbox = (ImageView) findViewById(R.id.imageView4);
-		final ImageView lastfm = (ImageView) findViewById(R.id.imageView5);
 		sync.setVisibility(View.GONE);
 		wifi.setVisibility(View.GONE);
 		//playpause.setVisibility(View.GONE);
-		startService(new Intent(this, TrashPlayService.class));
-		startService(new Intent(this, NDSService.class));
+		startService(new Intent(ctx, TrashPlayService.class));
 		
 		playpause.setOnClickListener(new OnClickListener(){
 
@@ -66,40 +78,85 @@ public class MainActivity extends Activity
 			public void onClick(View v) 
 			{
 				Log.d(TAG, "click");
-				if(TrashPlayService.playing)
+				if(TrashPlayServerService.playing)
 				{
-					if(TrashPlayService.ctx!=null)
+					if(TrashPlayServerService.ctx!=null)
 					{
-						TrashPlayService.ctx.stop();
+						TrashPlayServerService.ctx.stop();
 					}
-					ctx.stopService(new Intent(ctx, TrashPlayService.class));
+					ctx.stopService(new Intent(ctx, TrashPlayServerService.class));
+					//ctx.stopService(new Intent(ctx, NDSService.class));
 					MainActivity.this.finish();
 				}
 				else
 				{
-					if(TrashPlayService.ctx!=null)
-					{
-						TrashPlayService.ctx.start();
-					}
+					startService(new Intent(ctx, TrashPlayServerService.class));
+					//startService(new Intent(ctx, NDSService.class));
 					playpause.setImageResource(R.drawable.pause);
+					display="";
 				}
 			}
 			
 		});
 		playpause.setClickable(false);
-        final SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-		dropbox.setOnClickListener(new OnClickListener(){
-
-			@Override
-			public void onClick(View v) 
-			{
-				if(!settings.getString("DB_KEY", "").equals(""))
+        
+		ListView nextsongs = (ListView) findViewById(R.id.nextsongs);
+		adapter=new ArrayAdapter<String>(this,
+		                android.R.layout.simple_list_item_1,
+		                listItems);
+		ListView lv = (ListView) findViewById(R.id.nextsongs);
+		lv.setAdapter(adapter);
+		update();
+		
+		updater= new UIUpdater();
+        updater.run();
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) 
+	{
+	    // Inflate the menu items for use in the action bar
+	    MenuInflater inflater = getMenuInflater();
+	    this.menu=menu;
+	    inflater.inflate(R.menu.main, menu);
+	    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+	    //set starting icon
+	    for(int i=0; i<menu.size(); i++)
+	    {
+	    	MenuItem item = menu.getItem(i);
+	    	if(item.getItemId()==R.id.dropbox)
+	    	{
+	    		
+	    	}
+	    	if(item.getItemId()==R.id.lastfm)
+	    	{
+	    		final boolean lastfmactive = settings.getBoolean("lastfmactive", false);
+	    		if(lastfmactive)
+	    		{
+	    			Drawable myIcon = getResources().getDrawable(R.drawable.lastfmlogoyes);
+					item.setIcon(myIcon);
+	    		}
+	    	}
+	    }
+	    return super.onCreateOptionsMenu(menu);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) 
+	{
+	    // Handle presses on the action bar items
+    	SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+	    switch (item.getItemId()) 
+	    {
+	        case R.id.dropbox:
+	        	if(!settings.getString("DB_KEY", "").equals(""))
 				{
 					Log.d(TAG, "click dp");
 					Editor edit = settings.edit();
 					edit.putString("DB_KEY", "");
 					edit.putString("DB_SECRET", "");
 					edit.commit();
+					DropBox.syncinprogress=false;
 					toast("Disconnected from Dropbox");
 				}
 				else
@@ -108,25 +165,15 @@ public class MainActivity extends Activity
 					TrashPlayService.mDBApi.getSession().startAuthentication(MainActivity.this);
 					toast("Connecting to Dropbox");
 				}
-			}
-			
-		});
-		final boolean lastfmactive = settings.getBoolean("lastfmactive", false);
-		if(lastfmactive)
-		{
-			lastfm.setImageResource(R.drawable.lastfmlogoyes);
-		}
-		
-		lastfm.setOnClickListener(new OnClickListener(){
-
-			@Override
-			public void onClick(View v) 
-			{
-				final boolean lfma = settings.getBoolean("lastfmactive", false);
+	            return true;
+	        case R.id.lastfm:
+	        	final boolean lfma = settings.getBoolean("lastfmactive", false);
 				Log.d(TAG, "click lfm");
 				if(lfma)
 				{
-					lastfm.setImageResource(R.drawable.lastfmlogono);
+					Drawable myIcon = getResources().getDrawable(R.drawable.lastfmlogono);
+					item.setIcon(myIcon);
+					//lastfm.setImageResource(R.drawable.lastfmlogono);
 					Editor edit = settings.edit();
 					edit.putBoolean("lastfmactive", false);
 					edit.commit();
@@ -134,27 +181,21 @@ public class MainActivity extends Activity
 				}
 				else
 				{
-					lastfm.setImageResource(R.drawable.lastfmlogoyes);
+					Drawable myIcon = getResources().getDrawable(R.drawable.lastfmlogoyes);
+					item.setIcon(myIcon);
+					//lastfm.setImageResource(R.drawable.lastfmlogoyes);
 					Editor edit = settings.edit();
 					edit.putBoolean("lastfmactive", true);
 					edit.commit();
 					toast("Connected to Last.fm");
 				}
-			}
-			
-		});
-		updater= new UIUpdater();
-        updater.run();
+	            return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
 	}
 	
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) 
-	{
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
+	
 	@Override
 	protected void onPause() 
 	{
@@ -183,7 +224,7 @@ public class MainActivity extends Activity
 		super.onResume();
 		Log.d(TAG, "on Resume Main Activity");
     	SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        DropBox.syncFiles(settings);
+        //DropBox.syncFiles(settings);
 		updater.onResume();
 		if(TrashPlayService.mDBApi!=null)
 		{
@@ -203,7 +244,7 @@ public class MainActivity extends Activity
 		        } 
 		        catch (IllegalStateException e) 
 		        {
-		            Log.i("DbAuthLog", "Error authenticating", e);
+		            Log.i("DbAuthLog", " Error authenticating", e);
 		        }
 		    }
 		}
@@ -224,11 +265,17 @@ public class MainActivity extends Activity
 		 private Handler handler = new Handler();
          public static final int delay= 1000;
          SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
- 		
-         @Override
+ 		 String newdisplay="";
+       
+ 		 @Override
          public void run() 
          {
-        	 //Log.d(TAG, "run");
+        	 if(counter<0) //take care of posible overflow... unlikeley but possible
+        	 {
+        		 counter=0;
+        	 }
+        	 counter++;
+        	 //Log.d(TAG, "run"+counter);
         	 File folder = new File(Environment.getExternalStorageDirectory().getPath() + "/Music/TrashPlay");
        		 if(TrashPlayService.mDBApi!=null && !settings.getString("DB_KEY", "").equals(""))
        		 {
@@ -244,30 +291,46 @@ public class MainActivity extends Activity
         			}
        			}
         	 }
-        	 if(TrashPlayService.mDBApi!=null && !settings.getString("DB_KEY", "").equals(""))
-    		 {
-	        		 ImageView dropbox = (ImageView) findViewById(R.id.imageView4);
-	        		 
-	      		 dropbox.setImageResource(R.drawable.dropbox2);
-	  		  }
-        	 else
+       		 if(menu!=null)
+       		 {
+	        	 if(TrashPlayService.mDBApi!=null && !settings.getString("DB_KEY", "").equals(""))
+	    		 {
+	        		 for(int i=0; i<menu.size(); i++)
+	        		 {
+	        			MenuItem item = menu.getItem(i);
+	        			if(item.getItemId()==R.id.dropbox)
+	        			{
+	        				Drawable myIcon = getResources().getDrawable(R.drawable.dropbox2);
+	        				item.setIcon(myIcon);
+	        			}
+	        		}
+	    		 }
+	        	 else
+	        	 {
+	        		 for(int i=0; i<menu.size(); i++)
+	        		 {
+	        			MenuItem item = menu.getItem(i);
+	        			if(item.getItemId()==R.id.dropbox)
+	        			{
+	        				Drawable myIcon = getResources().getDrawable(R.drawable.dropbox);
+	        				item.setIcon(myIcon);
+	        			}
+	        		}
+	        	 }
+       		 }
+        	 if(!TrashPlayServerService.file.equals(""))
         	 {
-        		 ImageView dropbox = (ImageView) findViewById(R.id.imageView4);
-	        		
-        		 dropbox.setImageResource(R.drawable.dropbox);
-        	 }
-        	 if(!TrashPlayService.file.equals(""))
-        	 {
-        		File f = new File(TrashPlayService.file);
-        		if(TrashPlayService.file.equals(display))
+        		//Log.d(TAG, "run file not euals \"\"");
+        		File f = new File(TrashPlayServerService.file);
+        		if(TrashPlayServerService.file.equals(display))
         		{
-
+        			//Log.d(TAG, "file equals display");
         		}
         		else
         		{
-        			display=TrashPlayService.file;
-	        		String[] metadata = TrashPlayService.getMetaData(f);
-	        		String newdisplay="";
+        			//Log.d(TAG, "x");
+        			display=TrashPlayServerService.file;
+	        		String[] metadata = TrashPlayServerService.getMetaData(f);
 	        		if(!metadata[0].equals("") && !metadata[1].equals(""))
 	 				{
 	        			 newdisplay=metadata[0]+" - "+metadata[1];
@@ -276,9 +339,25 @@ public class MainActivity extends Activity
 	        		{
 	        			newdisplay=f.getName();
 	        		}
-	        		TextView textView1 = (TextView) findViewById(R.id.textView1);
-	        		textView1.setText(newdisplay);
+	        		nexts = TrashPlayServerService.songs;
+	        		
+	        		update();
         		}
+        		//shif stuff
+
+        		TextView position = (TextView) findViewById(R.id.posi);
+        		String posix = TrashPlayServerService.playposition();
+        		position.setText(posix);
+        		
+        		int shift = counter%newdisplay.length();
+        		//Log.d(TAG, "shift: "+shift);
+        		CharSequence d1 = newdisplay.subSequence(0, shift);
+        		String s1Str = d1.toString();
+        		CharSequence d2 = newdisplay.subSequence(shift, newdisplay.length());
+        		String s2Str = d2.toString();
+        		String ndx = s2Str+"+++"+s1Str;
+        		TextView textView1 = (TextView) findViewById(R.id.songinfo);
+        		textView1.setText(ndx);
         	 }
         	 ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
  			 NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
@@ -305,9 +384,10 @@ public class MainActivity extends Activity
  				ImageView sync = (ImageView) findViewById(R.id.imageView2);
  				sync.setVisibility(View.GONE);
  			}
+ 			
              handler.removeCallbacks(this); // remove the old callback
              handler.postDelayed(this, delay); // register a new one
-             }
+         }
          
          public void onPause()
 	     {
@@ -354,4 +434,44 @@ public class MainActivity extends Activity
 		   toast.show();
 	   }
 
+	    private void update()
+	    {
+	    	nexts.clear();
+	    	SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+	    	nexts = TrashPlayServerService.getSongList(settings);
+	    	listItems.clear();
+	    	if(nexts!=null)
+	    	{
+		    	Log.d(TAG, "+-+-+-+-"+nexts.size());
+	    		for(int i=0; i<(nexts.size()-1); i++)
+	    		{
+	    			File f=null;
+	    			if(TrashPlayServerService.playing)
+	    			{
+	    				f = nexts.get(i+1);
+	    			}
+	    			else
+	    			{
+	    				f = nexts.get(i);
+	    			}
+	    			String newdisplay="";
+	    			String[] metadata = TrashPlayServerService.getMetaData(f);
+	        		if(!metadata[0].equals("") && !metadata[1].equals(""))
+	 				{
+	        			 newdisplay=(i+1)+": "+metadata[0]+" - "+metadata[1];
+	        			 //LastFM.getTrackInfo(metadata[0], metadata[1]);
+	 				}
+	        		else
+	        		{
+	        			newdisplay=(i+1)+": "+f.getName();
+	        		}
+	        		listItems.add(i, newdisplay);
+	    		}
+	    		for(int i=8; i<listItems.size(); i++)
+	    		{
+	    			listItems.remove(i);
+	    		}
+	    	}
+	        adapter.notifyDataSetChanged();
+	    }
 }

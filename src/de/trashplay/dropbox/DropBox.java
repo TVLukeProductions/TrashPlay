@@ -12,8 +12,8 @@ import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 
 import de.trashplay.main.TrashPlayConstants;
+import de.trashplay.main.TrashPlayServerService;
 import de.trashplay.main.TrashPlayService;
-
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Environment;
@@ -43,7 +43,7 @@ public class DropBox
     	    		ArrayList<String> fileNames = new ArrayList<String>();
 	    	    	try
 	    	    	{ 
-	    	    		Log.d(TAG, "try");
+	    	    		//Log.d(TAG, "try");
 	    	    		//ArrayList<String> folderName=new ArrayList<String>();
 	    	    		Entry dropboxDir1=null;
 	    	    		try
@@ -52,7 +52,7 @@ public class DropBox
 	    	    		}
 	    	    		catch(DropboxException ex)
 	    	    		{
-	    	    			Log.e(TAG, "->"+ex.getMessage());
+	    	    			//Log.e(TAG, "->"+ex.getMessage());
 	    	    			mApi.createFolder("/DropBoxTrashPlaylistDerHoelle");
 	    	    			dropboxDir1 = mApi.metadata("/DropBoxTrashPlaylistDerHoelle", 0, null, true, null); 
 	    	    		}
@@ -79,15 +79,15 @@ public class DropBox
 	   	    		            				{
 		    	    		            			if(TrashPlayService.wifi)
 		    	    		            			{
-		    	    		            				Log.d(TAG, "wifi is");
+		    	    		            				//Log.d(TAG, "wifi is");
 			    	    		            			Editor edit = settings.edit();
 			    	    		            			File file = new File(Environment.getExternalStorageDirectory().getPath() + "/Music/TrashPlay/"+e.fileName());
 				    	    		            		Log.d(TAG, "have new file");
 				    	    		            		outputStream = new FileOutputStream(file);
-				    	    		            		Log.d(TAG, "have output stream for the file");
-				    	    		            		Log.d(TAG, "String->"+dropboxDir1.fileName()+"/"+e.fileName());
+				    	    		            		//Log.d(TAG, "have output stream for the file");
+				    	    		            		//Log.d(TAG, "String->"+dropboxDir1.fileName()+"/"+e.fileName());
 				    	    		            		mApi.getFile(dropboxDir1.fileName()+"/"+e.fileName(), null, outputStream, null);
-				    	    		            		Log.d(TAG, "stuff with stuff");
+				    	    		            		//Log.d(TAG, "stuff with stuff");
 			    	    		            			edit.putString("lastchange"+e.fileName(), e.modified);
 			    	    		            			edit.commit();
 		    	    		            			}
@@ -143,7 +143,7 @@ public class DropBox
 	    	    		{
 	    	    			//TODO: theoretically a file could be deleted while it is played. that would most certainly crash the app.
 	    	    			Log.d(TAG, "DELETE"+files.get(i).getName());
-	    	    			if(!TrashPlayService.file.contains(files.get(i).getName()))//do not delet the file that is currently played plz
+	    	    			if(!TrashPlayServerService.file.contains(files.get(i).getName()))//do not delet the file that is currently played plz
 	    	    			{
 		    	    			files.get(i).delete();
 		    	    			Editor edit = settings.edit();

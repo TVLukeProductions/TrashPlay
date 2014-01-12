@@ -44,4 +44,36 @@ public class LastFM
 		}
 		return null;
 	}
+	
+	public static void getTrackInfo(final String artist, final String song)
+	{
+		try
+		{
+		    new Thread(new Runnable() 
+	    	{
+	    	    public void run() 
+	    	    {
+	    	    	try
+	    	    	{
+	    	    		Session session=getSession();
+	    				if(session!=null)
+	    				{
+			    	    	Track trackinfo = Track.getInfo(artist, song, LastFMConstants.key);
+			    	    	String imageurl = trackinfo.getImageURL(null);
+			    	    	Log.d(TAG, "imageurl->"+imageurl);
+			    	    	Log.d(TAG, "duration: "+trackinfo.getDuration());
+	    				}
+	    	    	}
+	    	    	catch(Exception e)
+	    			{
+	    				Log.e(TAG, ""+e.getMessage());
+	    			}
+				}
+	    	}).start();
+		}
+		catch(Exception e)
+		{
+			Log.e(TAG, ""+e.getMessage());
+		}
+	}
 }

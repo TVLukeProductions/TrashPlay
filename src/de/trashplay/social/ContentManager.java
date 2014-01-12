@@ -28,7 +28,7 @@ import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.util.Log;
 import de.trashplay.main.TrashPlayConstants;
-import de.trashplay.main.TrashPlayService;
+import de.trashplay.main.TrashPlayServerService;
 import de.uniluebeck.itm.ncoap.message.CoapResponse;
 import de.uniluebeck.itm.ncoap.message.header.Code;
 import de.uniluebeck.itm.ncoap.message.options.OptionRegistry.MediaType;
@@ -44,11 +44,11 @@ public class ContentManager extends Service
 
 	public static final String TAG = TrashPlayConstants.TAG;
 	public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
-	static TrashPlayService tps;
+	static TrashPlayServerService tps;
 	
 	private static Context context=null;
 	 
-	public static void startServer(TrashPlayService tps)
+	public static void startServer(TrashPlayServerService tps)
     {
       	Log.d(TAG, "Content startServer");
       	Log.d(TAG, "IP "+getIPAddress(true));
@@ -59,7 +59,7 @@ public class ContentManager extends Service
 	public static byte[] createPayload(MediaType mediaType) 
 	{
 		Log.d(TAG, "create Payload");
-		ArrayList<File> songlist = TrashPlayService.songlist();
+		ArrayList<File> songlist = TrashPlayServerService.songlist();
 		if(songlist.size()>0)
 		{
 			Log.d(TAG, "greater 0 and so..."+songlist.get(0).getAbsolutePath());
@@ -145,7 +145,7 @@ public class ContentManager extends Service
             		if(x.equals("loudUp"))
             		{
             			Log.d(TAG, "command, louder");
-            			int loudness = TrashPlayService.louder(true);
+            			int loudness = TrashPlayServerService.louder(true);
             			
             			Log.d(TAG, "loudness"+loudness); 
             			result ="{\n";
@@ -154,7 +154,7 @@ public class ContentManager extends Service
             		}
             		if(x.equals("loudDown"))
             		{
-            			int loudness = TrashPlayService.louder(false);
+            			int loudness = TrashPlayServerService.louder(false);
             			
             			Log.d(TAG, "loudness"+loudness);
             			result ="{\n";
@@ -219,7 +219,7 @@ public class ContentManager extends Service
 	{
 		Log.d(TAG, "current Song Info");
 		String result="";
-		ArrayList<File> songlist = TrashPlayService.songlist();
+		ArrayList<File> songlist = TrashPlayServerService.songlist();
 		if(songlist.size()>0)
 		{
 			//Log.d(TAG, "greater 0 and so..."+songlist.get(0).getAbsolutePath());
@@ -238,8 +238,8 @@ public class ContentManager extends Service
 				result=result+"    \"File\": \""+f.getName()+"\",\n";
 				result=result+"  },\n";
 				result=result+"  \"Player\": {\n";
-				result=result+"    \"Playing\": \""+TrashPlayService.playing+"\",\n";
-				result=result+"    \"Loudness\": \""+TrashPlayService.loudness+"\",\n";
+				result=result+"    \"Playing\": \""+TrashPlayServerService.playing+"\",\n";
+				result=result+"    \"Loudness\": \""+TrashPlayServerService.loudness+"\",\n";
 				result=result+"  },";
 				result=result+"}\n";
 				
@@ -274,8 +274,8 @@ public class ContentManager extends Service
 						result=result+"    \"File\": \""+f.getName()+"\",\n";
 						result=result+"  },\n";
 						result=result+"  \"Player\": {\n";
-						result=result+"    \"Playing\": \""+TrashPlayService.playing+"\",\n";
-						result=result+"    \"Loudness\": \""+TrashPlayService.loudness+"\",\n";
+						result=result+"    \"Playing\": \""+TrashPlayServerService.playing+"\",\n";
+						result=result+"    \"Loudness\": \""+TrashPlayServerService.loudness+"\",\n";
 						result=result+"  },";
 						result=result+"}\n";
 						
@@ -292,8 +292,8 @@ public class ContentManager extends Service
 						result=result+"  \"File\": \""+f.getName()+"\",\n";
 						result=result+"  },\n";
 						result=result+"  \"Player\": {\n";
-						result=result+"    \"Playing\": \""+TrashPlayService.playing+"\",\n";
-						result=result+"    \"Loudness\": \""+TrashPlayService.loudness+"\",\n";
+						result=result+"    \"Playing\": \""+TrashPlayServerService.playing+"\",\n";
+						result=result+"    \"Loudness\": \""+TrashPlayServerService.loudness+"\",\n";
 						result=result+"  },";
 						result=result+"}\n";
 					}
@@ -314,8 +314,8 @@ public class ContentManager extends Service
 			result=result+"  \"File\": \"unknown\",\n";
 			result=result+"  },\n";
 			result=result+"  \"Player\": {\n";
-			result=result+"    \"Playing\": \""+TrashPlayService.playing+"\",\n";
-			result=result+"    \"Loudness\": \""+TrashPlayService.loudness+"\",\n";
+			result=result+"    \"Playing\": \""+TrashPlayServerService.playing+"\",\n";
+			result=result+"    \"Loudness\": \""+TrashPlayServerService.loudness+"\",\n";
 			result=result+"  },";
 			result=result+"}\n";
 			return " ";

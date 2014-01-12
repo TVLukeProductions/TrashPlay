@@ -48,6 +48,10 @@
 		  android:label="Dropbox Sync" />
         <service android:name="TrashPlayService">
         </service>
+        <service android:name="TrashPlayServerService">
+        </service>
+        <service android:name="TrashPlayClientService">
+        </service>
         <service android:name="de.trashplay.social.WifiDirectServic">
         </service>
         <service android:name="de.trashplay.social.NDSService">

@@ -33,6 +33,8 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 ### Current
 #### v 0.1.dayum (11.01.2014) [Download]()
 * The volume control is now only turing up to 10% if the loudness was done to 0%. The previous strategy turned out to suck for headphone users.
+* changes in UI
+* Partymode: The TrashPlayer now opens a CoaP Server to provide info to clients
 * **Bug Fixes**
 * Some minor fixes for convenience
 * Checking if files are changed or deleted before playing (this used to get the app into some hickups)
