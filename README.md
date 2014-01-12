@@ -38,6 +38,7 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 * **Bug Fixes**
 * Some minor fixes for convenience
 * Checking if files are changed or deleted before playing (this used to get the app into some hickups)
+
 #### v 0.1.roflcopter (02.01.2014) [Download](https://www.dropbox.com/s/g0jf9bbckhkohtk/TrasPlay_0.1.roflcopter.apk)
 * Play music
 * Shut down on stop
