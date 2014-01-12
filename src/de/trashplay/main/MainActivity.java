@@ -7,6 +7,8 @@ import com.dropbox.client2.session.AccessTokenPair;
 
 import de.trashplay.dropbox.DropBox;
 import de.trashplay.main.TrashPlayService.LocalBinder;
+import de.trashplay.social.ContentManager;
+import de.trashplay.social.NDSService;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -56,7 +58,7 @@ public class MainActivity extends Activity
 		wifi.setVisibility(View.GONE);
 		//playpause.setVisibility(View.GONE);
 		startService(new Intent(this, TrashPlayService.class));
-		
+		startService(new Intent(this, NDSService.class));
 		
 		playpause.setOnClickListener(new OnClickListener(){
 

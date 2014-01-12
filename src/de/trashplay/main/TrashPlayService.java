@@ -17,12 +17,13 @@ import com.dropbox.client2.session.Session.AccessType;
 import de.trashplay.dropbox.*;
 import de.trashplay.lastfm.LastFM;
 import de.trashplay.lastfm.LastFMConstants;
+import de.trashplay.social.ContentManager;
+import de.trashplay.social.TrashPlayerWebService;
 import de.umass.lastfm.Authenticator;
 import de.umass.lastfm.Caller;
 import de.umass.lastfm.Session;
 import de.umass.lastfm.Track;
 import de.umass.lastfm.scrobble.ScrobbleResult;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -52,6 +53,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
 {
 
 	public static boolean playing=false;
+	public static int loudness=0;
 	public static final String TAG = TrashPlayConstants.TAG;
 	public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 	
@@ -65,13 +67,16 @@ public class TrashPlayService extends Service implements OnPreparedListener
     String oldartist="";
     String oldtitle="";
     public static String file=""; 
+    public static ArrayList<File> songs = new ArrayList<File>();
     private int startId=0;
     
-	 AudioManager audio;
+    static TrashPlayerWebService trashPlayerWebService=null;
+    
+	 static AudioManager audio=null;
 	 
-	 public static TrashPlayService ctx;
+	public static TrashPlayService ctx;
 	 
-	    private final IBinder mBinder = new LocalBinder();
+	private final IBinder mBinder = new LocalBinder();
     
 	public class LocalBinder extends Binder 
     {
@@ -130,6 +135,9 @@ public class TrashPlayService extends Service implements OnPreparedListener
  		file="";
 
         audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        changeInLoudness();
+        
+		ContentManager.startServer(this);
         
 		updater= new Updater();
         updater.run();
@@ -187,6 +195,10 @@ public class TrashPlayService extends Service implements OnPreparedListener
 			if(filelist!=null)
 			{
 				String nextSongFilePath = selectNextSong(filelist);
+				if(trashPlayerWebService!=null)
+				{
+					trashPlayerWebService.setResourceStatus(nextSongFilePath);
+				}
 				final SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 				boolean lastfmactive = settings.getBoolean("lastfmactive", false);
 				if(lastfmactive)
@@ -246,6 +258,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
 				int randomsongnumber = (int) (Math.random() * (filelist.size()));
 				String olol = filelist.get(randomsongnumber).getAbsolutePath();
 				edit.putString("nextSong"+i, olol);	
+				songs.add(i, new File(olol));
 				Log.d(TAG, olol);
 			}
 		}
@@ -262,6 +275,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
 					if(filelist.get(j).getAbsolutePath().equals(x))
 					{
 						Log.d(TAG, "all good, the file "+i+" still exists");
+						songs.add(i, new File(settings.getString("nextSong"+i, "")));
 						exist=true;
 					}
 				}
@@ -271,6 +285,7 @@ public class TrashPlayService extends Service implements OnPreparedListener
 					int randomsongnumber = (int) (Math.random() * (filelist.size()));
 					String olol = filelist.get(randomsongnumber).getAbsolutePath();
 					edit.putString("nextSong"+i, olol);
+					songs.add(i, new File(olol));
 					edit.commit();
 				}
 			}
@@ -287,10 +302,12 @@ public class TrashPlayService extends Service implements OnPreparedListener
 				for(int i=0; i<9; i++)
 				{
 					edit.putString("nextSong"+i, settings.getString("nextSong"+(i+1), ""));
+					songs.add(i, new File(settings.getString("nextSong"+(i+1), "")));
 				}
 				int randomsongnumber = (int) (Math.random() * (filelist.size()));
 				String olol = filelist.get(randomsongnumber).getAbsolutePath();
 				edit.putString("nextSong9", olol);
+				songs.add(9, new File(olol));
 			}
 			Log.d(TAG, "its"+musicpath);
 			
@@ -471,21 +488,28 @@ public class TrashPlayService extends Service implements OnPreparedListener
          SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
          long counter=0;
          boolean onpause=false;
+         int loudness=0;
          @Override
          public void run() 
          {
         	 //check for the volume
         	 int volume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
-        	 Log.d(TAG, "volume= "+volume);
+        	 //Log.d(TAG, "volume= "+volume);
         	 if(volume<1)
         	 {
         		 fadein();
+        	 }
+        	 if(volume!=loudness)
+        	 {
+        		 changeInLoudness();
+        		 loudness=volume;
         	 }
         	 //every 60 cicles (5 minutes) check if wifi and if so, dropbox sync
         	 if(counter%60==0) //every 5 minutes
         	 {
 	        	 if(wifi)
 	        	 {
+	        		 Log.d(TAG, "make it sync");
 	        		 DropBox.syncFiles(settings);
 	        	 }
         	 }
@@ -508,11 +532,12 @@ public class TrashPlayService extends Service implements OnPreparedListener
 	{
 		final AudioManager audio;
 		audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		final int volume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
 		new Thread(new Runnable() 
     	{
     	    public void run() 
     	    {
-    			for(int x=0; x<2; x++)
+    			for(int x=volume; x<3; x++)
     			{
     				Log.d(TAG, "v up");
     				audio.setStreamVolume(AudioManager.STREAM_MUSIC, x, AudioManager.FLAG_VIBRATE);
@@ -527,5 +552,48 @@ public class TrashPlayService extends Service implements OnPreparedListener
     			}
     	    }
     	}).start();
+	}
+
+	public static ArrayList<File> songlist() 
+	{
+		return songs;
+	}
+
+	public void registerForUpdates(TrashPlayerWebService trashPlayerWebService) 
+	{
+		this.trashPlayerWebService=trashPlayerWebService;
+	}
+
+	public static int louder(boolean b) 
+	{
+		Log.d(TAG, "loder/less loud");
+		if(audio!=null)
+		{
+			int volume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
+			Log.d(TAG, "volume-> "+volume);
+			if(b)
+			{
+				Log.d(TAG, "louder");
+				audio.setStreamVolume(AudioManager.STREAM_MUSIC, (volume+1), AudioManager.FLAG_VIBRATE);
+				return (volume+1);
+			}
+			else
+			{
+				Log.d(TAG, "less loud");
+				audio.setStreamVolume(AudioManager.STREAM_MUSIC, (volume-1), AudioManager.FLAG_VIBRATE);
+				return (volume-1);
+			}
+		}
+		return -5000;
+	}
+	
+	private static void changeInLoudness()
+	{
+		Log.d(TAG, "change in loudness->");
+		loudness = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
+		if(trashPlayerWebService!=null)
+		{
+			trashPlayerWebService.setResourceStatus("");
+		}
 	}
 }

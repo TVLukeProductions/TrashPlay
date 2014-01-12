@@ -13,7 +13,7 @@
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 	
     <uses-sdk
-        android:minSdkVersion="11"
+        android:minSdkVersion="15"
         android:targetSdkVersion="17" />
 
     <application
@@ -49,6 +49,8 @@
         <service android:name="TrashPlayService">
         </service>
         <service android:name="de.trashplay.social.WifiDirectServic">
+        </service>
+        <service android:name="de.trashplay.social.NDSService">
         </service>
         <receiver android:name="de.trashplay.main.MyBroadcastReceiver" >
             <intent-filter>

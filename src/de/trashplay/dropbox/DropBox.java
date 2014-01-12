@@ -43,7 +43,7 @@ public class DropBox
     	    		ArrayList<String> fileNames = new ArrayList<String>();
 	    	    	try
 	    	    	{ 
-	    	    		//Log.d(TAG, "try");
+	    	    		Log.d(TAG, "try");
 	    	    		//ArrayList<String> folderName=new ArrayList<String>();
 	    	    		Entry dropboxDir1=null;
 	    	    		try
