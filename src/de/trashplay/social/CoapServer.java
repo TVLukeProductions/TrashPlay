@@ -5,7 +5,6 @@ import java.lang.reflect.Field;
 
 import android.util.Log;
 import de.trashplay.main.TrashPlayConstants;
-import de.trashplay.main.TrashPlayServerService;
 import de.uniluebeck.itm.ncoap.application.server.CoapServerApplication;
 import de.uniluebeck.itm.ncoap.application.server.webservice.WebService;
 import de.uniluebeck.itm.ncoap.application.server.webservice.WellKnownCoreResource;

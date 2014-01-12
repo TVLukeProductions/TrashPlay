@@ -15,7 +15,6 @@ import java.util.Set;
 import org.apache.http.conn.util.InetAddressUtils;
 import org.farng.mp3.MP3File;
 import org.farng.mp3.id3.ID3v1;
-import org.jboss.netty.handler.codec.http.HttpMethod;
 
 import com.json.parsers.JSONParser;
 import com.json.parsers.JsonParserFactory;
@@ -49,7 +48,7 @@ public class ContentManager extends Service
       	Log.d(TAG, "Content startServer");
       	Log.d(TAG, "IP "+getIPAddress(true));
       	CoapServer server = new CoapServer(5683);
-      	server.registerService(new TrashPlayerWebService("/TrashPlayer"," ", tps));
+      	server.registerService(new TrashPlayerWebService("/TrashPlayer", " ", tps));
     }
 	
 	@Override
