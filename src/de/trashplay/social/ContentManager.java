@@ -62,7 +62,7 @@ public class ContentManager extends Service
 		ArrayList<File> songlist = TrashPlayServerService.songlist();
 		if(songlist.size()>0)
 		{
-			Log.d(TAG, "greater 0 and so..."+songlist.get(0).getAbsolutePath());
+			Log.d(TAG, "greater 0 and so..."+songlist.get(1).getAbsolutePath());
 			return getCurrentSongInfo().getBytes(Charset.forName("UTF-8"));
 		}
 		else
@@ -220,11 +220,11 @@ public class ContentManager extends Service
 		Log.d(TAG, "current Song Info");
 		String result="";
 		ArrayList<File> songlist = TrashPlayServerService.songlist();
-		if(songlist.size()>0)
+		if(songlist.size()>1)
 		{
 			//Log.d(TAG, "greater 0 and so..."+songlist.get(0).getAbsolutePath());
 			//String path = songlist.get(0).getAbsolutePath();
-			File f = songlist.get(0);
+			File f = new File(TrashPlayServerService.file);
 			try 
 			{
 				MP3File mp3 = new MP3File(f);
@@ -280,23 +280,23 @@ public class ContentManager extends Service
 						result=result+"}\n";
 						
 					}
-					else
-					{
-						result="";
-						result=result+"{\n";
-						result=result="  \"Song\": {\n";
-						result=result+"  \"Artist\": \"unknown\",\n";
-						result=result+"  \"Title\": \"unknown\",\n";
-						result=result+"  \"Size\": \"unknown\",\n";
-						result=result+"  \"Year\": \"unknown\",\n";
-						result=result+"  \"File\": \""+f.getName()+"\",\n";
-						result=result+"  },\n";
-						result=result+"  \"Player\": {\n";
-						result=result+"    \"Playing\": \""+TrashPlayServerService.playing+"\",\n";
-						result=result+"    \"Loudness\": \""+TrashPlayServerService.loudness+"\",\n";
-						result=result+"  },";
-						result=result+"}\n";
-					}
+				}
+				else
+				{
+					result="";
+					result=result+"{\n";
+					result=result="  \"Song\": {\n";
+					result=result+"  \"Artist\": \"unknown\",\n";
+					result=result+"  \"Title\": \"unknown\",\n";
+					result=result+"  \"Size\": \"unknown\",\n";
+					result=result+"  \"Year\": \"unknown\",\n";
+					result=result+"  \"File\": \""+f.getName()+"\",\n";
+					result=result+"  },\n";
+					result=result+"  \"Player\": {\n";
+					result=result+"    \"Playing\": \""+TrashPlayServerService.playing+"\",\n";
+					result=result+"    \"Loudness\": \""+TrashPlayServerService.loudness+"\",\n";
+					result=result+"  },";
+					result=result+"}\n";
 				}
 			} 
 			

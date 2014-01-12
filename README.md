@@ -21,7 +21,6 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 ## Next Up (version 0.1.Freezer)
 * Check to keep some storrage on the device
 * Partymode (connect via Wifi/CoaP and somehow influence the playlist)
-* NextUp (A preview of comming attarctions)
 ## Ideas for Future Releases (0.2.hundimbuero)**
 
 * Since Trash-Playlists are a social thing, this app will, in the near future, be a server, connecting to phones in its environment, as clients, who can in some way (to be determined) the playlist or the experience for other users of the TrashPlay. This will be exiting, and strange. And I have no Idea yet how it will work. 
@@ -34,7 +33,7 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 #### v 0.1.dayum (11.01.2014) [Download](https://www.dropbox.com/s/w2z350mt5urbu20/TrashPlay_0.1.dayum.apk)
 * The volume control is now only turing up to 10% if the loudness was done to 0%. The previous strategy turned out to suck for headphone users.
 * changes in UI
-* Partymode: The TrashPlayer now opens a CoaP Server to provide info to clients
+* List of coming songs
 * **Bug Fixes**
 * Some minor fixes for convenience
 * Checking if files are changed or deleted before playing (this used to get the app into some hickups)

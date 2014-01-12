@@ -102,7 +102,7 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
         audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         changeInLoudness();
         
-		ContentManager.startServer(this);
+		//ContentManager.startServer(this);
         
 		updater= new Updater();
         updater.run();
@@ -162,10 +162,6 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 			if(filelist!=null)
 			{
 				String nextSongFilePath = selectNextSong(filelist);
-				if(trashPlayerWebService!=null)
-				{
-					trashPlayerWebService.setResourceStatus(nextSongFilePath);
-				}
 				final SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 				boolean lastfmactive = settings.getBoolean("lastfmactive", false);
 				if(lastfmactive)
@@ -185,7 +181,11 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 				}
 				try 
 				{
-					file=nextSongFilePath;//static variable to show which file is playing. 
+					file=nextSongFilePath;//static variable to show which file is playing.
+					if(trashPlayerWebService!=null)
+					{
+						trashPlayerWebService.setResourceStatus(file);
+					}
 					mp = new MediaPlayer();
 					mp.setDataSource(nextSongFilePath);
 					mp.setLooping(false);
@@ -358,8 +358,8 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 	public static String[] getMetaData(File file) 
 	{
 		String[] metadata = new String[2];
-		metadata[0]="";
-		metadata[1]="";
+		metadata[0]=file.getName();
+		metadata[1]=" ";
 		try 
 		{
 			Log.d(TAG, "md1");
@@ -379,10 +379,18 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 		catch (IOException e1) 
 		{
 			e1.printStackTrace();
+			metadata[0]=file.getName();
+			metadata[1]=" ";
+			Log.d(TAG, "----------->ARTIST():"+metadata[0]);
+			Log.d(TAG, "----------->SONG():"+metadata[1]);
 		} 
 		catch (TagException e1) 
 		{
 			e1.printStackTrace();
+			metadata[0]=file.getName();
+			metadata[1]=" ";
+			Log.d(TAG, "----------->ARTIST():"+metadata[0]);
+			Log.d(TAG, "----------->SONG():"+metadata[1]);
 		}
 		catch(Exception ex)
 		{
@@ -402,6 +410,13 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 					Log.d(TAG, "----------->ARTIST():"+spl[0]);
 					Log.d(TAG, "----------->SONG():"+spl[1]);
 				}
+			}
+			else
+			{
+				metadata[0]=file.getName();
+				metadata[1]=" ";
+				Log.d(TAG, "----------->ARTIST():"+metadata[0]);
+				Log.d(TAG, "----------->SONG():"+metadata[1]);
 			}
 		}
 		return metadata;

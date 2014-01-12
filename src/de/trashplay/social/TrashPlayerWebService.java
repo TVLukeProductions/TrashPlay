@@ -147,15 +147,11 @@ public class TrashPlayerWebService extends ObservableWebService<String>
         Log.d(TAG, "GET: "+payload);
         try
         {
-        	//If accept option is not set in the request, use the default (TEXT_PLAIN)
-	        if(acceptOptions.isEmpty())
-	        {
-	                Log.d(TAG, "accept optioon is empty ");
-	                CoapResponse response = new CoapResponse(Code.CONTENT_205);
-                    response.setPayload(ContentManager.createPayload(APP_XML));
-                    response.setContentType(APP_XML);
-                    responseFuture.set(response);
-	        }
+	          Log.d(TAG, "accept optioon is empty ");
+	          CoapResponse response = new CoapResponse(Code.CONTENT_205);
+              response.setPayload(ContentManager.createPayload(APP_XML));
+              response.setContentType(APP_XML);
+              responseFuture.set(response);
         }
         catch(Exception e)
         {

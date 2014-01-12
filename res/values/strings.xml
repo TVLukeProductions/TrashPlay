@@ -6,5 +6,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="dropbox">Dropbox</string>
     <string name="lastfm">Last.fm</string>
+    <string name="clientmode">Client Mode</string>
+    <string name="off">Off</string>
 
 </resources>
