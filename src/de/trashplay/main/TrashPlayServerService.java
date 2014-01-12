@@ -539,24 +539,6 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
         		 changeInLoudness();
         		 loudness=volume;
         	 }
-        	 //TEST STUFF
-        		 if(ContentManager.s!=null)
-        		 {
-        			 try
-        			 {
-	        			 Log.d(TAG, ContentManager.s.getName());
-	        			 Log.d(TAG, ContentManager.s.getBaseUrl());
-	        			 Log.d(TAG, " "+ContentManager.s.getPort());
-        			 }
-        			 catch(Exception e)
-        			 {
-        				 
-        			 }
-        		 }
-        		 else
-        		 {
-        			 Log.e(TAG, "s is null");
-        		 }
         	 //call the handler again
              handler.removeCallbacks(this); // remove the old callback
              handler.postDelayed(this, delay); // register a new one

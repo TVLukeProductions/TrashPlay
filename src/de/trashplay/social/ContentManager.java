@@ -19,8 +19,6 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
 
 import com.json.parsers.JSONParser;
 import com.json.parsers.JsonParserFactory;
-import com.strategicgains.restexpress.Format;
-import com.strategicgains.restexpress.RestExpress;
 
 import android.app.Service;
 import android.content.Context;
@@ -44,7 +42,6 @@ public class ContentManager extends Service
 	public static final String TAG = TrashPlayConstants.TAG;
 	public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 	static TrashPlayServerService tps;
-	public static RestExpress s=null;
 	private static Context context=null;
 	 
 	public static void startServer(TrashPlayServerService tps)
