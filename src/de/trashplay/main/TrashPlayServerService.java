@@ -69,7 +69,7 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
     
     static TrashPlayerWebService trashPlayerWebService=null;
     
-	 static AudioManager audio=null;
+	static AudioManager audio=null;
 	 
 	public static TrashPlayServerService ctx;
 	 
@@ -102,6 +102,7 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
         audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         changeInLoudness();
         
+        //startService(new Intent(ctx, ContentManager.class));
 		//ContentManager.startServer(this);
         
 		updater= new Updater();
@@ -362,35 +363,35 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 		metadata[1]=" ";
 		try 
 		{
-			Log.d(TAG, "md1");
+			//Log.d(TAG, "md1");
 			MP3File mp3 = new MP3File(file);
-			Log.d(TAG, "md2");
+			//Log.d(TAG, "md2");
 			ID3v1 id3 = mp3.getID3v1Tag();
-			Log.d(TAG, "md3");
-			Log.d(TAG, "md3d");
+			//Log.d(TAG, "md3");
+			//Log.d(TAG, "md3d");
 			metadata[0] = id3.getArtist();
-			Log.d(TAG, "md4");
-			Log.d(TAG, "----------->ARTIST:"+metadata[0]);
+			//Log.d(TAG, "md4");
+			//Log.d(TAG, "----------->ARTIST:"+metadata[0]);
 			metadata[1] = id3.getSongTitle();
-			Log.d(TAG, "md5");
-			Log.d(TAG, "----------->SONG:"+metadata[1]);
-			Log.d(TAG, "md6");
+			//Log.d(TAG, "md5");
+			//Log.d(TAG, "----------->SONG:"+metadata[1]);
+			//Log.d(TAG, "md6");
 		} 
 		catch (IOException e1) 
 		{
 			e1.printStackTrace();
 			metadata[0]=file.getName();
 			metadata[1]=" ";
-			Log.d(TAG, "----------->ARTIST():"+metadata[0]);
-			Log.d(TAG, "----------->SONG():"+metadata[1]);
+			//Log.d(TAG, "----------->ARTIST():"+metadata[0]);
+			//Log.d(TAG, "----------->SONG():"+metadata[1]);
 		} 
 		catch (TagException e1) 
 		{
 			e1.printStackTrace();
 			metadata[0]=file.getName();
 			metadata[1]=" ";
-			Log.d(TAG, "----------->ARTIST():"+metadata[0]);
-			Log.d(TAG, "----------->SONG():"+metadata[1]);
+			//Log.d(TAG, "----------->ARTIST():"+metadata[0]);
+			//Log.d(TAG, "----------->SONG():"+metadata[1]);
 		}
 		catch(Exception ex)
 		{
@@ -538,6 +539,24 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
         		 changeInLoudness();
         		 loudness=volume;
         	 }
+        	 //TEST STUFF
+        		 if(ContentManager.s!=null)
+        		 {
+        			 try
+        			 {
+	        			 Log.d(TAG, ContentManager.s.getName());
+	        			 Log.d(TAG, ContentManager.s.getBaseUrl());
+	        			 Log.d(TAG, " "+ContentManager.s.getPort());
+        			 }
+        			 catch(Exception e)
+        			 {
+        				 
+        			 }
+        		 }
+        		 else
+        		 {
+        			 Log.e(TAG, "s is null");
+        		 }
         	 //call the handler again
              handler.removeCallbacks(this); // remove the old callback
              handler.postDelayed(this, delay); // register a new one

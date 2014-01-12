@@ -1,7 +1,6 @@
 package de.trashplay.social;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.nio.charset.Charset;
@@ -15,21 +14,21 @@ import java.util.Set;
 
 import org.apache.http.conn.util.InetAddressUtils;
 import org.farng.mp3.MP3File;
-import org.farng.mp3.TagException;
 import org.farng.mp3.id3.ID3v1;
+import org.jboss.netty.handler.codec.http.HttpMethod;
 
 import com.json.parsers.JSONParser;
 import com.json.parsers.JsonParserFactory;
+import com.strategicgains.restexpress.Format;
+import com.strategicgains.restexpress.RestExpress;
 
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.util.Log;
 import de.trashplay.main.TrashPlayConstants;
 import de.trashplay.main.TrashPlayServerService;
-import de.uniluebeck.itm.ncoap.message.CoapResponse;
 import de.uniluebeck.itm.ncoap.message.header.Code;
 import de.uniluebeck.itm.ncoap.message.options.OptionRegistry.MediaType;
 
@@ -45,7 +44,7 @@ public class ContentManager extends Service
 	public static final String TAG = TrashPlayConstants.TAG;
 	public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 	static TrashPlayServerService tps;
-	
+	public static RestExpress s=null;
 	private static Context context=null;
 	 
 	public static void startServer(TrashPlayServerService tps)
@@ -54,6 +53,30 @@ public class ContentManager extends Service
       	Log.d(TAG, "IP "+getIPAddress(true));
       	CoapServer server = new CoapServer(5683);
       	server.registerService(new TrashPlayerWebService("/TrashPlayer"," ", tps));
+    }
+	
+	@Override
+	public void onCreate() 
+	{
+		super.onCreate();
+		Log.d(TAG, "Server Service on Create");
+
+	}
+	
+	
+	@Override
+    public int onStartCommand(Intent intent, int flags, int startId) 
+    {
+		
+		return START_STICKY;
+    }
+	
+	@Override
+    public void onDestroy() 
+    {
+        super.onDestroy();
+		Log.i(TAG, "onDestroy!");
+        Log.d(TAG, "bye!");
     }
 	 
 	public static byte[] createPayload(MediaType mediaType) 
@@ -217,7 +240,7 @@ public class ContentManager extends Service
 
 	public static String getCurrentSongInfo() 
 	{
-		Log.d(TAG, "current Song Info");
+		//Log.d(TAG, "current Song Info");
 		String result="";
 		ArrayList<File> songlist = TrashPlayServerService.songlist();
 		if(songlist.size()>1)
@@ -251,7 +274,7 @@ public class ContentManager extends Service
 				metadata[1]="";
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				Log.e(TAG, "There has been an exception while extracting ID3 Tag Information from the MP3");
+				//Log.e(TAG, "There has been an exception while extracting ID3 Tag Information from the MP3");
 				String fn = f.getName();
 				fn.replace("–", "-"); //wired symbols that look alike
 				if(fn.contains("-") && fn.endsWith("mp3"))
@@ -300,7 +323,7 @@ public class ContentManager extends Service
 				}
 			} 
 			
-			Log.d(TAG, "ID3:" + result);
+			//Log.d(TAG, "ID3:" + result);
 			return result;
 		}
 		else

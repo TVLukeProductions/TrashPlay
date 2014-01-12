@@ -52,6 +52,8 @@
         </service>
         <service android:name="TrashPlayClientService">
         </service>
+        <service android:name="de.trashplay.social.ContentManager">
+        </service>
         <service android:name="de.trashplay.social.WifiDirectServic">
         </service>
         <service android:name="de.trashplay.social.NDSService">
