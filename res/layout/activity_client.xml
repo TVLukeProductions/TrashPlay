@@ -13,7 +13,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <EditText
-        android:id="@+id/IP"
+        android:id="@+id/ipfield"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10" >
@@ -25,7 +25,14 @@
         android:id="@+id/button1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Button" />
+        android:text="Store IP" />
+
+    <ImageView
+        android:id="@+id/stoppall"
+        android:layout_width="92dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.21"
+        android:src="@drawable/off" />
 
     <TextView
         android:id="@+id/textView1"

@@ -14,18 +14,44 @@ The player is nice to your bandwidth and synchronizes only when you are in a Wif
 
 If you enable last.fm (that is, when the last.fm button is grey) it scrobbles the music you listen to a [specific last.fm account](http://www.lastfm.de/user/TrashPlayList). This last.fm-account represents the record of all music played on any TrashPlay App. Ever.
 
-If you turn down the volume of the phone, it will turn back up. You cannot silence the trash. Ever.
-
 If you stop the app TrashPlay will resume with the song played when you stoped the app. There is no skipping with Trash. Ever.
 
-## Next Up (version 0.1.Freezer)
-* Check to keep some storrage on the device
-* Partymode (connect via Wifi/CoaP and somehow influence the playlist)
-## Ideas for Future Releases (0.2.hundimbuero)**
+## Next Up (version 0.2.1 Hund im Buero)
+* Check to keep some storage on the device
+* **Party Mode** (connect via Wifi/CoaP and somehow influence the playlist)
+* Client Activity: Clients "log in" to a TrashPlayer session. They can then 
+ * Scroble the song to their own last.fm account
+ * Control loudness
+ * See what songs are coming up
+ * Like and dislike songs
+ * More Stuff I have to think of
+#### Bug Fixes
+* The ServerService would restart itself under some conditions and start playing music. That was stupid. It doesn't anymore.
 
-* Since Trash-Playlists are a social thing, this app will, in the near future, be a server, connecting to phones in its environment, as clients, who can in some way (to be determined) the playlist or the experience for other users of the TrashPlay. This will be exiting, and strange. And I have no Idea yet how it will work. 
-* Weighted probabilities. There are reasons (for example special purpose songs) that should occur with higher probability
-* Geofencing feature. Certain Songs that get palyed when entering or exiting specific locations. Possibly as a global feature...
+## Ideas for Future Releases 
+
+### 0.2.2
+* HTTP Server in addition to the existing coap Server
+* Better Service/Resource structure provided via more then just one URI
+* QR Code visualisation to make connecting to a server easy
+* More Meta Info on Tracks (probably from last.fm)
+* Automated Light Show via Philips Hue
+
+### 0.3 Isengard
+* facebook Social Graph API Integration
+* Geofencing feature. Certain Songs that get palyed when entering or exiting specific locations Possibly as a global feature...
+* Integrate different sub-folders by date (Christmas, Easter, Party,...)
+
+### 0.4 Yumi, Yumi
+* Allow Users to define new sub-folders and rules on how and when these should be used
+* Network Service Discovery
+* Visualize the people who are in a group of listeners
+
+### 0.5 Tutenchamun
+* Integrating other sources of music besides the dropbox (NAS Storage...)
+
+### 1.0 Meiser
+* Allow for Trash Mode and regular music player mode (at this point the project is not actually the Trash Player anymore and needs to be forked)
 
 ## Release History
 

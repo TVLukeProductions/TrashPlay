@@ -95,43 +95,57 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
     public int onStartCommand(Intent intent, int flags, int startId) 
     {
 		//Start foreground is another way to make sure the app does not stop...
-		ctx=this;
+       
+        if(MainActivity.clicked)
+        {
+    		ctx=this;
 
- 		file="";
+     		file="";
 
-        audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        changeInLoudness();
-        
-        //startService(new Intent(ctx, ContentManager.class));
-		//ContentManager.startServer(this);
-        
-		updater= new Updater();
-        updater.run();
-        
-        start();
-        
-		return START_STICKY;
+            audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            changeInLoudness();
+            
+        	start();
+            
+    		updater= new Updater();
+            updater.run();
+                    
+    		return START_STICKY;
+        }
+        else
+        {
+    		ctx=this;
+
+     		file="";
+     		
+        	stopSelf();
+        	return START_NOT_STICKY;
+        }
+
     }
 
 	@Override
 	public void onCreate() 
 	{
-		super.onCreate();
+		ctx=this;
 		Log.d(TAG, "Server Service on Create");
+		super.onCreate();
 
 	}
 	
 	@Override
     public void onDestroy() 
     {
+		ContentManager.stopServer();
         super.onDestroy();
+        if(mp!=null)
+        {
+        	stop();
+        }
 		Log.i(TAG, "onDestroy!");
-		stopForeground(true);
-        NotificationManager notificationManager = (NotificationManager) 
-        		  getSystemService(NOTIFICATION_SERVICE); 
-        notificationManager.cancel(5646);
         updater.onPause();
         updater=null;
+        ctx=null;
         Log.d(TAG, "bye!");
     }
 	
@@ -183,9 +197,16 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 				try 
 				{
 					file=nextSongFilePath;//static variable to show which file is playing.
-					if(trashPlayerWebService!=null)
+					try
 					{
-						trashPlayerWebService.setResourceStatus(file);
+						if(TrashPlayerWebService.service!=null)
+						{
+							TrashPlayerWebService.service.setResourceStatus(" ", 10);
+						}
+					}
+					catch(Exception e)
+					{
+						Log.e(TAG, "looks like coap crashed."+e.getMessage());
 					}
 					mp = new MediaPlayer();
 					mp.setDataSource(nextSongFilePath);
@@ -345,15 +366,23 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 	
 	public static ArrayList<File> getSongList(SharedPreferences settings)
 	{
+		Log.d(TAG, "get Song list from Server");
+		if(songs==null)
+		{
+			Log.d(TAG, "songs is null... wtf");
+			songs = new ArrayList<File>();
+		}
 		if(songs.size()==0)
 		{
+			Log.d(TAG, "song size 0");
 			for(int i=0; i<10; i++)
 			{
+				Log.d(TAG, ""+i);
 				songs.add(i, new File(settings.getString("nextSong"+(i), "")));
 			}
 			return songs;
 		}
-		return null;
+		return songs;
 	}
 
 	public static String[] getMetaData(File file) 
@@ -477,6 +506,10 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 	public void stop() 
 	{
 		Log.d(TAG, "Service player stop");
+		if(MainActivity.clicked)
+		{
+			MainActivity.ctx.finish();
+		}
 		playing=false;
 		updater.onPause();
 		try
@@ -490,7 +523,7 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 			Log.e(TAG, "stop() had a problem when stoping the player....");
 			playing=false;
 		}
-		stopSelf(startId);
+		stopSelf();
 	}
 
 	public void start() 
@@ -538,6 +571,14 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
         	 {
         		 changeInLoudness();
         		 loudness=volume;
+        	 }
+        	 if(!TrashPlayService.wifi && ContentManager.runningServer())
+        	 {
+        		 ContentManager.stopServer();
+        	 }
+        	 if(TrashPlayService.wifi && !ContentManager.runningServer())
+        	 {
+        		 ContentManager.startServer();
         	 }
         	 //call the handler again
              handler.removeCallbacks(this); // remove the old callback
@@ -615,9 +656,16 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 	{
 		Log.d(TAG, "change in loudness->");
 		loudness = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
-		if(trashPlayerWebService!=null)
+		try
 		{
-			trashPlayerWebService.setResourceStatus("");
+			if(TrashPlayerWebService.service!=null)
+			{
+				TrashPlayerWebService.service.setResourceStatus(" ", 10);
+			}
+		}
+		catch(Exception e)
+		{
+			Log.e(TAG, "looks like coap crashed+. "+e.getMessage()+" "+e.getLocalizedMessage());
 		}
 	}
 }

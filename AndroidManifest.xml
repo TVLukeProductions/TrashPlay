@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.trashplay.main"
     android:versionCode="0"
-    android:versionName="0.1.roflcopter" >
+    android:versionName="0.2.1 Hund im Buero" >
 
     <uses-permission android:name="android.permission.INTERNET" />
  	<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
@@ -58,12 +58,6 @@
         </service>
         <service android:name="de.trashplay.social.NDSService">
         </service>
-        <receiver android:name="de.trashplay.main.MyBroadcastReceiver" >
-            <intent-filter>
-                <action android:name="android.net.wifi.supplicant.CONNECTION_CHANGE" />
-                <action android:name="android.net.wifi.STATE_CHANGE" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>

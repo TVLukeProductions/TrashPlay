@@ -26,8 +26,9 @@ import android.os.IBinder;
 import android.util.Log;
 import de.trashplay.main.TrashPlayConstants;
 import de.trashplay.main.TrashPlayServerService;
-import de.uniluebeck.itm.ncoap.message.header.Code;
-import de.uniluebeck.itm.ncoap.message.options.OptionRegistry.MediaType;
+import de.trashplay.main.TrashPlayService;
+import de.uniluebeck.itm.ncoap.message.MessageCode.Name;
+import de.uniluebeck.itm.ncoap.message.options.ContentFormat;
 
 /**
  * This class is used by the HTTP and CoaP Server to get Content, so that both Web Interfaces always provide the same Data
@@ -42,14 +43,36 @@ public class ContentManager extends Service
 	public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 	static TrashPlayServerService tps;
 	private static Context context=null;
+	static CoapServer server;
+	static boolean running=false;
 	 
-	public static void startServer(TrashPlayServerService tps)
+	public static void startServer()
     {
       	Log.d(TAG, "Content startServer");
       	Log.d(TAG, "IP "+getIPAddress(true));
-      	CoapServer server = new CoapServer(5683);
-      	server.registerService(new TrashPlayerWebService("/TrashPlayer", " ", tps));
+      	server = new CoapServer(5683);
+      	server.registerService(new TrashPlayerWebService("/trashplayer", " "));
+      	running = true;
     }
+	
+	public static void stopServer()
+	{
+		Log.d(TAG, "Stop startServer");
+		if(server!=null)
+		{
+			server.shutdown();
+		}
+		running=false;
+	}
+	
+	public static boolean runningServer()
+	{
+		if(server!=null && running)
+		{
+			return running;
+		}
+		return false;
+	}
 	
 	@Override
 	public void onCreate() 
@@ -71,11 +94,16 @@ public class ContentManager extends Service
     public void onDestroy() 
     {
         super.onDestroy();
+        if(server!=null)
+        {
+        	server.shutdown();
+        	running=false;
+        }
 		Log.i(TAG, "onDestroy!");
         Log.d(TAG, "bye!");
     }
 	 
-	public static byte[] createPayload(MediaType mediaType) 
+	public static byte[] createPayload(long contentFormat) 
 	{
 		Log.d(TAG, "create Payload");
 		ArrayList<File> songlist = TrashPlayServerService.songlist();
@@ -91,13 +119,13 @@ public class ContentManager extends Service
 		}
 	}
 
-	public static String parseRequest(Code get, String payload, MediaType mediaType) 
+	public static String parseRequest(Name post, String payload, long mediaType) 
 	{
 		
 		Log.d(TAG, "parse Request");
-        Log.d(TAG, "Mediatype: "+mediaType.toString());
+        Log.d(TAG, "Mediatype: "+mediaType);
         Date d = new Date();
-        if(mediaType == MediaType.TEXT_PLAIN_UTF8)
+        if(mediaType == ContentFormat.Name.TEXT_PLAIN_UTF8)
         {
                 Log.d(TAG, "MediaType Plain Text");
                 if(payload.equals(""))
@@ -109,7 +137,7 @@ public class ContentManager extends Service
                         return parsePlainTextRequest(payload);
                 }
         }
-        if(mediaType == MediaType.APP_JSON)
+        if(mediaType == ContentFormat.Name.APP_JSON)
         {
                 Log.d(TAG, "MediaType JSON");
                 if(payload.equals(""))
@@ -179,6 +207,10 @@ public class ContentManager extends Service
             			result ="{\n";
             			result=result+"\"loudness\":\""+loudness+"\"\n";
             			result=result+"}";	
+            		}
+            		if(x.equals("stop"))
+            		{
+            			return "{\n\"stop\": \"ok\",\n}";
             		}
             	}
             }

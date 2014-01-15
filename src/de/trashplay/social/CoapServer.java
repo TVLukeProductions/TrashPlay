@@ -6,7 +6,7 @@ import java.lang.reflect.Field;
 import android.util.Log;
 import de.trashplay.main.TrashPlayConstants;
 import de.uniluebeck.itm.ncoap.application.server.CoapServerApplication;
-import de.uniluebeck.itm.ncoap.application.server.webservice.WebService;
+import de.uniluebeck.itm.ncoap.application.server.webservice.Webservice;
 import de.uniluebeck.itm.ncoap.application.server.webservice.WellKnownCoreResource;
 
 public class CoapServer extends CoapServerApplication
@@ -25,13 +25,13 @@ public class CoapServer extends CoapServerApplication
 		Log.d(TAG, "CoapServer...");
 	}
 	
-	protected ConcurrentHashMap<String, WebService> getRegisteredServices() 
+	protected ConcurrentHashMap<String, Webservice> getRegisteredServices() 
     {
 		Log.d(TAG, "getRegisteredServices");
         try 
         {
             Field privateStringField = getClass().getDeclaredField("registeredServices");
-            return (ConcurrentHashMap<String, WebService>) privateStringField.get(this);
+            return (ConcurrentHashMap<String, Webservice>) privateStringField.get(this);
         } 
         catch (NoSuchFieldException e) 
         {
@@ -41,7 +41,7 @@ public class CoapServer extends CoapServerApplication
         {
             e.printStackTrace();
         }
-        return new ConcurrentHashMap<String, WebService>();
+        return new ConcurrentHashMap<String, Webservice>();
     }
 
     public void refreshRootService() 

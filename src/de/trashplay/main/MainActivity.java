@@ -1,7 +1,16 @@
 package de.trashplay.main;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AccessTokenPair;
@@ -24,6 +33,8 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.Menu;
@@ -34,51 +45,114 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/**
+ * The main activity of the app. It has to modes, called "clientmode" and "servermode", which use different 
+ * layouts and menus and handle different usecases. They are both in this activity
+ * to allow to be in the preset mode of the app right on startup.
+ * 
+ * 
+ * 
+ * @author lukas
+ *
+ */
 public class MainActivity extends Activity
 {
 
+	//standard TAG and PREFS Constants
 	public static final String TAG = TrashPlayConstants.TAG;
 	public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 
+	//the menu veriable is set on createOptionsmenu to be used in other methods to reset the icons
 	private Menu menu = null;
 	
-	private ServerUIUpdater updater;
-    String display="";
-    Activity ctx;
+	//the UI Updater Classes (ServerUI Updater or ClientUIUpdater) run to handle periodic updates to 
+	//the UI and to the communcataion with the responsible service
+	private ServerUIUpdater supdater;
+	private ClientUIUpdater cupdater;
+	
+	//is set to true as soon as the playbutton is called. This is here because sometimes (for no apparent reason) the ServerService seems to start
+	//if this is false it doesn't start playing mp3s
+	public static boolean clicked=false;
+    //the context (this)
+    static Activity ctx;
     
+	//the current track file path to be displayed on top
+    String display="";
+    //next tracks
     ArrayList<File> nexts = new ArrayList<File>();
+    //listItems from nexts
     ArrayList<String> listItems = new ArrayList<String>();
+    //List adapter
     ArrayAdapter<String> adapter;
     
+    //on first start the app asumes servermode
     boolean clientmode =false;
     
+    //counter used for the scrolling text needs a variable to count where we are with scrolling
     int counter=0;
     
+    //DB Stuff...
     private static final int REQUEST_LINK_TO_DBX = 56;
-    
-	@Override
+     
+    @Override
 	protected void onCreate(Bundle savedInstanceState) 
 	{
 		super.onCreate(savedInstanceState);
 		ctx=this;
-		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+		Log.d(TAG, "1");
+		final SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 		clientmode = settings.getBoolean("clientmode", false);
+		Log.d(TAG, "2");
 		if(clientmode)
 		{
 			setContentView(R.layout.activity_client);
+			String ipstringx = settings.getString("ServerIP", "");
+			Button button1 = (Button) findViewById(R.id.button1);
+			final EditText ip = (EditText) findViewById(R.id.ipfield);
+			ip.setText(ipstringx);
+			button1.setOnClickListener(new OnClickListener(){
+
+				@Override
+				public void onClick(View v) 
+				{
+					Editor edit = settings.edit();
+		        	edit.putString("ServerIP", ip.getEditableText().toString());
+					edit.commit();
+				}
+			});
+			ImageView imageView1 = (ImageView) findViewById(R.id.stoppall);
+			imageView1.setOnClickListener(new OnClickListener(){
+
+				@Override
+				public void onClick(View v) 
+				{
+					Log.d(TAG, "click X");
+					if(TrashPlayClientService.ctx!=null)
+					{
+						TrashPlayClientService.ctx.stopTrashPlayer();
+					}
+				}
+			});
+			
 			startService(new Intent(ctx, TrashPlayService.class));
 			startService(new Intent(ctx, TrashPlayClientService.class));			
-			Button button1 = (Button) findViewById(R.id.button1);
 			
+			
+			cupdater= new ClientUIUpdater();
+	        cupdater.run();
 		}
 		else
 		{
+			startService(new Intent(ctx, ContentManager.class));
+			ContentManager.startServer();
 			setContentView(R.layout.activity_main);
+			Log.d(TAG, "3");
 			//start the trashPlayService
 			final ImageView playpause = (ImageView) findViewById(R.id.imageView1);
 			ImageView sync = (ImageView) findViewById(R.id.imageView2);
@@ -87,7 +161,7 @@ public class MainActivity extends Activity
 			wifi.setVisibility(View.GONE);
 			//playpause.setVisibility(View.GONE);
 			startService(new Intent(ctx, TrashPlayService.class));
-			
+			Log.d(TAG, "4");
 			playpause.setOnClickListener(new OnClickListener(){
 
 				@Override
@@ -107,18 +181,24 @@ public class MainActivity extends Activity
 					}
 					else
 					{
-						startService(new Intent(ctx, TrashPlayServerService.class));
+						ctx.startService(new Intent(ctx, TrashPlayServerService.class));
+						clicked=true;
 						//startService(new Intent(ctx, NDSService.class));
 						playpause.setImageResource(R.drawable.pause);
+						if(TrashPlayService.wifi)
+						{
+							 
+						}
 						display="";
 					}
 				}
 				
 			});
+			Log.d(TAG, "5");
 			playpause.setClickable(false);
-			
-			updater= new ServerUIUpdater();
-	        updater.run();
+			Log.d(TAG, "6");
+			supdater= new ServerUIUpdater();
+	        supdater.run();
 		}
 		
 	}
@@ -132,7 +212,7 @@ public class MainActivity extends Activity
 	    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
     	if(clientmode)
     	{
-    		inflater.inflate(R.menu.clientmain, menu);
+    		inflater.inflate(R.menu.servermain, menu);
 			for(int i=0; i<menu.size(); i++)
 			{
 				MenuItem item = menu.getItem(i);
@@ -275,15 +355,15 @@ public class MainActivity extends Activity
 		        	Log.d(TAG, "clientmode?");
 		        	if(!TrashPlayServerService.playing)
 		        	{
-				        //Editor edit = settings.edit();
-				        //edit.putBoolean("clientmode", true);
-				        //item.setTitle("Client Mode");
-						//edit.commit();
-			        	//recreate();
+				        Editor edit = settings.edit();
+				        edit.putBoolean("clientmode", true);
+				        item.setTitle("Client Mode");
+						edit.commit();
+			        	recreate();
 		        	}
 		        	else
 		        	{
-		        		//toast("Running Sever can not go into client mode.");
+		        		toast("Running Sever can not go into client mode.");
 		        	}
 		        	return true;
 		        default:
@@ -304,7 +384,8 @@ public class MainActivity extends Activity
 		}
 		else
 		{
-			updater.onPause();
+			clicked=false;
+			supdater.onPause();
 		}
 
 	}
@@ -312,13 +393,15 @@ public class MainActivity extends Activity
 	@Override
 	protected void onStop()
 	{
-		 super.onStop();
-		 Log.d(TAG, "on Stop in Activity called");
+		clicked=false;
+		super.onStop();
+		Log.d(TAG, "on Stop in Activity called");
 	}
 
 	@Override
 	protected void onDestroy()
 	{	
+		Log.d(TAG, "Main On Destroy");
 		super.onDestroy();
 		if(clientmode)
 		{
@@ -328,9 +411,16 @@ public class MainActivity extends Activity
 		{
 			if(!TrashPlayServerService.playing)
 			{
-				ctx.stopService(new Intent(ctx, TrashPlayService.class));
+				clicked=false;
+				ContentManager.stopServer();
+				ctx.stopService(new Intent(ctx, ContentManager.class));
+			}
+			else
+			{
+				toast("You can not switch into client mode while you are playing music");
 			}
 		}
+		ctx=null;
 		Log.d(TAG, "on Destroy in Activity called");
 	}
 	
@@ -347,7 +437,7 @@ public class MainActivity extends Activity
     	}
     	else
     	{
-			updater.onResume();
+			supdater.onResume();
 			if(TrashPlayService.mDBApi!=null)
 			{
 			    if (TrashPlayService.mDBApi.getSession().authenticationSuccessful()) 
@@ -370,8 +460,7 @@ public class MainActivity extends Activity
 			        }
 			    }
 			}
-			
-			ListView nextsongs = (ListView) findViewById(R.id.nextsongs);
+			Log.d(TAG, "populate lists");
 			adapter=new ArrayAdapter<String>(this,
 			                android.R.layout.simple_list_item_1,
 			                listItems);
@@ -391,6 +480,18 @@ public class MainActivity extends Activity
 		edit.commit();
 		
 	}
+	
+	private class  ClientUIUpdater implements Runnable
+    {
+
+		@Override
+		public void run() 
+		{
+			// TODO Auto-generated method stub
+			
+		}
+		
+    }
 
 	private class  ServerUIUpdater implements Runnable
     {
@@ -450,6 +551,58 @@ public class MainActivity extends Activity
 	        		}
 	        	 }
        		 }
+       		 if(TrashPlayServerService.playing)
+       		 {
+       		 final ImageView playpause = (ImageView) findViewById(R.id.imageView1);
+	         if(!TrashPlayService.wifi && !ContentManager.runningServer())
+	         {
+				    MainActivity.this.runOnUiThread(new Runnable()
+				    {
+				        public void run()
+				        {
+				        	playpause.setImageResource(R.drawable.pause);
+				        }
+					});
+	        	 }
+	        	 if(TrashPlayService.wifi && ContentManager.runningServer())
+	        	 {
+	        		 new Thread(new Runnable() 
+				     {
+				    	    public void run() 
+				    	    {
+								try 
+								{
+									//TODO: this should be the right URL otherwise this is not working.
+									URL uri = new URL("http://chart.apis.google.com/chart?cht=qr&chs=300x300&chl=coap://"+ContentManager.getIPAddress(true)+":5683&choe=UTF-8");
+									InputStream is = (InputStream) uri.getContent();
+								    byte[] buffer = new byte[8192];
+								    int bytesRead;
+								    ByteArrayOutputStream output = new ByteArrayOutputStream();
+								    while ((bytesRead = is.read(buffer)) != -1) 
+								    {
+								            output.write(buffer, 0, bytesRead);
+								    }
+								    byte[] bytes = output.toByteArray();
+								    final Bitmap bm = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+								    MainActivity.this.runOnUiThread(new Runnable()
+								    {
+								        public void run()
+								        {
+								        	playpause.setImageBitmap(bm);
+								        }
+								    });
+								    
+								} 
+								catch (IOException e) 
+								{
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+				    	    }
+				    }).start();
+	        	 }
+       		 }
+       		 
         	 if(!TrashPlayServerService.file.equals(""))
         	 {
         		//Log.d(TAG, "run file not euals \"\"");
@@ -568,6 +721,7 @@ public class MainActivity extends Activity
 
 	    private void update()
 	    {
+	    	Log.d(TAG, "update");
 	    	if(nexts!=null)
 	    	{
 	    		nexts.clear();
@@ -607,6 +761,17 @@ public class MainActivity extends Activity
 	    			listItems.remove(i);
 	    		}
 	    	}
-	        adapter.notifyDataSetChanged();
+	    	else
+	    	{
+	    		Log.d(TAG, "nexts is null");
+	    	}
+	    	try
+	    	{
+	    		adapter.notifyDataSetChanged();
+	    	}
+	    	catch(Exception e)
+	    	{
+	    		
+	    	}
 	    }
 }

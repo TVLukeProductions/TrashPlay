@@ -77,7 +77,7 @@ public class DropBox
 		    	    		            		fileNames.add(e.fileName());
 		    	    		            		if(!e.modified.equals(settings.getString("lastchange"+e.fileName(), "")))//last change has changed
 	   	    		            				{
-		    	    		            			if(TrashPlayService.wifi)
+		    	    		            			if(TrashPlayService.wifi && TrashPlayService.ctx!=null)
 		    	    		            			{
 		    	    		            				//Log.d(TAG, "wifi is");
 			    	    		            			Editor edit = settings.edit();
