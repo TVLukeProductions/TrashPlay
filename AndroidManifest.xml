@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.trashplay.main"
     android:versionCode="0"
-    android:versionName="0.2.1 Hund im Buero" >
+    android:versionName="0.2.b Hund Im Betastadium" >
 
     <uses-permission android:name="android.permission.INTERNET" />
  	<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />

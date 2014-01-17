@@ -1,9 +1,11 @@
 package de.trashplay.main;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.util.Date;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
@@ -136,7 +138,7 @@ public class TrashPlayClientService extends Service
 	    	}).start();
 	}
 	
-	public class SimpleResponseProcessor implements CoapResponseProcessor, EmptyAcknowledgementProcessor, RetransmissionTimeoutProcessor 
+	public class SimpleResponseProcessor implements CoapResponseProcessor, EmptyAcknowledgementProcessor 
     {
 
             
@@ -149,8 +151,17 @@ public class TrashPlayClientService extends Service
                 {
                 	ChannelBuffer paylo = coapResponse.getContent();
                     byte[] paylobyte = paylo.array();
-                    String strpay = new String(paylobyte);
-                    Log.d(TAG, "PAYLOAD->"+strpay);
+                    String decoded = "";
+					try 
+					{
+						decoded = new String(paylobyte, "UTF-8");
+					} 
+					catch (UnsupportedEncodingException e) 
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+                    Log.d(TAG, "PAYLOAD->"+decoded);
                     Log.d(TAG, "X");
 	                
                 }
@@ -166,12 +177,7 @@ public class TrashPlayClientService extends Service
             {
                     Log.d(TAG, "Received empty ACK: " + message);
             }
-            
-            @Override
-            public void processRetransmissionTimeout(InternalRetransmissionTimeoutMessage timeoutMessage) 
-            {
-                    Log.d(TAG, "Transmission timed out: " + timeoutMessage);
-            }
+
     }
 
 	public void stopTrashPlayer() 
@@ -188,11 +194,14 @@ public class TrashPlayClientService extends Service
 					 {
 						 if(!TrashServerIP.equals(""))
 						 {
+							Date d = new Date();
 							Log.d(TAG, "try to kill the player...");
 							URI targetURI = new URI ("coap://"+TrashServerIP+":5683/trashplayer");
 							CoapRequest coapRequest = new CoapRequest(MessageType.Name.CON, MessageCode.Name.POST, targetURI);
 							String r ="{\n";
+							r=r+"\"token\": \"xxxx\",\n";
 							r=r+"\"command\": \"stop\",\n";
+							r=r+"\"timestamp\": \""+d.getTime()+"\",\n";
 							r=r+"}";
 							byte[] bytes = r.getBytes();
 				            coapRequest.setContent(bytes, ContentFormat.Name.APP_JSON);

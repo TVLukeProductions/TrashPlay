@@ -578,7 +578,7 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
         	 }
         	 if(TrashPlayService.wifi && !ContentManager.runningServer())
         	 {
-        		 ContentManager.startServer();
+        		 // ContentManager.startServer();
         	 }
         	 //call the handler again
              handler.removeCallbacks(this); // remove the old callback
@@ -660,7 +660,11 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 		{
 			if(TrashPlayerWebService.service!=null)
 			{
+				/**
+				 * 
+				 //TODO PUT BACK IN LATER
 				TrashPlayerWebService.service.setResourceStatus(" ", 10);
+				*/
 			}
 		}
 		catch(Exception e)

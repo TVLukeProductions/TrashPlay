@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
+import de.trashplay.main.MainActivity;
 import de.trashplay.main.TrashPlayConstants;
 import de.trashplay.main.TrashPlayServerService;
 import de.trashplay.main.TrashPlayService;
@@ -163,7 +165,7 @@ public class ContentManager extends Service
         Map jsonData=parser.parseJson(payload);
         Set keys = jsonData.keySet();
         Iterator it = keys.iterator();
-        
+        HashMap<String, String> commands = new HashMap<String, String>();
         while(it.hasNext())
         {
         	Object key = it.next();
@@ -210,10 +212,43 @@ public class ContentManager extends Service
             		}
             		if(x.equals("stop"))
             		{
-            			return "{\n\"stop\": \"ok\",\n}";
+            			commands.put("command", "stop");
+            			
+            		}
+            		if(x.equals("start"))
+            		{
+            			context.startActivity(new Intent(context, MainActivity.class));
+            			MainActivity.clicked=true;
+            			context.startService(new Intent(context, TrashPlayServerService.class));
+            			if(TrashPlayServerService.ctx!=null)
+            			{
+            				TrashPlayServerService.ctx.start();
+            			}
+            			return "{\n\"start\": \"ok\",\n}";
             		}
             	}
+            	if(key.equals("timestamp"))
+            	{
+            		Log.d(TAG, "timestamp "+x);
+            		commands.put("timestamp", ""+x);
+            	}
             }
+        }
+        Log.d(TAG, "stored timestamp "+commands.get("timestamp"));
+        if(Long.parseLong(commands.get("timestamp")) < new Date().getTime()-2000)
+        {
+        	Log.d(TAG, "old command is old");
+        	//The request took more then 2 seconds and will be discarted for being old (this is a hack to prevent retransmition issues)
+        	result="";
+        }
+        else
+        {
+        	if(commands.get("command").equals("stop"))
+        	{
+        		Log.d(TAG, "command STOP!");
+        		result="{\n\"stop\": \"ok\",\n}";
+        	}
+        	
         }
 		return result;
 	}

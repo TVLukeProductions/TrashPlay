@@ -60,6 +60,7 @@ public class TrashPlayerWebService extends ObservableWebservice<String>
 		log.debug("got request");
         try
         {
+        	//we should check, if its a retransmit. if so, kill it with fire.
 		    if(coapRequest.getMessageCodeName() == MessageCode.Name.GET)
 		    {
 		    	Log.d(TAG, "GET");
@@ -130,7 +131,6 @@ public class TrashPlayerWebService extends ObservableWebservice<String>
             {
                 response = new CoapResponse(MessageCode.Name.CONTENT_205);
 				response.setContent(responseString.getBytes(Charset.forName("UTF-8")), APP_JSON);
-				//response.setContentType(APP_JSON); TODO: how does this work now?
 		        responseFuture.set(response);
 		        if(responseString.equals("{\n\"stop\": \"ok\",\n}"))
 		        {
@@ -151,6 +151,19 @@ public class TrashPlayerWebService extends ObservableWebservice<String>
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} 
+        }
+        else
+        {
+        	try 
+        	{
+				response = new CoapResponse(MessageCode.Name.BAD_REQUEST_400);
+				responseFuture.set(response);
+			} 
+        	catch (InvalidHeaderException e) 
+        	{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
     }
 	

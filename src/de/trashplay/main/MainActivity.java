@@ -149,8 +149,9 @@ public class MainActivity extends Activity
 		}
 		else
 		{
+			/**Uncomment for Beta
 			startService(new Intent(ctx, ContentManager.class));
-			ContentManager.startServer();
+			ContentManager.startServer();**/
 			setContentView(R.layout.activity_main);
 			Log.d(TAG, "3");
 			//start the trashPlayService
@@ -355,15 +356,16 @@ public class MainActivity extends Activity
 		        	Log.d(TAG, "clientmode?");
 		        	if(!TrashPlayServerService.playing)
 		        	{
+		        		/** BETA
 				        Editor edit = settings.edit();
 				        edit.putBoolean("clientmode", true);
 				        item.setTitle("Client Mode");
 						edit.commit();
-			        	recreate();
+			        	recreate();**/
 		        	}
 		        	else
 		        	{
-		        		toast("Running Sever can not go into client mode.");
+		        		//toast("Running Sever can not go into client mode.");
 		        	}
 		        	return true;
 		        default:
