@@ -25,8 +25,11 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 * **BUG FIXES**
 * The last version was restarting from time to time and would just play music. This one does not
 * Reliability
+
+<p align="center">
 <img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/trashplay02b_a.png" alt="Screenshot 1"/>
 <img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/trashplay02b_b.png" alt="Screenshot 2"/>
+</p>
 
 ### Next Up (version 0.2.1 Trash im Buero)
 * Check to keep some storage on the device
@@ -59,6 +62,7 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 * Scrobbling to last.fm
 * No Silence. Music will be turned up again at once.
 * Remember last song and continue with that song when restarted
+
 <p align="center">
 <img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191841.png" alt="Screenshot 1"/>
 <img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191103.png" alt="Screenshot 2"/>
