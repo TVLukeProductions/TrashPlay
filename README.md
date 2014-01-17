@@ -25,7 +25,8 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 * **BUG FIXES**
 * The last version was restarting from time to time and would just play music. This one does not
 * Reliability
-
+<img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/trashplay02b_a.png" alt="Screenshot 1"/>
+<img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/trashplay02b_b.png" alt="Screenshot 2"/>
 ### Next Up (version 0.2.1 Trash im Buero)
 * Check to keep some storage on the device
 * **Party Mode** (connect via Wifi/CoaP and somehow influence the playlist)
