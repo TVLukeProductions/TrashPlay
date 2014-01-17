@@ -632,10 +632,18 @@ public class MainActivity extends Activity
         		}
         		//shif stuff
 
-        		TextView position = (TextView) findViewById(R.id.posi);
-        		String posix = TrashPlayServerService.playposition();
-        		position.setText(posix);
-        		
+        		if(TrashPlayServerService.playing)
+        		{
+	        		TextView position = (TextView) findViewById(R.id.posi);
+	        		String posix = TrashPlayServerService.playposition();
+	        		position.setText(posix);
+        		}
+        		else
+        		{
+        			TextView position = (TextView) findViewById(R.id.posi);
+        			int x = TrashPlayServerService.getSizeOfTrashPlaylist();
+        			position.setText("["+x+"]");
+        		}
         		int shift = counter%newdisplay.length();
         		//Log.d(TAG, "shift: "+shift);
         		CharSequence d1 = newdisplay.subSequence(0, shift);

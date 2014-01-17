@@ -19,13 +19,14 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 ## Release History
 
 ### Current
+
 #### v 0.2.b Hund im Betastadium (17.01.2014) [Download](https://www.dropbox.com/s/qe885dgip6c31rt/TrashPlay_0.2hundbeta.apk)
 * Some UI Improvements
 * **BUG FIXES**
 * The last version was restarting from time to time and would just play music. This one does not
 * Reliability
 
-## Next Up (version 0.2.1 Trash im Buero)
+### Next Up (version 0.2.1 Trash im Buero)
 * Check to keep some storage on the device
 * **Party Mode** (connect via Wifi/CoaP and somehow influence the playlist)
 * Client Activity: Clients "log in" to a TrashPlayer session. They can then 
@@ -34,7 +35,6 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
  * See what songs are coming up
  * Like and dislike songs
  * More Stuff I have to think of
-
 
 ### Older Versions
 #### v 0.1.dayum (11.01.2014) [Download](https://www.dropbox.com/s/w2z350mt5urbu20/TrashPlay_0.1.dayum.apk)
@@ -61,6 +61,7 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 <img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191841.png" alt="Screenshot 1"/>
 <img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191103.png" alt="Screenshot 2"/>
 </p>
+
 #### v 0.1.deinemudda (31.12.2013)
 * Play music
 * Shut down on stop
@@ -72,7 +73,6 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 * No Silence. Music will be turned up again after a few minutes.
 
 ### Ideas for Future Releases 
-
 #### 0.2.2
 * HTTP Server in addition to the existing coap Server
 * Better Service/Resource structure provided via more then just one URI

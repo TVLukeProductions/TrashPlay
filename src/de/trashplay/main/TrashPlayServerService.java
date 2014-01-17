@@ -457,7 +457,7 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 	 * @param filesystem
 	 * @return
 	 */
-	private ArrayList<File> getTrashMusicFiles(File filesystem) 
+	private static ArrayList<File> getTrashMusicFiles(File filesystem) 
 	{
 		File[] filelist = filesystem.listFiles();
 		ArrayList<File> fl = new ArrayList<File>();
@@ -487,6 +487,19 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 		return null;
 	}
 
+	public static int getSizeOfTrashPlaylist()
+	{
+		try
+		{
+			File filesystem = Environment.getExternalStorageDirectory();
+			return getTrashMusicFiles(filesystem).size();
+		}
+		catch(Exception e)
+		{
+			
+		}
+		return 0;
+	}
 	@Override
 	public void onPrepared(MediaPlayer mpx) 
 	{
