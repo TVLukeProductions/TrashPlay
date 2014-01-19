@@ -87,15 +87,15 @@ public class TrashPlayClientService extends Service
 	    	{
 	    	    public void run() 
 	    	    {
-					 //try 
-					 //{
+					/**try 
+					{
 						 if(!TrashServerIP.equals(""))
 						 {
-							//URI targetURI = new URI ("coap://"+TrashServerIP+":5683/trashplayer");
-							//CoapRequest coapRequest = new CoapRequest(MessageType.Name.CON, MessageCode.Name.GET, targetURI);
-							//coapRequest.setAccept(ContentFormat.Name.APP_JSON);
-							//coapRequest.setObserve(true);
-					        //client.writeCoapRequest(coapRequest, new SimpleResponseProcessor());
+							URI targetURI = new URI ("coap://"+TrashServerIP+":5683/trashplayer");
+							CoapRequest coapRequest = new CoapRequest(MessageType.Name.CON, MessageCode.Name.GET, targetURI);
+							coapRequest.setAccept(ContentFormat.Name.APP_JSON);
+							coapRequest.setObserve(true);
+					        client.writeCoapRequest(coapRequest, new SimpleResponseProcessor());
 					            
 							//URI targetURI = new URI ("coap://192.168.1.103:5683/TrashPlayer");
 							//CoapRequest coapRequest = new CoapRequest(MessageType.Name.CON, MessageCode.Name.GET, targetURI);
@@ -107,8 +107,8 @@ public class TrashPlayClientService extends Service
 				            //coapRequest.setContent(bytes);
 				            //client.writeCoapRequest(coapRequest, new SimpleResponseProcessor());
 						 }
-					//} 
-					/** catch (URISyntaxException e) 
+					} 
+					 catch (URISyntaxException e) 
 					 {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -138,7 +138,7 @@ public class TrashPlayClientService extends Service
 	    	}).start();
 	}
 	
-	public class SimpleResponseProcessor implements CoapResponseProcessor, EmptyAcknowledgementProcessor 
+	public class SimpleResponseProcessor implements CoapResponseProcessor, EmptyAcknowledgementProcessor, RetransmissionTimeoutProcessor 
     {
 
             
@@ -178,12 +178,20 @@ public class TrashPlayClientService extends Service
                     Log.d(TAG, "Received empty ACK: " + message);
             }
 
+			@Override
+			public void processRetransmissionTimeout(
+					InternalRetransmissionTimeoutMessage timeoutMessage) {
+				// TODO Auto-generated method stub
+				
+			}
+
     }
 
 	public void stopTrashPlayer() 
 	{
 
 		final SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+		final String sessiontoken = settings.getString("SessionToken", "");
 		TrashServerIP = settings.getString("ServerIP", "");
 		 client = new CoapClientApplication();
 		    new Thread(new Runnable() 
@@ -199,13 +207,14 @@ public class TrashPlayClientService extends Service
 							URI targetURI = new URI ("coap://"+TrashServerIP+":5683/trashplayer");
 							CoapRequest coapRequest = new CoapRequest(MessageType.Name.CON, MessageCode.Name.POST, targetURI);
 							String r ="{\n";
-							r=r+"\"token\": \"xxxx\",\n";
+							r=r+"\"token\": \""+sessiontoken+"\",\n";
 							r=r+"\"command\": \"stop\",\n";
 							r=r+"\"timestamp\": \""+d.getTime()+"\",\n";
 							r=r+"}";
 							byte[] bytes = r.getBytes();
 				            coapRequest.setContent(bytes, ContentFormat.Name.APP_JSON);
-					        client.writeCoapRequest(coapRequest, new SimpleResponseProcessor());
+					        client.writeCoapRequest(coapRequest, new SimpleResponseProcessor2());
+					        Log.d(TAG, "xx");
 						 }
 				      } 
 					 catch (URISyntaxException e) 
@@ -242,4 +251,111 @@ public class TrashPlayClientService extends Service
 	{
 		stopSelf();
 	}
+
+	public void startTrashPlayer() 
+	{
+		// TODO Auto-generated method stub
+		final SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+		final String sessiontoken = settings.getString("SessionToken", "");
+		TrashServerIP = settings.getString("ServerIP", "");
+		final CoapClientApplication client2 = new CoapClientApplication();
+		new Thread(new Runnable() 
+		{
+			public void run() 
+	    	{
+				try 
+				{
+						 if(!TrashServerIP.equals(""))
+						 {
+							Date d = new Date();
+							Log.d(TAG, "try to start the player...");
+							URI targetURI = new URI ("coap://"+TrashServerIP+":5683/trashplayer");
+							CoapRequest coapRequest = new CoapRequest(MessageType.Name.CON, MessageCode.Name.POST, targetURI);
+							String r ="{\n";
+							r=r+"\"token\": \""+sessiontoken+"\",\n";
+							r=r+"\"command\": \"start\",\n";
+							r=r+"\"timestamp\": \""+d.getTime()+"\",\n";
+							r=r+"}";
+							byte[] bytes = r.getBytes();
+				            coapRequest.setContent(bytes, ContentFormat.Name.APP_JSON);
+					        client2.writeCoapRequest(coapRequest, new SimpleResponseProcessor2());
+						 }
+				      } 
+					 catch (URISyntaxException e) 
+					 {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} 
+					 catch (InvalidOptionException e) 
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} 
+					 catch (UnknownHostException e) 
+					 {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} 
+					 catch (InvalidHeaderException e) 
+					 {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} 
+					 catch (InvalidMessageException e) 
+					 {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+	    	}).start();
+	}
+	
+	public class SimpleResponseProcessor2 implements CoapResponseProcessor, EmptyAcknowledgementProcessor, RetransmissionTimeoutProcessor 
+    {
+
+            
+            @Override
+            public void processCoapResponse(CoapResponse coapResponse) 
+            {
+                Log.d(TAG, "Received Response: " + coapResponse);
+                Log.d(TAG, "MAX AGE->"+coapResponse.getMaxAge());
+                if(coapResponse.getContent()!=null)
+                {
+                	ChannelBuffer paylo = coapResponse.getContent();
+                    byte[] paylobyte = paylo.array();
+                    String decoded = "";
+					try 
+					{
+						decoded = new String(paylobyte, "UTF-8");
+					} 
+					catch (UnsupportedEncodingException e) 
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+                    Log.d(TAG, "PAYLOAD->"+decoded);
+                    Log.d(TAG, "X");
+	                
+                }
+                else
+                {
+                    Log.d(TAG, "NO PAYLOAD");
+                }
+                return;
+            }
+            
+            @Override
+            public void processEmptyAcknowledgement(InternalEmptyAcknowledgementReceivedMessage message) 
+            {
+                    Log.d(TAG, "Received empty ACK: " + message);
+            }
+
+			@Override
+			public void processRetransmissionTimeout(
+					InternalRetransmissionTimeoutMessage timeoutMessage) {
+				// TODO Auto-generated method stub
+				
+			}
+
+    }
 }

@@ -80,6 +80,7 @@ public class ContentManager extends Service
 	public void onCreate() 
 	{
 		super.onCreate();
+      	context=this;
 		Log.d(TAG, "Server Service on Create");
 
 	}
@@ -217,7 +218,16 @@ public class ContentManager extends Service
             		}
             		if(x.equals("start"))
             		{
-            			context.startActivity(new Intent(context, MainActivity.class));
+            			if(MainActivity.ctx!=null)
+            			{
+            				
+            			}
+            			else
+            			{
+            				Intent i = new Intent(context, MainActivity.class);
+            				i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            				context.startActivity(new Intent(context, MainActivity.class));
+            			}
             			MainActivity.clicked=true;
             			context.startService(new Intent(context, TrashPlayServerService.class));
             			if(TrashPlayServerService.ctx!=null)
@@ -235,7 +245,7 @@ public class ContentManager extends Service
             }
         }
         Log.d(TAG, "stored timestamp "+commands.get("timestamp"));
-        if(Long.parseLong(commands.get("timestamp")) < new Date().getTime()-2000)
+        if(Long.parseLong(commands.get("timestamp")) < new Date().getTime()-6000)
         {
         	Log.d(TAG, "old command is old");
         	//The request took more then 2 seconds and will be discarted for being old (this is a hack to prevent retransmition issues)
@@ -315,8 +325,8 @@ public class ContentManager extends Service
 			{
 				MP3File mp3 = new MP3File(f);
 				ID3v1 id3 = mp3.getID3v1Tag();
-				result=result+"{\n";
-				result=result="  \"Song\": {\n";
+				result="{\n";
+				result=result+"  \"Song\": {\n";
 				result=result+"    \"Artist\": \""+id3.getArtist()+"\",\n";
 				result=result+"    \"Title\": \""+id3.getSongTitle()+"\",\n";
 				result=result+"    \"Size\": \""+id3.getSize()+"\",\n";
@@ -326,12 +336,13 @@ public class ContentManager extends Service
 				result=result+"  \"Player\": {\n";
 				result=result+"    \"Playing\": \""+TrashPlayServerService.playing+"\",\n";
 				result=result+"    \"Loudness\": \""+TrashPlayServerService.loudness+"\",\n";
-				result=result+"  },";
-				result=result+"}\n";
+				result=result+"  },\n";
+				result=result+"}";
 				
 			} 
 			catch (Exception e) 
 			{
+				result="";
 				String[] metadata = new String[2];
 				metadata[0]="";
 				metadata[1]="";
@@ -351,8 +362,8 @@ public class ContentManager extends Service
 						metadata[0]=metadata[0].trim();
 						metadata[1]=spl[1];
 						metadata[1]=metadata[1].trim();
-						result=result+"{\n";
-						result=result="  \"Song\": {\n";
+						result="{\n";
+						result=result+"  \"Song\": {\n";
 						result=result+"    \"Artist\": \""+metadata[0]+"\",\n";
 						result=result+"    \"Title\": \""+metadata[1]+"\",\n";
 						result=result+"    \"Size\": \"unknown\",\n";
@@ -362,16 +373,16 @@ public class ContentManager extends Service
 						result=result+"  \"Player\": {\n";
 						result=result+"    \"Playing\": \""+TrashPlayServerService.playing+"\",\n";
 						result=result+"    \"Loudness\": \""+TrashPlayServerService.loudness+"\",\n";
-						result=result+"  },";
-						result=result+"}\n";
+						result=result+"  },\n";
+						result=result+"}";
 						
 					}
 				}
 				else
 				{
 					result="";
-					result=result+"{\n";
-					result=result="  \"Song\": {\n";
+					result="{\n";
+					result=result+"  \"Song\": {\n";
 					result=result+"  \"Artist\": \"unknown\",\n";
 					result=result+"  \"Title\": \"unknown\",\n";
 					result=result+"  \"Size\": \"unknown\",\n";
@@ -381,8 +392,8 @@ public class ContentManager extends Service
 					result=result+"  \"Player\": {\n";
 					result=result+"    \"Playing\": \""+TrashPlayServerService.playing+"\",\n";
 					result=result+"    \"Loudness\": \""+TrashPlayServerService.loudness+"\",\n";
-					result=result+"  },";
-					result=result+"}\n";
+					result=result+"  },\n";
+					result=result+"}";
 				}
 			} 
 			
@@ -391,8 +402,9 @@ public class ContentManager extends Service
 		}
 		else
 		{
-			result=result+"{\n";
-			result=result="  \"Song\": {\n";
+			result="";
+			result="{\n";
+			result=result+"  \"Song\": {\n";
 			result=result+"  \"Artist\": \"unknown\",\n";
 			result=result+"  \"Title\": \"unknown\",\n";
 			result=result+"  \"Size\": \"unknown\",\n";
@@ -402,8 +414,8 @@ public class ContentManager extends Service
 			result=result+"  \"Player\": {\n";
 			result=result+"    \"Playing\": \""+TrashPlayServerService.playing+"\",\n";
 			result=result+"    \"Loudness\": \""+TrashPlayServerService.loudness+"\",\n";
-			result=result+"  },";
-			result=result+"}\n";
+			result=result+"  },\n";
+			result=result+"}";
 			return " ";
 		}
 	}

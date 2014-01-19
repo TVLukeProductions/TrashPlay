@@ -30,7 +30,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-         <activity android:name="com.dropbox.sync.android.DbxAuthActivity" />
+        <activity
+            android:theme="@android:style/Theme.Dialog"
+            android:label="@string/app_name"
+            android:name="de.trashplay.main.SearchForHubs">
+        </activity>
+        <activity android:name="com.dropbox.sync.android.DbxAuthActivity" />
         <activity
 		  android:name="com.dropbox.client2.android.AuthActivity"
 		  android:launchMode="singleTask" >

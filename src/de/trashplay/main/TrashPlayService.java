@@ -1,5 +1,8 @@
 package de.trashplay.main;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
+
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.session.AccessTokenPair;
@@ -18,6 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -38,6 +42,8 @@ public class TrashPlayService extends Service
 	
 	public static TrashPlayService ctx;
     private int startId=0;
+    
+    private String sessionToken="";
 	
     WifiBroadcastReceiver wbr = new WifiBroadcastReceiver();
     
@@ -57,6 +63,17 @@ public class TrashPlayService extends Service
 			Log.d(TAG, "on create Service");
 			ctx=this;
 			this.startId = startId;
+			SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+			
+			if(sessionToken.equals(""))
+			{
+				SecureRandom random = new SecureRandom();
+				sessionToken = new BigInteger(250, random).toString(32);
+				Editor edit = settings.edit();
+				edit.putString("SessionToken", sessionToken);
+				edit.commit();
+			}
+			
 			 Notification note=new Notification(icon, "TrashPlayer", System.currentTimeMillis());
 			 Intent i=new Intent(this, MainActivity.class);
 	
@@ -76,7 +93,6 @@ public class TrashPlayService extends Service
 			intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
 			this.registerReceiver(wbr, intentFilter);
 			startForeground(5646, note);
-			SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 			getDropboxAPI();
 			DropBox.syncFiles(settings);
 			

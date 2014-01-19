@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,13 +44,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemSelectedListener;
 
 /**
  * The main activity of the app. It has to modes, called "clientmode" and "servermode", which use different 
@@ -80,7 +84,7 @@ public class MainActivity extends Activity
 	//if this is false it doesn't start playing mp3s
 	public static boolean clicked=false;
     //the context (this)
-    static Activity ctx;
+    public static Activity ctx;
     
 	//the current track file path to be displayed on top
     String display="";
@@ -112,46 +116,48 @@ public class MainActivity extends Activity
 		if(clientmode)
 		{
 			setContentView(R.layout.activity_client);
+			startActivity(new Intent(this, SearchForHubs.class));
 			String ipstringx = settings.getString("ServerIP", "");
-			Button button1 = (Button) findViewById(R.id.button1);
-			final EditText ip = (EditText) findViewById(R.id.ipfield);
-			ip.setText(ipstringx);
-			button1.setOnClickListener(new OnClickListener(){
+	
+			startService(new Intent(ctx, TrashPlayService.class));
+			startService(new Intent(ctx, TrashPlayClientService.class));			
+			
+			ImageView playbutton = (ImageView) findViewById(R.id.playbutton);
+			playbutton.setOnClickListener(new OnClickListener(){
 
 				@Override
-				public void onClick(View v) 
+				public void onClick(View arg0) 
 				{
-					Editor edit = settings.edit();
-		        	edit.putString("ServerIP", ip.getEditableText().toString());
-					edit.commit();
+					// TODO Auto-generated method stub
+					if(TrashPlayClientService.ctx!=null)
+					{
+						TrashPlayClientService.ctx.startTrashPlayer();
+					}
 				}
+				
 			});
-			ImageView imageView1 = (ImageView) findViewById(R.id.stoppall);
-			imageView1.setOnClickListener(new OnClickListener(){
+			
+			ImageView offbutton = (ImageView) findViewById(R.id.offbutton);
+			offbutton.setOnClickListener(new OnClickListener(){
 
 				@Override
-				public void onClick(View v) 
+				public void onClick(View arg0) 
 				{
-					Log.d(TAG, "click X");
 					if(TrashPlayClientService.ctx!=null)
 					{
 						TrashPlayClientService.ctx.stopTrashPlayer();
 					}
 				}
+				
 			});
-			
-			startService(new Intent(ctx, TrashPlayService.class));
-			startService(new Intent(ctx, TrashPlayClientService.class));			
-			
 			
 			cupdater= new ClientUIUpdater();
 	        cupdater.run();
 		}
 		else
 		{
-			/**Uncomment for Beta
 			startService(new Intent(ctx, ContentManager.class));
-			ContentManager.startServer();**/
+			ContentManager.startServer();
 			setContentView(R.layout.activity_main);
 			Log.d(TAG, "3");
 			//start the trashPlayService
@@ -356,16 +362,15 @@ public class MainActivity extends Activity
 		        	Log.d(TAG, "clientmode?");
 		        	if(!TrashPlayServerService.playing)
 		        	{
-		        		/** BETA
 				        Editor edit = settings.edit();
 				        edit.putBoolean("clientmode", true);
 				        item.setTitle("Client Mode");
 						edit.commit();
-			        	recreate();**/
+			        	recreate();
 		        	}
 		        	else
 		        	{
-		        		//toast("Running Sever can not go into client mode.");
+		        		toast("Running Sever can not go into client mode.");
 		        	}
 		        	return true;
 		        default:
@@ -431,11 +436,59 @@ public class MainActivity extends Activity
 	{
 		super.onResume();
 		Log.d(TAG, "on Resume Main Activity");
-    	SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+    	final SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         //DropBox.syncFiles(settings);
     	if(clientmode)
     	{
-    		//client mode stuff
+    		final Spinner ipspiner = (Spinner) findViewById(R.id.ipspiner); 
+    		ArrayList<String> iplist = new ArrayList<String>();
+    		String worklingips = settings.getString("workingHubIPs", "");
+    		String[] wip = worklingips.split(",");
+    		for(int i=0; i<wip.length; i++)
+    		{
+    			if(!wip[i].equals(""))
+    			{
+    				iplist.add(wip[i]);
+    			}
+    		}
+ 		    Log.d(TAG, "folderlistsize="+iplist.size());
+ 		    final List<String> spinnerArray = new ArrayList<String>();
+ 		    int sf = settings.getInt("selectedfolder", 0);
+ 		    
+ 		    for(int i=0; i<iplist.size(); i++)
+ 		    {
+ 			    spinnerArray.add(iplist.get(i));	
+
+ 		    }
+ 		    ipspiner.setOnItemSelectedListener(new OnItemSelectedListener() 
+ 			    {
+ 		    	@Override
+ 	            public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) 
+ 		    	{
+					Editor edit = settings.edit();
+		        	edit.putString("ServerIP", spinnerArray.get(arg2));
+					edit.commit();
+ 	            }
+ 	
+ 	            @Override
+ 	            public void onNothingSelected(AdapterView<?> arg0) 
+ 	            {
+ 	               
+ 		    		Log.d(TAG, "not selected");
+ 	            }
+ 		    });
+
+ 		    ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, spinnerArray);
+ 		    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+ 		    adapter.notifyDataSetChanged();
+ 		    ipspiner.setAdapter(adapter);
+ 		    ipspiner.setClickable(true);
+ 		    ipspiner.setSelected(true);
+ 		    adapter.notifyDataSetChanged();
+ 		    if(iplist.size()==1)
+ 		    {
+ 		    	ipspiner.setSelection(0);
+ 		    }
     	}
     	else
     	{
@@ -574,7 +627,6 @@ public class MainActivity extends Activity
 				    	    {
 								try 
 								{
-									//TODO: this should be the right URL otherwise this is not working.
 									URL uri = new URL("http://chart.apis.google.com/chart?cht=qr&chs=300x300&chl=coap://"+ContentManager.getIPAddress(true)+":5683&choe=UTF-8");
 									InputStream is = (InputStream) uri.getContent();
 								    byte[] buffer = new byte[8192];
@@ -604,7 +656,21 @@ public class MainActivity extends Activity
 				    }).start();
 	        	 }
        		 }
-       		 
+     		if(TrashPlayServerService.playing)
+     		{
+     			//Log.d(TAG, "fill position with time");
+	        		TextView position = (TextView) findViewById(R.id.posi);
+	        		String posix = TrashPlayServerService.playposition();
+	        		String length = TrashPlayServerService.playlength();
+	        		position.setText("["+posix+"|"+length+"]");
+     		}
+     		else
+     		{
+     			//Log.d(TAG, "fill position with number of tracks");
+     			TextView position = (TextView) findViewById(R.id.posi);
+     			int x = TrashPlayServerService.getSizeOfTrashPlaylist();
+     			position.setText("["+x+"]");
+     		}
         	 if(!TrashPlayServerService.file.equals(""))
         	 {
         		//Log.d(TAG, "run file not euals \"\"");
@@ -630,20 +696,7 @@ public class MainActivity extends Activity
 	        		
 	        		update();
         		}
-        		//shif stuff
-
-        		if(TrashPlayServerService.playing)
-        		{
-	        		TextView position = (TextView) findViewById(R.id.posi);
-	        		String posix = TrashPlayServerService.playposition();
-	        		position.setText(posix);
-        		}
-        		else
-        		{
-        			TextView position = (TextView) findViewById(R.id.posi);
-        			int x = TrashPlayServerService.getSizeOfTrashPlaylist();
-        			position.setText("["+x+"]");
-        		}
+        		//shif stuff in the field for title
         		int shift = counter%newdisplay.length();
         		//Log.d(TAG, "shift: "+shift);
         		CharSequence d1 = newdisplay.subSequence(0, shift);

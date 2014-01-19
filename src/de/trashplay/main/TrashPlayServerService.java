@@ -183,7 +183,12 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 				{
 					if(!oldtitle.equals(""))
 					{
-						LastFM.scrobble(oldartist, oldtitle);
+						audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+						final int volume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
+						if(volume!=0) //do not scrobble when volume ==0, cause the person is not actually listening to shit at all.
+						{
+							LastFM.scrobble(oldartist, oldtitle);
+						}
 					}
 					oldartist="";
 					oldtitle="";
@@ -239,6 +244,47 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 			try 
 			{
 				int p = mp.getCurrentPosition();
+				int m=0;
+				p = p/1000;
+				if(p>59)
+				{
+					m=p/60;
+					p=p-(60*m);
+				}
+				if(m>9)
+				{
+					result=result+m;
+				}
+				else
+				{
+					result=result+"0"+m;
+				}
+				result=result+":";
+				if(p>9)
+				{
+					result=result+p;
+				}
+				else
+				{
+					result=result+"0"+p;
+				}
+			}
+			catch (Exception e) 
+			{
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+	
+	public static String playlength()
+	{
+		String result ="";
+		if(mp!=null)
+		{
+			try 
+			{
+				int p = mp.getDuration();
 				int m=0;
 				p = p/1000;
 				if(p>59)
@@ -448,6 +494,18 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 				Log.d(TAG, "----------->ARTIST():"+metadata[0]);
 				Log.d(TAG, "----------->SONG():"+metadata[1]);
 			}
+		}
+		//This is unsafe insofar as that songs or artists names might actually have on a vowel + "?" but thats less likely than it being a
+		//false interpretation of the good damn id3 lib given that (at least right now) lots of German stuff is in the
+		//trashplaylist
+		for(int i=0; i<metadata.length; i++)
+		{
+			metadata[i]=metadata[i].replace("A?", "Ä");
+			metadata[i]=metadata[i].replace("a?", "ä");
+			metadata[i]=metadata[i].replace("U?", "Ü");
+			metadata[i]=metadata[i].replace("u?", "ü");
+			metadata[i]=metadata[i].replace("O?", "Ö");
+			metadata[i]=metadata[i].replace("o?", "ö");
 		}
 		return metadata;
 	}
@@ -673,11 +731,7 @@ public class TrashPlayServerService extends Service implements OnPreparedListene
 		{
 			if(TrashPlayerWebService.service!=null)
 			{
-				/**
-				 * 
-				 //TODO PUT BACK IN LATER
 				TrashPlayerWebService.service.setResourceStatus(" ", 10);
-				*/
 			}
 		}
 		catch(Exception e)

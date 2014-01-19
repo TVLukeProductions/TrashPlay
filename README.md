@@ -5,6 +5,7 @@
 
 [Download current version: 0.2.b Hund im Betastadium](https://www.dropbox.com/s/qe885dgip6c31rt/TrashPlay_0.2hundbeta.apk)
 (This thing is totally Beta. So report Bugs, Questions and Feature Requests [here](https://github.com/TVLuke/TrashPlay/issues) and check from time to time if there is an update.)
+or if you feel like taking a risk try the the [Nighly Build](https://www.dropbox.com/s/4j2on0itfdfxkhy/TrashPlay_0.2.0.1_nightly.apk).
 
 TrashPlay is a simple music player for Android (3.x and 4.x) phones and tablets to use during car trips and other events that need a Trash Playlist (for reasons). It offers only one button. Play. There is no skipping and no pausing. Ever.
 
@@ -71,7 +72,7 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 #### v 0.1.deinemudda (31.12.2013)
 * Play music
 * Shut down on stop
-* Dropbox connection possible
+* DropBox connection possible
 * Syncing with the _DropBoxTrashPlaylistDerHoelle_ folder
 * stops syncing when you leave the Wifi
 * only show play button if play is actually an option
@@ -107,6 +108,8 @@ If you stop the app TrashPlay will resume with the song played when you stoped t
 * [Dropbox android SDK](https://www.dropbox.com/developers/core/sdks/android)
 * [lastfm-java](https://code.google.com/p/lastfm-java/)
 * [Java ID3 Tag Library](http://javamusictag.sourceforge.net/)
+* [nCoap Library](https://github.com/okleine/nCoAP)
+* [quick-json](https://code.google.com/p/quick-json/)
 
 ## License
 [CC-BY-NC](http://creativecommons.org/licenses/by-nc/4.0/)
