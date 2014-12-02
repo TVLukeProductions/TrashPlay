@@ -1,0 +1,133 @@
+package de.lukeslog.trashplay.playlist;
+
+import android.util.Log;
+
+import org.farng.mp3.MP3File;
+import org.farng.mp3.TagException;
+import org.farng.mp3.id3.ID3v1;
+import org.joda.time.DateTime;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import de.lukeslog.trashplay.cloudstorage.CloudStorage;
+import de.lukeslog.trashplay.constants.TrashPlayConstants;
+
+public class Song {
+
+    ArrayList<PlayList> playLists = new ArrayList<PlayList>();
+    String songName;
+    String artist;
+    String fileName;
+    DateTime lastUpdate;
+
+    boolean toBeUpdated;
+    boolean toBeDeleted;
+
+    public static final String TAG = TrashPlayConstants.TAG;
+
+    Song(String fileName) {
+        this.fileName=fileName;
+        String[] metadata = getMetaData(new File(CloudStorage.LOCAL_STORAGE+fileName));
+        artist = metadata[0];
+        songName = metadata[1];
+    }
+
+    public void refreshLastUpdate() {
+        lastUpdate=new DateTime();
+    }
+
+    public static String[] getMetaData(File file)
+    {
+        String[] metadata = new String[2];
+        metadata[0]=file.getName();
+        metadata[1]=" ";
+        try
+        {
+            //Log.d(TAG, "md1");
+            MP3File mp3 = new MP3File(file);
+
+            //Log.d(TAG, "md2");
+            ID3v1 id3 = mp3.getID3v1Tag();
+            //Log.d(TAG, "md3");
+            //Log.d(TAG, "md3d");
+            metadata[0] = id3.getArtist();
+            //Log.d(TAG, "md4");
+            //Log.d(TAG, "----------->ARTIST:"+metadata[0]);
+            metadata[1] = id3.getSongTitle();
+            //Log.d(TAG, "md5");
+            //Log.d(TAG, "----------->SONG:"+metadata[1]);
+            //Log.d(TAG, "md6");
+        }
+        catch (IOException e1)
+        {
+            e1.printStackTrace();
+            metadata[0]=file.getName();
+            metadata[1]=" ";
+            //Log.d(TAG, "----------->ARTIST():"+metadata[0]);
+            //Log.d(TAG, "----------->SONG():"+metadata[1]);
+        }
+        catch (TagException e1)
+        {
+            e1.printStackTrace();
+            metadata[0]=file.getName();
+            metadata[1]=" ";
+            //Log.d(TAG, "----------->ARTIST():"+metadata[0]);
+            //Log.d(TAG, "----------->SONG():"+metadata[1]);
+        }
+        catch(Exception ex)
+        {
+            Log.e(TAG, "There has been an exception while extracting ID3 Tag Information from the MP3");
+            String fn = file.getName();
+            fn.replace("�", "-"); //wired symbols that look alike
+            if(fn.contains("-") && fn.endsWith("mp3"))
+            {
+                fn=fn.replace(".mp3", "");
+                String[] spl = fn.split("-");
+                if(spl.length==2)
+                {
+                    metadata[0]=spl[0];
+                    metadata[0]=metadata[0].trim();
+                    metadata[1]=spl[1];
+                    metadata[1]=metadata[1].trim();
+                    Log.d(TAG, "----------->ARTIST():"+spl[0]);
+                    Log.d(TAG, "----------->SONG():"+spl[1]);
+                }
+            }
+            else
+            {
+                metadata[0]=file.getName();
+                metadata[1]=" ";
+                Log.d(TAG, "----------->ARTIST():"+metadata[0]);
+                Log.d(TAG, "----------->SONG():"+metadata[1]);
+            }
+        }
+        //This is unsafe insofar as that songs or artists names might actually have on a vowel + "?" but thats less likely than it being a
+        //false interpretation of the good damn id3 lib given that (at least right now) lots of German stuff is in the
+        //trashplaylist
+        for(int i=0; i<metadata.length; i++)
+        {
+            metadata[i]=metadata[i].replace("A?", "�");
+            metadata[i]=metadata[i].replace("a?", "�");
+            metadata[i]=metadata[i].replace("U?", "�");
+            metadata[i]=metadata[i].replace("u?", "�");
+            metadata[i]=metadata[i].replace("O?", "�");
+            metadata[i]=metadata[i].replace("o?", "�");
+        }
+        return metadata;
+    }
+
+    public void addToPlayList(PlayList playList) {
+        Log.d(TAG, "Add Song To PLAylIst "+playList.getName());
+        playLists.add(playList);
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public DateTime getLastUpdate() {
+        return lastUpdate;
+    }
+}
