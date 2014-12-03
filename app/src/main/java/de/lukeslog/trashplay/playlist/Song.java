@@ -16,14 +16,15 @@ import de.lukeslog.trashplay.constants.TrashPlayConstants;
 
 public class Song {
 
-    ArrayList<PlayList> playLists = new ArrayList<PlayList>();
-    String songName;
-    String artist;
-    String fileName;
-    DateTime lastUpdate;
+    private ArrayList<PlayList> playLists = new ArrayList<PlayList>();
+    private String songName;
+    private String artist;
+    private String fileName;
+    private DateTime lastUpdate;
+    private int durationInSeconds=0;
 
-    boolean toBeUpdated;
-    boolean toBeDeleted;
+    private boolean toBeUpdated;
+    private boolean toBeDeleted;
 
     public static final String TAG = TrashPlayConstants.TAG;
 
@@ -129,5 +130,64 @@ public class Song {
 
     public DateTime getLastUpdate() {
         return lastUpdate;
+    }
+
+    public boolean isInPlayList(PlayList playList) {
+        return playLists.contains(playList);
+    }
+
+    public boolean isToBeDeleted() {
+        return toBeDeleted;
+    }
+
+    public void setToBeDeleted(boolean toBeDeleted) {
+        this.toBeDeleted = toBeDeleted;
+    }
+
+    public boolean isToBeUpdated() {
+        return toBeUpdated;
+    }
+
+    public void setToBeUpdated(boolean toBeUpdated) {
+        this.toBeUpdated = toBeUpdated;
+    }
+
+    public String getArtist() {
+        return artist;
+    }
+
+    public void setArtist(String artist) {
+        this.artist = artist;
+    }
+
+    public String getSongName() {
+        return songName;
+    }
+
+    public void setSongName(String songName) {
+        this.songName = songName;
+    }
+
+    public void removeFromPlayList(PlayList playList) {
+        playLists.remove(playList);
+        if(playLists.isEmpty()) {
+            setToBeDeleted(true);
+        }
+    }
+
+    public void setDurationInSeconds(int durationInSeconds) {
+        this.durationInSeconds = durationInSeconds;
+    }
+
+    public int getDurationInSeconds() {
+        return durationInSeconds;
+    }
+
+    public String getTitleInfoAsString() {
+        if(songName!=null && artist!=null) {
+            return artist+" - "+songName;
+        } else {
+            return fileName;
+        }
     }
 }

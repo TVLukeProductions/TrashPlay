@@ -25,11 +25,12 @@ import java.util.List;
 
 import javax.net.ssl.HandshakeCompletedEvent;
 
+import de.lukeslog.trashplay.R;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
 import de.lukeslog.trashplay.playlist.PlayList;
 import de.lukeslog.trashplay.service.TrashPlayService;
-import trashplay.lukeslog.de.trashplaylikeaboss.R;
+
 
 public class DropBox extends CloudStorage {
 
@@ -73,8 +74,9 @@ public class DropBox extends CloudStorage {
         return playListFolders;
     }
 
+    //TODO: Users should not be calling this directly.
     @Override
-    public ArrayList<String> getFileNameListWithEndings(List<String> listOfAllowedFileEndings, String folderPath) throws Exception {
+    public ArrayList<String> getFileNameListWithEndingsFromRemoteStorage(List<String> listOfAllowedFileEndings, String folderPath) throws Exception {
         Log.d(TAG, "getListOfFiles With Allowed Ending");
         ArrayList<String> fileList = new ArrayList<String>();
         String givenPath = "/" + folderPath;
@@ -102,11 +104,11 @@ public class DropBox extends CloudStorage {
     }
 
     @Override
-    public String downloadFile(String path, String fileName) throws Exception {
-        return downloadFileIfNewerVersion(path, fileName, null);
+    public String downloadFileFromRemoteStorage(String path, String fileName) throws Exception {
+        return downloadFileIfNewerVersionFromRemoteStorage(path, fileName, null);
     }
 
-    public String downloadFileIfNewerVersion(String path, String fileName, DateTime lastChange) throws Exception {
+    public String downloadFileIfNewerVersionFromRemoteStorage(String path, String fileName, DateTime lastChange) throws Exception {
         if(lastChange==null) {
             lastChange= new DateTime();
             lastChange = lastChange.minusYears(100);
@@ -203,6 +205,7 @@ public class DropBox extends CloudStorage {
                 if (!content.isDir) {
                     Log.d(TAG, ">" + content.fileName());
                     if (content.fileName().startsWith(".trashplay")) {
+                        Log.d(TAG, "FOOOUND ONE!");
                         return true;
                     }
                     if (content.fileName().matches("^[a-zA-Z].*$") || content.fileName().matches("^\\d.*$")) {

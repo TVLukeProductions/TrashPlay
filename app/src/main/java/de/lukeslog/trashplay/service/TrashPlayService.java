@@ -16,13 +16,13 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
+import de.lukeslog.trashplay.R;
 import de.lukeslog.trashplay.cloudstorage.CloudSynchronizationService;
 import de.lukeslog.trashplay.cloudstorage.DropBox;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
 import de.lukeslog.trashplay.ui.MainControl;
-import trashplay.lukeslog.de.trashplaylikeaboss.R;
 
 public class TrashPlayService extends Service {
 
@@ -170,10 +170,10 @@ public class TrashPlayService extends Service {
 
         @Override
         public void run() {
-            startService(new Intent(ctx, CloudSynchronizationService.class));
-
+            Log.d(TAG, "ServiceRunner: run");
             if(counter%60==0)
             {
+                Log.d(TAG, "ServiceRunner: Time to try to synchronize and Stuff");
                 try {
                     MusicCollectionManager.getInstance().syncRemoteStorageWithDevice();
                 } catch (Exception e) {
@@ -189,6 +189,11 @@ public class TrashPlayService extends Service {
         public void onPause() {
             Log.d(TAG, "updater on Pause in Service");
             handler.removeCallbacks(this);
+        }
+
+        public void onResume() {
+            handler.removeCallbacks(this); // remove the old callback
+            handler.postDelayed(this, delay); // register a new one
         }
     }
 

@@ -12,6 +12,7 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.util.Log;
 
 import org.farng.mp3.MP3File;
 import org.farng.mp3.TagException;
@@ -22,14 +23,13 @@ import java.io.IOException;
 
 import de.lukeslog.trashplay.cloudstorage.CloudStorage;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
+import de.lukeslog.trashplay.lastfm.PersonalLastFM;
 import de.lukeslog.trashplay.lastfm.TrashPlayLastFM;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
 import de.lukeslog.trashplay.playlist.Song;
+import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
 
-/**
- * Created by lukas on 25.04.14.
- */
 public class MusicPlayer extends Service implements OnPreparedListener, OnCompletionListener, MediaPlayer.OnErrorListener {
     public static final String ACTION_START_MUSIC = "startmusic";
     public static final String ACTION_STOP_MUSIC = "stopmusic";
@@ -42,6 +42,10 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     static MediaPlayer mp;
 
     String actionID = "";
+
+    public static Song getCurrentlyPlayingSong() {
+        return currentlyPlayingSong;
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -88,22 +92,24 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             mExternalStorageAvailable = false;
         }
         if (mExternalStorageAvailable) {
-            File file = new File(CloudStorage.LOCAL_STORAGE + song.getFileName());
-
-            scrobbleTrack(file);
+            currentlyPlayingSong = song;
+            //TODO switch to the last song instead of the nex one
+            //TODO: Make parameter of type Song
+            scrobbleTrack(song);
 
             try {
-                playMusic(file.getAbsolutePath());
+                playMusic(song);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void scrobbleTrack(File file) {
+    private void scrobbleTrack(Song song) {
         String artist = "";
         String title = "";
         try {
+            File file = getFileFromSong(song);
             MP3File mp3 = new MP3File(file);
             ID3v1 id3 = mp3.getID3v1Tag();
             artist = id3.getArtist();
@@ -112,6 +118,9 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             //Log.d(TAG, "----------->SONG:" + song);
             //TODO: Scrobble to trashplay and private account
             TrashPlayLastFM.scrobble(artist, title);
+            if(TrashPlayService.serviceRunning()) {
+                PersonalLastFM.scrobble(artist, title, TrashPlayService.getContext().settings);
+            }
         } catch (IOException e1) {
             e1.printStackTrace();
         } catch (TagException e1) {
@@ -121,11 +130,14 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         }
     }
 
-    private void playMusic(String musicpath) throws IOException {
+    private void playMusic(Song song) throws IOException {
+        try {
+        File file = getFileFromSong(song);
+        String musicPath = file.getAbsolutePath();
         mp = new MediaPlayer();
-        mp.setDataSource(musicpath);
+        mp.setDataSource(musicPath);
         mp.setLooping(false);
-        mp.setVolume(0.99f, 0.99f);
+        //mp.setVolume(0.99f, 0.99f);
         Logger.d(TAG, "...");
         mp.setOnCompletionListener(this);
         mp.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
@@ -133,12 +145,28 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         mp.setOnPreparedListener(this);
         Logger.d(TAG, ".....");
         mp.prepareAsync();
+        } catch (IllegalStateException e) {
+            mp = null;
+            playMusic(song);
+        }
+    }
+
+    private File getFileFromSong(Song song) {
+        return new File(CloudStorage.LOCAL_STORAGE + song.getFileName());
     }
 
     public void stop() {
-        Logger.d(TAG, "stop Media Player Service");
-        mp.stop();
-        mp.release();
+        Log.d(TAG, "stop Media Player Service");
+        try {
+            mp.stop();
+        } catch (Exception e) {
+
+        }
+        try {
+            mp.release();
+        } catch (Exception e) {
+
+        }
         mp = null;
     }
 
@@ -151,6 +179,9 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     public void onPrepared(MediaPlayer mpx) {
         Logger.d(TAG, "on Prepared!");
         mpx.setOnCompletionListener(this);
+        if(mpx.getDuration()>0) {
+            currentlyPlayingSong.setDurationInSeconds(mpx.getDuration());
+        }
         Logger.d(TAG, "ok, I'v set the on Completion Listener again...");
         mpx.start();
     }

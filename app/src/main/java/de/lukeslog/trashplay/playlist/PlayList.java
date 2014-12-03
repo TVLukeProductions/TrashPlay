@@ -2,12 +2,10 @@ package de.lukeslog.trashplay.playlist;
 
 import android.util.Log;
 
-import org.joda.time.DateTime;
-
 import java.util.ArrayList;
+import java.util.List;
 
 import de.lukeslog.trashplay.cloudstorage.CloudStorage;
-import de.lukeslog.trashplay.cloudstorage.DropBox;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 
 /**
@@ -44,12 +42,25 @@ public class PlayList {
                 MusicCollectionManager.getInstance().addToSongCollection(newSong);
             }
             if(inCollection) {
-                //TODO get those that have changed
+                Log.d(TAG, "is in Collection but does it need to be renewed");
                 Song oldSong = MusicCollectionManager.getInstance().getSongByFileName(fileName);
                 remoteStorage.downloadFileIfNewerVersion(remotePath, fileName, oldSong.getLastUpdate());
             }
-
             //TODO: delete those that are no longer in remote storage
+            Log.d(TAG, "now checking if a song needs to be deleted");
+            List<Song> songsInPlayList = MusicCollectionManager.getInstance().getSongsByPlayList(this);
+            for(Song song : songsInPlayList) {
+                Log.d(TAG, song.getFileName());
+                if(!listOfFileNames.contains(song.getFileName())) {
+                    Log.d(TAG, "This Song needs to be removed from this Playlist");
+                    song.removeFromPlayList(this);
+                    if(song.isToBeDeleted()) {
+                        remoteStorage.deleteSongFromLocalStorage(song);
+                    }
+                }
+            }
+            MusicCollectionManager.getInstance().removeSongsThatAreToBeDeleted();
+
         }
     }
 

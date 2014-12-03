@@ -41,9 +41,22 @@ public class MusicCollectionManager {
     }
 
     public Song getNextSong() {
+        Log.d(TAG, "get Next Song");
         int randomsongnumber = (int) (Math.random() * (songs.size()));
         Song[] thesongs = songs.values().toArray(new Song[songs.size()]);
-        return thesongs[randomsongnumber];
+        Song posibleSong = thesongs[randomsongnumber];
+        Log.d(TAG, "its probably gona be "+posibleSong.getArtist()+" - "+posibleSong.getSongName());
+        return replaceSongForReasons(posibleSong);
+    }
+
+    private Song replaceSongForReasons(Song posibleSong) {
+        if(posibleSong.isToBeDeleted()) {
+            return getNextSong();
+        }
+        if(posibleSong.isToBeUpdated()) {
+            return getNextSong();
+        }
+        return posibleSong;
     }
 
     private PlayList createNewPlayList(CloudStorage cloudStorage, String path) {
@@ -113,5 +126,30 @@ public class MusicCollectionManager {
 
     public Song getSongByFileName(String fileName) {
         return songs.get(fileName);
+    }
+
+    public List<Song> getSongsByPlayList(PlayList playList) {
+        List<Song> songsInPlayList = new ArrayList<Song>();
+        for(String songFileName : songs.keySet()) {
+            Song theSong = songs.get(songFileName);
+            if(theSong.isInPlayList(playList)) {
+                songsInPlayList.add(theSong);
+            }
+        }
+        return songsInPlayList;
+    }
+
+    public boolean collectionNotEmpty() {
+        removeSongsThatAreToBeDeleted();
+        return !songs.isEmpty();
+    }
+
+    public void removeSongsThatAreToBeDeleted() {
+        for(String songFileName : songs.keySet()) {
+            Song theSong = songs.get(songFileName);
+            if(theSong.isToBeDeleted()) {
+                songs.remove(songFileName);
+            }
+        }
     }
 }

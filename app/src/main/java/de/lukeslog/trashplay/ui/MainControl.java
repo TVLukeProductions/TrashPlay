@@ -20,15 +20,16 @@ import com.dropbox.client2.session.AccessTokenPair;
 
 import java.io.File;
 
+import de.lukeslog.trashplay.R;
 import de.lukeslog.trashplay.cloudstorage.CloudStorage;
 import de.lukeslog.trashplay.cloudstorage.CloudSynchronizationService;
 import de.lukeslog.trashplay.cloudstorage.DropBox;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
+import de.lukeslog.trashplay.playlist.Song;
 import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
-import trashplay.lukeslog.de.trashplaylikeaboss.R;
 
 
 public class MainControl extends Activity {
@@ -67,7 +68,7 @@ public class MainControl extends Activity {
             public void onClick(View v) {
                 Log.d(TAG, "click");
                 if (TrashPlayService.serviceRunning()) {
-                    if (isPlayButtonClicked()) {
+                    if (MusicPlayer.getCurrentlyPlayingSong() != null) {
                         sendBroadcastToStopMusic();
 
                         TrashPlayService.getContext().stop();
@@ -76,20 +77,18 @@ public class MainControl extends Activity {
                         //TODO: Broadcast to the thing that it shukld play some funky music
                         sendBroadcastToStartMusic();
 
-                        setPlayButtonClicked(true);
                         playpause.setImageResource(R.drawable.pause);
-                        if (TrashPlayService.wifi) {
+                        setPlayButtonClicked(true);
 
-                        }
                         setDisplayStringForCurrentTrackInformation("");
                     }
                 }
             }
         });
         playpause.setClickable(false);
-        uiUpdater=new
+        uiUpdater = new
 
-        UIUpdater();
+                UIUpdater();
 
         uiUpdater.run();
     }
@@ -232,14 +231,16 @@ public class MainControl extends Activity {
             Log.d(TAG, "UI UPDATER");
             CloudSynchronizationService.updateRegisteredCloudStorageSystems();
 
-            if (CloudSynchronizationService.atLeastOneCloudStorageServiceIsConnected()) {
+            if (CloudSynchronizationService.atLeastOneCloudStorageServiceIsConnected() && MusicCollectionManager.getInstance().collectionNotEmpty()) {
                 setButtonToPlayButton();
             }
             if (menu != null) {
                 Log.d(TAG, "menu is not null");
                 setMenuIcons();
             }
-            //setShiftedSongTitle();
+            setSyncInProgressAnimation();
+
+            setShiftedSongTitle();
 
             handler.removeCallbacks(this); // remove the old callback
             handler.postDelayed(this, delay); // register a new one
@@ -256,26 +257,44 @@ public class MainControl extends Activity {
         }
     }
 
+    private void setSyncInProgressAnimation() {
+        if (CloudStorage.syncInProgress) {
+            ImageView sync= (ImageView) findViewById(R.id.imageView2);
+            if(counter%4==0) {
+                sync.setImageResource(R.drawable.synchronize1);
+            }
+            if(counter%4==1){
+                sync.setImageResource(R.drawable.synchronize2);
+            }
+            if(counter%4==2){//TODO: more synchronize grafics
+                sync.setImageResource(R.drawable.synchronize1);
+            }
+            if(counter%4==3){
+                sync.setImageResource(R.drawable.synchronize2);            }
+            sync.setVisibility(View.VISIBLE);
+        } else {
+            ImageView sync = (ImageView) findViewById(R.id.imageView2);
+            sync.setVisibility(View.GONE);
+        }
+    }
+
     private void setShiftedSongTitle() {
         //shif stuff in the field for title
-        File f = new File("");//TODO: get the currently playing song file
-        String newdisplay = "";
-        setDisplayStringForCurrentTrackInformation(""); //TODO: get the data on the currently playing Song
-        String[] metadata = new String[2]; //TODO get Metadata on that Song
-        if (!metadata[0].equals("") && !metadata[1].equals("")) {
-            newdisplay = metadata[0] + " - " + metadata[1];
-        } else {
-            newdisplay = f.getName();
+        Song currentlyPlayingSong = MusicPlayer.getCurrentlyPlayingSong();
+        if (currentlyPlayingSong != null) {
+            String newdisplay = "";
+            setDisplayStringForCurrentTrackInformation(currentlyPlayingSong.getTitleInfoAsString());
+            newdisplay = currentlyPlayingSong.getTitleInfoAsString();
+            int shift = counter % newdisplay.length();
+            //Log.d(TAG, "shift: "+shift);
+            CharSequence d1 = newdisplay.subSequence(0, shift);
+            String s1Str = d1.toString();
+            CharSequence d2 = newdisplay.subSequence(shift, newdisplay.length());
+            String s2Str = d2.toString();
+            String ndx = s2Str + "+++" + s1Str;
+            TextView textView1 = (TextView) findViewById(R.id.songinfo);
+            textView1.setText(ndx);
         }
-        int shift = counter % newdisplay.length();
-        //Log.d(TAG, "shift: "+shift);
-        CharSequence d1 = newdisplay.subSequence(0, shift);
-        String s1Str = d1.toString();
-        CharSequence d2 = newdisplay.subSequence(shift, newdisplay.length());
-        String s2Str = d2.toString();
-        String ndx = s2Str + "+++" + s1Str;
-        TextView textView1 = (TextView) findViewById(R.id.songinfo);
-        textView1.setText(ndx);
     }
 
     private void setMenuIcons() {
