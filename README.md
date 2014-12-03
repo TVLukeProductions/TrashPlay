@@ -9,6 +9,7 @@ An diesem Ort entshet die neue Version der App.
 * Scrobblen zum TrashPlayList Last.fm account
 * Abspielen auch wieder Stoppen (App geht dann aus)
 * GitHub Branch "LikeABoss"
+
 ## 04.12.2014
 * readme.md erstellt
 * Dateien aus der App löschen, wenn sie in keiner Playlist mehr sind
@@ -18,6 +19,7 @@ An diesem Ort entshet die neue Version der App.
 * MusicPlayer.scrobble überarbeiten
 * Musiktitel in der Aktivität anzeigen
 * Sync-Anzeige (Mit Animation)
+
 # Was sie bald können wird
 * Länge des Stücks und bisher gespielte Zeit in der Main Aktivität einblenden
 * Es möglich machen die App abzuschalten ohne jemals Musik zu starten
@@ -38,6 +40,7 @@ An diesem Ort entshet die neue Version der App.
 * Unit-Tests?
 
 *Chromecast Integration
+
 # Worüber ich mir so Gedanken mache=
 * Redesign von Logos
 * Badges
