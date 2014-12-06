@@ -11,7 +11,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import de.lukeslog.trashplay.cloudstorage.CloudStorage;
+import de.lukeslog.trashplay.cloudstorage.CloudSynchronizationService;
+import de.lukeslog.trashplay.cloudstorage.LocalStorage;
+import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 
 public class Song {
@@ -22,6 +24,7 @@ public class Song {
     private String fileName;
     private DateTime lastUpdate;
     private int durationInSeconds=0;
+    private int plays=0;
 
     private boolean toBeUpdated;
     private boolean toBeDeleted;
@@ -30,7 +33,7 @@ public class Song {
 
     Song(String fileName) {
         this.fileName=fileName;
-        String[] metadata = getMetaData(new File(CloudStorage.LOCAL_STORAGE+fileName));
+        String[] metadata = getMetaData(new File(StorageManager.LOCAL_STORAGE+fileName));
         artist = metadata[0];
         songName = metadata[1];
     }
@@ -140,7 +143,17 @@ public class Song {
         return toBeDeleted;
     }
 
-    public void setToBeDeleted(boolean toBeDeleted) {
+    public void setToBeDeletedTrue() {
+        setToBeDeleted(true);
+        MusicCollectionManager.getInstance().determineNumberOfViableSongs();
+    }
+
+    public void setToBeDeletedFalse() {
+        setToBeDeleted(false);
+        MusicCollectionManager.getInstance().determineNumberOfViableSongs();
+    }
+
+    private void setToBeDeleted(boolean toBeDeleted) {
         this.toBeDeleted = toBeDeleted;
     }
 
@@ -189,5 +202,29 @@ public class Song {
         } else {
             return fileName;
         }
+    }
+
+    public String getTitleInfoAsStringWithPlayCount() {
+        String songName = getTitleInfoAsString();
+        songName= songName+" ("+getPlays()+")";
+        return songName;
+    }
+
+    public boolean localFileExists() {
+
+        Log.d(TAG, "LocalFileExists? "+StorageManager.LOCAL_STORAGE+getFileName());
+        return StorageManager.doesFileExists(this);
+    }
+
+    public void resetPlayList() {
+        playLists = new ArrayList<PlayList>();
+    }
+
+    public void finishedPlay() {
+        plays++;
+    }
+
+    public int getPlays(){
+        return plays;
     }
 }

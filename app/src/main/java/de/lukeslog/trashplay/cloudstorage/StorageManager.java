@@ -14,10 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
+import de.lukeslog.trashplay.playlist.MusicCollectionManager;
+import de.lukeslog.trashplay.playlist.PlayList;
 import de.lukeslog.trashplay.playlist.Song;
 import de.lukeslog.trashplay.service.TrashPlayService;
 
-public abstract class CloudStorage{
+public abstract class StorageManager {
 
     public static final String TAG = TrashPlayConstants.TAG;
 
@@ -136,5 +138,19 @@ public abstract class CloudStorage{
 
     public boolean isSyncInProgress() {
         return syncInProgress;
+    }
+
+    public static boolean doesFileExists(Song song) {
+        File f = new File(StorageManager.LOCAL_STORAGE+song.getFileName());
+        boolean localExists = f.exists();
+        Log.d(TAG, ""+localExists);
+        if(!localExists)
+        {
+            Log.d(TAG, "nope!");
+            song.setToBeDeletedTrue();
+            song.resetPlayList();
+            MusicCollectionManager.getInstance().removeSongsThatAreToBeDeleted();
+        }
+        return localExists;
     }
 }

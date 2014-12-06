@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -20,8 +19,9 @@ import org.farng.mp3.id3.ID3v1;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
-import de.lukeslog.trashplay.cloudstorage.CloudStorage;
+import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.lastfm.PersonalLastFM;
 import de.lukeslog.trashplay.lastfm.TrashPlayLastFM;
@@ -33,11 +33,18 @@ import de.lukeslog.trashplay.support.Logger;
 public class MusicPlayer extends Service implements OnPreparedListener, OnCompletionListener, MediaPlayer.OnErrorListener {
     public static final String ACTION_START_MUSIC = "startmusic";
     public static final String ACTION_STOP_MUSIC = "stopmusic";
+    public static final String ACTION_NEXT_SONG = "nextSong";
+    public static final String ACTION_PREV_SONG = "prevSong";
+    public static final String ACTION_PAUSE_SONG = "pauseSong";
 
     public static final String TAG = TrashPlayConstants.TAG;
 
+
     private static Service ctx;
     private static Song currentlyPlayingSong = null;
+
+    private String title = "";
+    private String artist = "";
 
     static MediaPlayer mp;
 
@@ -58,15 +65,21 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     public void onCreate() {
         super.onCreate();
         mp = null;
-        ctx=this;
+        ctx = this;
         registerIntentFilters();
     }
 
     private void registerIntentFilters() {
         IntentFilter inf = new IntentFilter(ACTION_START_MUSIC);
         IntentFilter inf2 = new IntentFilter(ACTION_STOP_MUSIC);
+        IntentFilter inf3 = new IntentFilter(ACTION_NEXT_SONG);
+        IntentFilter inf4 = new IntentFilter(ACTION_PREV_SONG);
+        IntentFilter inf5 = new IntentFilter(ACTION_PAUSE_SONG);
         registerReceiver(mReceiver, inf);
         registerReceiver(mReceiver, inf2);
+        registerReceiver(mReceiver, inf3);
+        registerReceiver(mReceiver, inf4);
+        registerReceiver(mReceiver, inf5);
 
     }
 
@@ -77,37 +90,46 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     }
 
     private void playmp3(Song song) {
-        boolean mExternalStorageAvailable = false;
-        String state = Environment.getExternalStorageState();
-        Logger.d(TAG, "Go Play 3");
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            // We can read and write the media
-            mExternalStorageAvailable = true;
-        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-            // We can only read the media
-            mExternalStorageAvailable = true;
+        if (song == null) {
+            Log.d(TAG, "playmp3 got null");
+            TrashPlayService.getContext().toast("Something went wrong.");
         } else {
-            // Something else is wrong. It may be one of many other states, but all we need
-            //  to know is we can neither read nor write
-            mExternalStorageAvailable = false;
-        }
-        if (mExternalStorageAvailable) {
-            currentlyPlayingSong = song;
-            //TODO switch to the last song instead of the nex one
-            //TODO: Make parameter of type Song
-            scrobbleTrack(song);
-
-            try {
-                playMusic(song);
-            } catch (IOException e) {
-                e.printStackTrace();
+            boolean mExternalStorageAvailable = false;
+            String state = Environment.getExternalStorageState();
+            Logger.d(TAG, "Go Play 3");
+            if (Environment.MEDIA_MOUNTED.equals(state)) {
+                // We can read and write the media
+                mExternalStorageAvailable = true;
+            } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+                // We can only read the media
+                mExternalStorageAvailable = true;
+            } else {
+                // Something else is wrong. It may be one of many other states, but all we need
+                //  to know is we can neither read nor write
+                mExternalStorageAvailable = false;
+            }
+            if (mExternalStorageAvailable) {
+                //TODO switch to the last song instead of the nex one
+                //TODO: Make parameter of type Song
+                if (needToScrobble()) {
+                    scrobbleTrack();
+                }
+                setTrackInfo(song);
+                try {
+                    playMusic(song);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
-    private void scrobbleTrack(Song song) {
-        String artist = "";
-        String title = "";
+    private boolean needToScrobble() {
+        return false;
+        //return (!artist.equals("") && !title.equals(""));
+    }
+
+    private void setTrackInfo(Song song) {
         try {
             File file = getFileFromSong(song);
             MP3File mp3 = new MP3File(file);
@@ -115,12 +137,6 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             artist = id3.getArtist();
             //Log.d(TAG, "----------->ARTIST:" + artist);
             title = id3.getSongTitle();
-            //Log.d(TAG, "----------->SONG:" + song);
-            //TODO: Scrobble to trashplay and private account
-            TrashPlayLastFM.scrobble(artist, title);
-            if(TrashPlayService.serviceRunning()) {
-                PersonalLastFM.scrobble(artist, title, TrashPlayService.getContext().settings);
-            }
         } catch (IOException e1) {
             e1.printStackTrace();
         } catch (TagException e1) {
@@ -130,29 +146,42 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         }
     }
 
+    private void scrobbleTrack() {
+        //TODO: Scrobble to trashplay and private account
+        TrashPlayLastFM.scrobble(artist, title);
+        if (TrashPlayService.serviceRunning()) {
+            PersonalLastFM.scrobble(artist, title, TrashPlayService.getContext().settings);
+        }
+
+    }
+
     private void playMusic(Song song) throws IOException {
         try {
-        File file = getFileFromSong(song);
-        String musicPath = file.getAbsolutePath();
-        mp = new MediaPlayer();
-        mp.setDataSource(musicPath);
-        mp.setLooping(false);
-        //mp.setVolume(0.99f, 0.99f);
-        Logger.d(TAG, "...");
-        mp.setOnCompletionListener(this);
-        mp.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-        Logger.d(TAG, "....");
-        mp.setOnPreparedListener(this);
-        Logger.d(TAG, ".....");
-        mp.prepareAsync();
+            File file = getFileFromSong(song);
+            String musicPath = file.getAbsolutePath();
+            mp = new MediaPlayer();
+            mp.setDataSource(musicPath);
+            mp.setLooping(false);
+            //mp.setVolume(0.99f, 0.99f);
+            Logger.d(TAG, "...");
+            mp.setOnCompletionListener(this);
+            mp.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+            Logger.d(TAG, "....");
+            mp.setOnPreparedListener(this);
+            Logger.d(TAG, ".....");
+            mp.prepareAsync();
+            currentlyPlayingSong = song;
         } catch (IllegalStateException e) {
             mp = null;
             playMusic(song);
         }
     }
 
-    private File getFileFromSong(Song song) {
-        return new File(CloudStorage.LOCAL_STORAGE + song.getFileName());
+    private File getFileFromSong(Song song) throws IOException {
+        if (song != null) {
+            return new File(StorageManager.LOCAL_STORAGE + song.getFileName());
+        }
+        throw new IOException();
     }
 
     public void stop() {
@@ -179,7 +208,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     public void onPrepared(MediaPlayer mpx) {
         Logger.d(TAG, "on Prepared!");
         mpx.setOnCompletionListener(this);
-        if(mpx.getDuration()>0) {
+        if (mpx.getDuration() > 0) {
             currentlyPlayingSong.setDurationInSeconds(mpx.getDuration());
         }
         Logger.d(TAG, "ok, I'v set the on Completion Listener again...");
@@ -189,6 +218,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     @Override
     public void onCompletion(MediaPlayer mpx) {
         Logger.d(TAG, "on Completetion");
+        MusicCollectionManager.getInstance().finishedSong();
         playmp3(MusicCollectionManager.getInstance().getNextSong());
     }
 
@@ -205,7 +235,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             mp.release();
             mp = null;
         }
-        if(MusicPlayer.ctx != null) {
+        if (MusicPlayer.ctx != null) {
             ctx.stopSelf();
         }
     }
@@ -226,6 +256,65 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                 stop();
                 actionID = "";
             }
+            if(action.equals(ACTION_NEXT_SONG)) {
+                Logger.d(TAG, "NEXT SONG REQUESTED");
+                if(currentlyPlayingSong!=null) {
+                    MusicCollectionManager.getInstance().finishedSong();
+                }
+                stop();
+                Song nextSong = MusicCollectionManager.getInstance().getNextSong();
+                playmp3(nextSong);
+            }
+            if(action.equals(ACTION_PREV_SONG)) {
+
+            }
         }
     };
+
+    public static String playPosition() {
+        String result = "";
+        if (mp != null) {
+            try {
+                int p = mp.getCurrentPosition();
+                result = getStringFromIntInSeconds(result, p);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
+
+    private static String getStringFromIntInSeconds(String result, int p) {
+        int m = 0;
+        p = p / 1000;
+        if (p > 59) {
+            m = p / 60;
+            p = p - (60 * m);
+        }
+        if (m > 9) {
+            result = result + m;
+        } else {
+            result = result + "0" + m;
+        }
+        result = result + ":";
+        if (p > 9) {
+            result = result + p;
+        } else {
+            result = result + "0" + p;
+        }
+        return result;
+    }
+
+    public static String playLength() {
+        String result = "";
+        if (mp != null) {
+            try {
+                int p = mp.getDuration();
+                result = getStringFromIntInSeconds(result, p);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
 }

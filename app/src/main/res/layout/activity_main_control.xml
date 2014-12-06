@@ -25,9 +25,9 @@
 
         <TextView
             android:id="@+id/posi"
-            android:layout_width="140dp"
+            android:layout_width="160dp"
             android:layout_height="wrap_content"
-            android:text="[00:00|00:00]"
+            android:text="(0)[00:00|00:00]"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
@@ -51,12 +51,35 @@
             android:layout_centerHorizontal="true"
             android:src="@drawable/ic_launcher" />
 
+        <ImageView
+            android:id="@+id/back"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="false"
+            android:src="@drawable/ic_action_playback_prev" />
+
+        <ImageView
+            android:id="@+id/next"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_action_playback_next"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
     </RelativeLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:id="@+id/infoBox" />
 
     <ListView
         android:id="@+id/nextsongs"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="match_parent" >
     </ListView>
 
 </LinearLayout>

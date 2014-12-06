@@ -1,10 +1,7 @@
 package de.lukeslog.trashplay.cloudstorage;
 
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
-import android.os.Environment;
 import android.util.Log;
-import android.view.MenuItem;
 
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.DropboxAPI.Entry;
@@ -23,16 +20,13 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.net.ssl.HandshakeCompletedEvent;
-
 import de.lukeslog.trashplay.R;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
-import de.lukeslog.trashplay.playlist.PlayList;
 import de.lukeslog.trashplay.service.TrashPlayService;
 
 
-public class DropBox extends CloudStorage {
+public class DropBox extends StorageManager {
 
     public static final String TAG = TrashPlayConstants.TAG;
     final static private Session.AccessType ACCESS_TYPE = Session.AccessType.DROPBOX;

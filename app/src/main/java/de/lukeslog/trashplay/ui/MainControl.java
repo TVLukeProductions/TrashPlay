@@ -12,16 +12,17 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dropbox.client2.session.AccessTokenPair;
-
-import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import de.lukeslog.trashplay.R;
-import de.lukeslog.trashplay.cloudstorage.CloudStorage;
+import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.cloudstorage.CloudSynchronizationService;
 import de.lukeslog.trashplay.cloudstorage.DropBox;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
@@ -47,6 +48,8 @@ public class MainControl extends Activity {
 
     private UIUpdater uiUpdater;
 
+    ArrayAdapter<String> adapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,10 +61,14 @@ public class MainControl extends Activity {
         startService(new Intent(ctx, TrashPlayService.class));
 
         final ImageView playpause = (ImageView) findViewById(R.id.imageView1);
+        final ImageView nextimg = (ImageView) findViewById(R.id.next);
+        final ImageView backimg = (ImageView) findViewById(R.id.back);
         ImageView sync = (ImageView) findViewById(R.id.imageView2);
         ImageView wifi = (ImageView) findViewById(R.id.imageView3);
         sync.setVisibility(View.GONE);
         wifi.setVisibility(View.GONE);
+        //nextimg.setVisibility(View.GONE);
+        backimg.setVisibility(View.GONE);
         playpause.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -85,12 +92,43 @@ public class MainControl extends Activity {
                 }
             }
         });
+        nextimg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "clockkkk");
+                sendBroadcastToStartNextSong();
+            }
+        });
+        backimg.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                Log.d(TAG, "claaackkkk");
+                sendBroadcastToGoBack();
+            }
+        });
+        nextimg.setClickable(true);
         playpause.setClickable(false);
         uiUpdater = new
 
                 UIUpdater();
 
         uiUpdater.run();
+    }
+
+    private void sendBroadcastToPause() {
+        Log.d(TAG, "send Broadcast to Pause");
+        sendBroadcast(MusicPlayer.ACTION_PAUSE_SONG);
+    }
+
+    private void sendBroadcastToGoBack() {
+        Log.d(TAG, "send Broadcast to go back");
+        sendBroadcast(MusicPlayer.ACTION_PREV_SONG);
+    }
+
+    private void sendBroadcastToStartNextSong() {
+        Log.d(TAG, "send Broadcast to Start the Next Song");
+        sendBroadcast(MusicPlayer.ACTION_NEXT_SONG);
     }
 
     private void sendBroadcastToStartMusic() {
@@ -106,7 +144,6 @@ public class MainControl extends Activity {
         Log.d(TAG, "SEND BROADCAST");
         Intent actionIntent = new Intent();
         actionIntent.setAction(action);
-        //startmusic.putExtra("AmbientActionID", ctx.getActionID());
         TrashPlayService.getContext().sendBroadcast(actionIntent);
     }
 
@@ -187,7 +224,7 @@ public class MainControl extends Activity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(TAG, "activity result");
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == CloudStorage.REQUEST_LINK_TO_DBX) {
+            if (requestCode == StorageManager.REQUEST_LINK_TO_DBX) {
                 DropBox.authenticate();
                 try {
                     MusicCollectionManager.getInstance().syncRemoteStorageWithDevice();
@@ -242,6 +279,12 @@ public class MainControl extends Activity {
 
             setShiftedSongTitle();
 
+            setPlayTimes();
+
+            fillListOfNextSongs();
+
+            fillInfoBox();
+
             handler.removeCallbacks(this); // remove the old callback
             handler.postDelayed(this, delay); // register a new one
         }
@@ -257,20 +300,49 @@ public class MainControl extends Activity {
         }
     }
 
+    private void fillInfoBox() {
+        TextView infoBox = (TextView) findViewById(R.id.infoBox);
+        if (MusicPlayer.getCurrentlyPlayingSong() != null) {
+            infoBox.setText("Up Next");
+        } else if (MusicCollectionManager.getInstance().collectionNotEmpty()) {
+            infoBox.setText("Press Play To Start");
+        } else if (!CloudSynchronizationService.atLeastOneCloudStorageServiceIsConnected()) {
+            infoBox.setText("Not connected to any storage with Playlists");
+        } else if (MusicCollectionManager.getInstance().getNumberOfViableSongs() == 0) {
+            infoBox.setText("No songs");
+        }
+    }
+
+    private void setPlayTimes() {
+        TextView position = (TextView) findViewById(R.id.posi);
+        String posix = MusicPlayer.playPosition();
+        String length = MusicPlayer.playLength();
+        if (length.equals("") || posix.equals("")) {
+            //TODO Number of tracks...
+
+            position.setText("(" + MusicCollectionManager.getInstance().getNumberOfViableSongs() + ")");
+
+        } else {
+            position.setText("(" + MusicCollectionManager.getInstance().getNumberOfViableSongs() + ")" + "[" + posix + "|" + length + "]");
+
+        }
+    }
+
     private void setSyncInProgressAnimation() {
-        if (CloudStorage.syncInProgress) {
-            ImageView sync= (ImageView) findViewById(R.id.imageView2);
-            if(counter%4==0) {
+        if (StorageManager.syncInProgress) {
+            ImageView sync = (ImageView) findViewById(R.id.imageView2);
+            if (counter % 4 == 0) {
                 sync.setImageResource(R.drawable.synchronize1);
             }
-            if(counter%4==1){
+            if (counter % 4 == 1) {
                 sync.setImageResource(R.drawable.synchronize2);
             }
-            if(counter%4==2){//TODO: more synchronize grafics
+            if (counter % 4 == 2) {//TODO: more synchronize grafics
                 sync.setImageResource(R.drawable.synchronize1);
             }
-            if(counter%4==3){
-                sync.setImageResource(R.drawable.synchronize2);            }
+            if (counter % 4 == 3) {
+                sync.setImageResource(R.drawable.synchronize2);
+            }
             sync.setVisibility(View.VISIBLE);
         } else {
             ImageView sync = (ImageView) findViewById(R.id.imageView2);
@@ -279,7 +351,7 @@ public class MainControl extends Activity {
     }
 
     private void setShiftedSongTitle() {
-        //shif stuff in the field for title
+        //TODO: this method does not perform correctly. Please write some unit tests.
         Song currentlyPlayingSong = MusicPlayer.getCurrentlyPlayingSong();
         if (currentlyPlayingSong != null) {
             String newdisplay = "";
@@ -297,25 +369,43 @@ public class MainControl extends Activity {
         }
     }
 
+    private void fillListOfNextSongs() {
+        Log.d(TAG, "fill List Of Songs");
+        final List<Song> listItems = MusicCollectionManager.getInstance().getListOfNextSongs();
+        if (listItems.size() > 0) {
+            Log.d(TAG, "listItems" + listItems.size());
+            final List<String> spinnerArray = new ArrayList<String>();
+            for (Song song : listItems) {
+                spinnerArray.add(song.getTitleInfoAsStringWithPlayCount());
+            }
+            spinnerArray.remove(0);
+            Log.d(TAG, "x");
+            adapter = new ArrayAdapter<String>(MainControl.this, android.R.layout.simple_spinner_item, spinnerArray);
+            ListView lv = (ListView) findViewById(R.id.nextsongs);
+            lv.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
+        }
+    }
+
     private void setMenuIcons() {
         Log.d(TAG, "setMenuIcons");
-        for (CloudStorage cloudStorage : CloudSynchronizationService.getRegisteredCloudStorageServices()) {
+        for (StorageManager storageManager : CloudSynchronizationService.getRegisteredCloudStorageServices()) {
             Log.d(TAG, "->");
-            adjustMenuIconForCloudStorageService(cloudStorage);
+            adjustMenuIconForCloudStorageService(storageManager);
         }
 
     }
 
-    private void adjustMenuIconForCloudStorageService(CloudStorage cloudStorage) {
+    private void adjustMenuIconForCloudStorageService(StorageManager storageManager) {
         Log.d(TAG, "adjust Menu Icons");
         for (int i = 0; i < menu.size(); i++) {
             MenuItem item = menu.getItem(i);
-            if (item.getItemId() == cloudStorage.menuItem()) {
-                if (cloudStorage.isConnected()) {
-                    Drawable myIcon = getResources().getDrawable(cloudStorage.getIconResourceConnected());
+            if (item.getItemId() == storageManager.menuItem()) {
+                if (storageManager.isConnected()) {
+                    Drawable myIcon = getResources().getDrawable(storageManager.getIconResourceConnected());
                     item.setIcon(myIcon);
                 } else {
-                    Drawable myIcon = getResources().getDrawable(cloudStorage.getIconResouceNotConnected());
+                    Drawable myIcon = getResources().getDrawable(storageManager.getIconResouceNotConnected());
                     item.setIcon(myIcon);
                 }
             }

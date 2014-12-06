@@ -1,19 +1,15 @@
 package de.lukeslog.trashplay.playlist;
 
-import android.content.SharedPreferences;
 import android.util.Log;
-
-import com.dropbox.client2.exception.DropboxException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import de.lukeslog.trashplay.cloudstorage.CloudStorage;
+import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.cloudstorage.DropBox;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
-import de.umass.lastfm.Playlist;
 
 /**
  * This class is a singleton which is in charge of managing the access of the music player to the
@@ -24,10 +20,15 @@ public class MusicCollectionManager {
     public static final String TAG = TrashPlayConstants.TAG;
     public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 
+    private static final int LENGTH_OF_PLAYLIST = 10;
+
     private static MusicCollectionManager instance = null;
 
     private HashMap<String, PlayList> playLists = new HashMap<String, PlayList>();
     private HashMap<String, Song> songs = new HashMap<String, Song>();
+    private int numberOfViableSongs = 0;
+
+    private ArrayList<Song> nextSongs = new ArrayList<Song>();
 
     private MusicCollectionManager() {
 
@@ -40,27 +41,87 @@ public class MusicCollectionManager {
         return instance;
     }
 
+    public void finishedSong() {
+        Log.d(TAG, "finished Song");
+        if (!nextSongs.isEmpty()) {
+            Log.d(TAG, "remove 0");
+            Song s = nextSongs.remove(0);
+            s.finishedPlay();
+        }
+
+    }
+
     public Song getNextSong() {
         Log.d(TAG, "get Next Song");
-        int randomsongnumber = (int) (Math.random() * (songs.size()));
-        Song[] thesongs = songs.values().toArray(new Song[songs.size()]);
-        Song posibleSong = thesongs[randomsongnumber];
-        Log.d(TAG, "its probably gona be "+posibleSong.getArtist()+" - "+posibleSong.getSongName());
-        return replaceSongForReasons(posibleSong);
+        refreshPlayList();
+        if (!nextSongs.isEmpty()) {
+
+            Song song = nextSongs.get(0);
+            if (song != null) {
+                Log.d(TAG, "next song: " + song.getTitleInfoAsString());
+            } else {
+                Log.d(TAG, "SONG IS NULL! THIS IS FUCKED UP");
+            }
+            return song;
+        }
+        return null;
     }
 
-    private Song replaceSongForReasons(Song posibleSong) {
-        if(posibleSong.isToBeDeleted()) {
-            return getNextSong();
-        }
-        if(posibleSong.isToBeUpdated()) {
-            return getNextSong();
-        }
-        return posibleSong;
+    public ArrayList<Song> getListOfNextSongs() {
+        return nextSongs;
     }
 
-    private PlayList createNewPlayList(CloudStorage cloudStorage, String path) {
-        PlayList playlist = new PlayList(cloudStorage, path);
+    private void refreshPlayList() {
+        //TODO if playList isEmpty check if one has to be recovered from the settings
+        Log.d(TAG, "refresh playlist");
+        for (int i = 0; i < nextSongs.size(); i++) {
+            Log.d(TAG, "refresh");
+            nextSongs.set(i, replaceSongForReasons(nextSongs.get(i)));
+        }
+        if (nextSongs.size() < LENGTH_OF_PLAYLIST) {
+            int numberOfSongsToAdd = LENGTH_OF_PLAYLIST - nextSongs.size();
+            Log.d(TAG, "refresh has to add " + numberOfSongsToAdd + " songs");
+            for (int i = 0; i < numberOfSongsToAdd; i++) {
+                Song s = pickASong();
+                Log.d(TAG, "->" + i + " " + s.getTitleInfoAsString());
+                nextSongs.add(s);
+            }
+        }
+        Log.d(TAG, "done with playlist refreshing");
+    }
+
+    public Song pickASong() {
+        Log.d(TAG, "pickASong()");
+        SongSelector songSelector = SongSelectorFactory.getSongSelector(SongSelector.EQUAL_PLAY_SONG_SELECTOR);
+        Song possibleSong = songSelector.getASong();
+        Log.d(TAG, "its probably gona be " + possibleSong.getArtist() + " - " + possibleSong.getSongName());
+        return replaceSongForReasons(possibleSong);
+    }
+
+    private Song replaceSongForReasons(Song possibleSong) {
+        Log.d(TAG, "check if song needs to be replaced (" + possibleSong.getTitleInfoAsString() + ")");
+        if (getNumberOfViableSongs() > 0) {
+            Log.d(TAG, "number if viable songs is more than 0, thats good");
+            if (possibleSong.isToBeDeleted()) {
+                Log.d(TAG, "isToBeDeleted");
+                return pickASong();
+            }
+            if (possibleSong.isToBeUpdated()) {
+                Log.d(TAG, "isToBeUpdated");
+                return pickASong();
+            }
+            if (!possibleSong.localFileExists()) {
+                Log.d(TAG, "localFiledoesNotExist");
+                return pickASong();
+            }
+            //TODO: check if the user wants to avoid repeating songs, replace song if its the not the next song but equals to the next song
+            return possibleSong;
+        }
+        return null;
+    }
+
+    private PlayList createNewPlayList(StorageManager storageManager, String path) {
+        PlayList playlist = new PlayList(storageManager, path);
         return playlist;
     }
 
@@ -83,6 +144,7 @@ public class MusicCollectionManager {
         Set<String> keys = playLists.keySet();
         for (String key : keys) {
             playLists.get(key).synchronizeFiles();
+            determineNumberOfViableSongs();
         }
     }
 
@@ -94,13 +156,12 @@ public class MusicCollectionManager {
             List<String> folderNames = newDropBox.getAllPlayListFolders();
             Log.d(TAG, "Done with the search");
             Log.d(TAG, "returned with a list of " + folderNames.size());
-            for (String foldername : folderNames) {
-                Log.d(TAG, foldername);
-                if (!knownPlaylist(foldername)) {
-                    playLists.put(foldername, createNewPlayList(newDropBox, foldername));
+            for (String folderName : folderNames) {
+                Log.d(TAG, folderName);
+                if (!knownPlaylist(folderName)) {
+                    playLists.put(folderName, createNewPlayList(newDropBox, folderName));
                 }
             }
-
         }
     }
 
@@ -120,8 +181,9 @@ public class MusicCollectionManager {
     }
 
     public void addToSongCollection(Song newSong) {
-        Log.d(TAG, "new Song "+newSong.getFileName());
+        Log.d(TAG, "new Song " + newSong.getFileName());
         songs.put(newSong.getFileName(), newSong);
+        determineNumberOfViableSongs();
     }
 
     public Song getSongByFileName(String fileName) {
@@ -130,9 +192,9 @@ public class MusicCollectionManager {
 
     public List<Song> getSongsByPlayList(PlayList playList) {
         List<Song> songsInPlayList = new ArrayList<Song>();
-        for(String songFileName : songs.keySet()) {
+        for (String songFileName : songs.keySet()) {
             Song theSong = songs.get(songFileName);
-            if(theSong.isInPlayList(playList)) {
+            if (theSong.isInPlayList(playList)) {
                 songsInPlayList.add(theSong);
             }
         }
@@ -141,15 +203,34 @@ public class MusicCollectionManager {
 
     public boolean collectionNotEmpty() {
         removeSongsThatAreToBeDeleted();
-        return !songs.isEmpty();
+        return !(getNumberOfViableSongs()==0);
     }
 
     public void removeSongsThatAreToBeDeleted() {
-        for(String songFileName : songs.keySet()) {
+        for (String songFileName : songs.keySet()) {
             Song theSong = songs.get(songFileName);
-            if(theSong.isToBeDeleted()) {
+            if (theSong.isToBeDeleted()) {
                 songs.remove(songFileName);
             }
         }
+        determineNumberOfViableSongs();
+    }
+
+    public void determineNumberOfViableSongs() {
+        int n = 0;
+        for (Song s : songs.values()) {
+            if (!s.isToBeDeleted() && !s.isToBeUpdated()) {
+                n++;
+            }
+        }
+        numberOfViableSongs = n;
+    }
+
+    public int getNumberOfViableSongs() {
+        return numberOfViableSongs;
+    }
+
+    public HashMap<String, Song> getListOfSongs() {
+        return songs;
     }
 }

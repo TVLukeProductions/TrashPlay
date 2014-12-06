@@ -5,7 +5,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.lukeslog.trashplay.cloudstorage.CloudStorage;
+import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 
 /**
@@ -13,13 +13,13 @@ import de.lukeslog.trashplay.constants.TrashPlayConstants;
  */
 public class PlayList {
 
-    CloudStorage remoteStorage;
+    StorageManager remoteStorage;
     String remotePath;
     boolean activated=false;
 
     public static final String TAG = TrashPlayConstants.TAG;
 
-    PlayList(CloudStorage remoteStorage, String remotePath) {
+    PlayList(StorageManager remoteStorage, String remotePath) {
         Log.d(TAG, "new PlayList "+remotePath);
         this.remoteStorage=remoteStorage;
         this.remotePath=remotePath;

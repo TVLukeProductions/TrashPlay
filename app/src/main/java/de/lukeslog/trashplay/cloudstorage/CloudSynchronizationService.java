@@ -2,7 +2,6 @@ package de.lukeslog.trashplay.cloudstorage;
 
 import android.app.Service;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -17,7 +16,7 @@ public class CloudSynchronizationService extends Service {
     public static final String TAG = TrashPlayConstants.TAG;
     public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 
-    private static ArrayList<CloudStorage> registeredCloudStorageServices = new ArrayList<CloudStorage>();
+    private static ArrayList<StorageManager> registeredCloudStorageServices = new ArrayList<StorageManager>();
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -42,7 +41,7 @@ public class CloudSynchronizationService extends Service {
         }
     }
 
-    public static void registerService(CloudStorage cloudStorageService) {
+    public static void registerService(StorageManager cloudStorageService) {
         Log.d(TAG, "register cloudStorage Service" + registeredCloudStorageServices.size());
 
         boolean alreadyRegistered = alreadyRegsitered(cloudStorageService);
@@ -52,8 +51,8 @@ public class CloudSynchronizationService extends Service {
 
     }
 
-    private static boolean alreadyRegsitered(CloudStorage cloudStorageService) {
-        for (CloudStorage c : registeredCloudStorageServices) {
+    private static boolean alreadyRegsitered(StorageManager cloudStorageService) {
+        for (StorageManager c : registeredCloudStorageServices) {
             if (c.returnUniqueReadableName().equals(cloudStorageService.returnUniqueReadableName())) {
                 return true;
             }
@@ -61,14 +60,14 @@ public class CloudSynchronizationService extends Service {
         return false;
     }
 
-    public static List<CloudStorage> getRegisteredCloudStorageServices() {
+    public static List<StorageManager> getRegisteredCloudStorageServices() {
         return registeredCloudStorageServices;
     }
 
     public static boolean atLeastOneCloudStorageServiceIsConnected() {
         Log.d(TAG, "at leastOne Cloud Storage Service Connected?");
         Log.d(TAG, "" + registeredCloudStorageServices.size());
-        for (CloudStorage c : registeredCloudStorageServices) {
+        for (StorageManager c : registeredCloudStorageServices) {
             Log.d(TAG, "...");
             if (c.isConnected()) {
                 Log.d(TAG, "yes");

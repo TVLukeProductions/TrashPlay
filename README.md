@@ -19,25 +19,32 @@ An diesem Ort entshet die neue Version der App.
 * MusicPlayer.scrobble überarbeiten
 * Musiktitel in der Aktivität anzeigen
 * Sync-Anzeige (Mit Animation)
-
-# Was sie bald können wird
-* Länge des Stücks und bisher gespielte Zeit in der Main Aktivität einblenden
 * Es möglich machen die App abzuschalten ohne jemals Musik zu starten
-* Interner Update Mechanismus
-* bessere sync animation
+## 06.12.2014
+* Fehler in der interaction zwischen Player und MuiscCollectionManager ausgearbeitet
+* Song Liste darstellen
+* Länge des Stücks und bisher gespielte Zeit in der Main Aktivität einblenden
+* Menge der Songs in der Main Activity Anzeigen
+* Infobox zwischen Playbutton und Liste
+* SongSelection
+** Default Wahrscheinlichkeits-SongSelector
+** EqualsPlaySongSelector
+# Was sie bald können wird
 * Persitenz von Informationen über Songs
+
+* bessere sync animation
 * Sammeln von persönlichen Statistiken
 * Exportfunktion 
-* Zeitanzeige auf der Hauptactivity
-* Titelanzeige auf der Hauptactivity
-* Scrobblen zum persönlichen Last.fm account
 * Settings Activity anlegen
+* Scrobblen zum persönlichen Last.fm account
+
+* Bessere/Mehr Unit-Tests
 
 * Lokalisierung
-* Deutsch
-* Endlisch
+** Deutsch
+** Endlisch
 
-* Unit-Tests?
+* Interner Mechanismus um die App upzudaten (insb. für die Testphase)?
 
 *Chromecast Integration
 
@@ -47,3 +54,4 @@ An diesem Ort entshet die neue Version der App.
 * Verschiedene Wahrscheinlichkeitsverteilungen (nach Ort, zeit, Tag, Jahreszeit, Geschwindigkeit...)
 * Social Interaction
 * Non Android Java version, die in der Dropbox liegt
+* Die Android Klasse SyncAdapter nutzen um zukünftige CloudStorage sachen vernünftig zu wrappen

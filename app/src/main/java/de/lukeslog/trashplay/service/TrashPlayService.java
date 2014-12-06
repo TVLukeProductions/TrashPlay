@@ -15,6 +15,7 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import de.lukeslog.trashplay.R;
 import de.lukeslog.trashplay.cloudstorage.CloudSynchronizationService;
@@ -159,6 +160,10 @@ public class TrashPlayService extends Service {
         NotificationManager notificationManager = (NotificationManager)
                 getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancel(5646);
+    }
+
+    public void toast(String s) {
+        Toast.makeText(this, s, Toast.LENGTH_LONG);
     }
 
     private class Updater implements Runnable {
