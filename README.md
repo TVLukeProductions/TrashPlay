@@ -1,7 +1,7 @@
 An diesem Ort entshet die neue Version der App.
 
-# Was sie schon kann (Sozusagen changelog)
-## 03.12.2014
+##Changelog
+### 03.12.2014
 * Activity zum abspielen erstellt
 * Verbinden zu DropBox
 * Synchronisieren von multiplen DropBox Ordnern
@@ -10,7 +10,7 @@ An diesem Ort entshet die neue Version der App.
 * Abspielen auch wieder Stoppen (App geht dann aus)
 * GitHub Branch "LikeABoss"
 
-## 04.12.2014
+### 04.12.2014
 * readme.md erstellt
 * Dateien aus der App löschen, wenn sie in keiner Playlist mehr sind
 * Sicherstellen dass die App nicht versucht Dateien abzuspielen die es nicht mehr gibt
@@ -20,7 +20,8 @@ An diesem Ort entshet die neue Version der App.
 * Musiktitel in der Aktivität anzeigen
 * Sync-Anzeige (Mit Animation)
 * Es möglich machen die App abzuschalten ohne jemals Musik zu starten
-## 06.12.2014
+
+### 06.12.2014
 * Fehler in der interaction zwischen Player und MuiscCollectionManager ausgearbeitet
 * Song Liste darstellen
 * Länge des Stücks und bisher gespielte Zeit in der Main Aktivität einblenden
@@ -29,14 +30,21 @@ An diesem Ort entshet die neue Version der App.
 * SongSelection
 ** Default Wahrscheinlichkeits-SongSelector
 ** EqualsPlaySongSelector
-* Persitenz von Informationen über Songs
+* Persitenzlayer
+* Mit dem Song weitermachen, mitdem man aufgehört hat
+* Plays zählen pr Song
 * Optinal Next and Previous Button
-# Was sie bald können wird
-* Sammeln von persönlichen Statistiken
-* bessere sync animation
-* Exportfunktion 
 * Settings Activity anlegen
 * Scrobblen zum persönlichen Last.fm account
+* Anlegen von Menu-Items für weitere Funktionen
+* Aktivieren und deaktivieren synchronisierter Playlists
+
+## ToDo
+* Sammeln von persönlichen Statistiken
+* bessere sync animation
+* Local Storage als Speicherort
+* Exportfunktion 
+
 
 * Bessere/Mehr Unit-Tests
 
@@ -46,7 +54,8 @@ An diesem Ort entshet die neue Version der App.
 
 * Interner Mechanismus um die App upzudaten (insb. für die Testphase)?
 
-*Chromecast Integration
+* GDrive Integration
+* Chromecast Integration
 
 # Worüber ich mir so Gedanken mache=
 * Redesign von Logos
