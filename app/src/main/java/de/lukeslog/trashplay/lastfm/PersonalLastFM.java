@@ -1,23 +1,28 @@
 package de.lukeslog.trashplay.lastfm;
 
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
+import de.lukeslog.trashplay.constants.TrashPlayConstants;
+import de.lukeslog.trashplay.service.TrashPlayService;
+import de.lukeslog.trashplay.support.SettingsConstants;
 import de.umass.lastfm.Session;
 import de.umass.lastfm.Track;
 import de.umass.lastfm.scrobble.ScrobbleResult;
 
-/**
- * Created by lukas on 02.12.14.
- */
 public class PersonalLastFM {
+
+    public static final String TAG = TrashPlayConstants.TAG;
 
     public static void scrobble(final String artist, final String song, final SharedPreferences settings)
     {
+        Log.d(TAG, "scrobble personal");
         new Thread(new Runnable()
         {
             public void run()
             {
-                Session session=getSession(settings);
+                Session session=getSession();
                 if(session!=null)
                 {
                     int now = (int) (System.currentTimeMillis() / 1000);
@@ -28,8 +33,19 @@ public class PersonalLastFM {
         }).start();
     }
 
-    protected static Session getSession(SharedPreferences settings) {
-        //TODO: get Username and Password
-        return LastFM.getSession(LastFMConstants.user, LastFMConstants.password);
+    protected static Session getSession() {
+        SharedPreferences defsettings = PreferenceManager.getDefaultSharedPreferences(TrashPlayService.getContext());
+        String lastfmusername = defsettings.getString(SettingsConstants.LASTFM_USER, "");
+        String lastfmpassword = defsettings.getString(SettingsConstants.LASTFM_PSW, "");
+        if(!lastfmusername.equals("") && !lastfmpassword.equals("") )
+        {
+            Log.d(TAG, "it should scrobble");
+            try {
+                return LastFM.getSession(lastfmusername, lastfmpassword);
+            } catch(Exception e) {
+                return null;
+            }
+        }
+        return null;
     }
 }

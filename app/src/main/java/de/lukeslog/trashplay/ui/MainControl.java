@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.lukeslog.trashplay.R;
+import de.lukeslog.trashplay.cloudstorage.GDrive;
 import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.cloudstorage.CloudSynchronizationService;
 import de.lukeslog.trashplay.cloudstorage.DropBox;
@@ -29,8 +31,10 @@ import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
 import de.lukeslog.trashplay.playlist.Song;
+import de.lukeslog.trashplay.playlist.SongHelper;
 import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
+import de.lukeslog.trashplay.support.SettingsConstants;
 
 
 public class MainControl extends Activity {
@@ -67,13 +71,17 @@ public class MainControl extends Activity {
         ImageView wifi = (ImageView) findViewById(R.id.imageView3);
         sync.setVisibility(View.GONE);
         wifi.setVisibility(View.GONE);
-        //nextimg.setVisibility(View.GONE);
-        backimg.setVisibility(View.GONE);
+        SharedPreferences defSetting = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean trashmode = defSetting.getBoolean(SettingsConstants.APP_SETTINGS_TRASHMODE, true);
+        if (trashmode) {
+            nextimg.setVisibility(View.GONE);
+            backimg.setVisibility(View.GONE);
+        }
         playpause.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "click");
+                Logger.d(TAG, "click");
                 if (TrashPlayService.serviceRunning()) {
                     if (MusicPlayer.getCurrentlyPlayingSong() != null) {
                         sendBroadcastToStopMusic();
@@ -81,7 +89,6 @@ public class MainControl extends Activity {
                         TrashPlayService.getContext().stop();
                         MainControl.this.finish();
                     } else {
-                        //TODO: Broadcast to the thing that it shukld play some funky music
                         sendBroadcastToStartMusic();
 
                         playpause.setImageResource(R.drawable.pause);
@@ -95,7 +102,7 @@ public class MainControl extends Activity {
         nextimg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "clockkkk");
+                Logger.d(TAG, "clockkkk");
                 sendBroadcastToStartNextSong();
             }
         });
@@ -103,7 +110,7 @@ public class MainControl extends Activity {
 
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "claaackkkk");
+                Logger.d(TAG, "claaackkkk");
                 sendBroadcastToGoBack();
             }
         });
@@ -117,22 +124,22 @@ public class MainControl extends Activity {
     }
 
     private void sendBroadcastToPause() {
-        Log.d(TAG, "send Broadcast to Pause");
+        Logger.d(TAG, "send Broadcast to Pause");
         sendBroadcast(MusicPlayer.ACTION_PAUSE_SONG);
     }
 
     private void sendBroadcastToGoBack() {
-        Log.d(TAG, "send Broadcast to go back");
+        Logger.d(TAG, "send Broadcast to go back");
         sendBroadcast(MusicPlayer.ACTION_PREV_SONG);
     }
 
     private void sendBroadcastToStartNextSong() {
-        Log.d(TAG, "send Broadcast to Start the Next Song");
+        Logger.d(TAG, "send Broadcast to Start the Next Song");
         sendBroadcast(MusicPlayer.ACTION_NEXT_SONG);
     }
 
     private void sendBroadcastToStartMusic() {
-        Log.d(TAG, "send Broadcast to Start the Music");
+        Logger.d(TAG, "send Broadcast to Start the Music");
         sendBroadcast(MusicPlayer.ACTION_START_MUSIC);
     }
 
@@ -141,7 +148,7 @@ public class MainControl extends Activity {
     }
 
     private void sendBroadcast(String action) {
-        Log.d(TAG, "SEND BROADCAST");
+        Logger.d(TAG, "SEND BROADCAST");
         Intent actionIntent = new Intent();
         actionIntent.setAction(action);
         TrashPlayService.getContext().sendBroadcast(actionIntent);
@@ -150,9 +157,23 @@ public class MainControl extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         getMenuInflater().inflate(R.menu.main_control, menu);
         this.menu = menu;
-        return true;
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            if (item.getItemId() == R.id.lastfm) {
+                final boolean lastfmactive = settings.getBoolean("scrobble", false);
+                if (lastfmactive) {
+                    Drawable myIcon = getResources().getDrawable(R.drawable.lastfmlogoyes_small);
+                    item.setIcon(myIcon);
+                } else {
+                    Drawable myIcon = getResources().getDrawable(R.drawable.lastfmlogono_small);
+                    item.setIcon(myIcon);
+                }
+            }
+        }
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -160,11 +181,12 @@ public class MainControl extends Activity {
         DropBox.authenticate();
         super.onResume();
         uiUpdater.onResume();
+
     }
 
     @Override
     protected void onPause() {
-        Log.d(TAG, "on Pause in Activity called");
+        Logger.d(TAG, "on Pause in Activity called");
         super.onPause();
         setPlayButtonClicked(false);
         uiUpdater.onPause();
@@ -187,14 +209,57 @@ public class MainControl extends Activity {
         switch (item.getItemId()) {
             case R.id.dropbox:
                 if (DropBox.getInstance().isConnected()) {
-                    Log.d(TAG, "click dp");
+                    Logger.d(TAG, "click dp");
                     String message = DropBox.getInstance().disconnect();
                     toast(message);
                 } else {
-                    Log.d(TAG, "click dp");
+                    Logger.d(TAG, "click dp");
                     DropBox.getDropBoxAPI().getSession().startAuthentication(MainControl.this);
                     toast("Connecting to Dropbox");
                 }
+                return true;
+            case R.id.drive:
+                if (GDrive.getInstance().isConnected()) {
+                    Logger.d(TAG, "click gd");
+                    String message = "";
+                    toast(message);
+                } else {
+                    Logger.d(TAG, "click gd");
+                    toast("Sorry, GDrive is not implemented yet");
+                }
+                return true;
+            case R.id.lastfm:
+                Log.d(TAG, "lastfm...");
+                SharedPreferences defsettings = PreferenceManager.getDefaultSharedPreferences(this);
+                String lastfmusername = defsettings.getString(SettingsConstants.LASTFM_USER, "");
+                String lastfmpassword = defsettings.getString(SettingsConstants.LASTFM_PSW, "");
+                if (!lastfmpassword.equals("") && !lastfmusername.equals("")) {
+                    boolean scrobbletolastfm = settings.getBoolean("scrobble", false);
+                    if (scrobbletolastfm) {
+                        Log.d(TAG, "Scrobble was yes will be no");
+                        SharedPreferences.Editor edit = settings.edit();
+                        edit.putBoolean("scrobble", false);
+                        edit.commit();
+                    } else {
+                        Log.d(TAG, "Scrobble was no will be yes");
+                        SharedPreferences.Editor edit = settings.edit();
+                        edit.putBoolean("scrobble", true);
+                        edit.commit();
+                    }
+                    updateSettingsIcons();
+                }
+                return true;
+            case R.id.action_settings:
+                startSettingsActivity();
+                return true;
+            case R.id.action_badges:
+                toast("sooon...");
+                return true;
+            case R.id.action_statistics:
+                toast("soooon...");
+                return true;
+            case R.id.action_social:
+                toast("Not in this version buddy. I'm not your buddy guy. I'm not your guy, man.");
                 return true;
             case R.id.off:
                 if (TrashPlayService.serviceRunning()) {
@@ -205,6 +270,15 @@ public class MainControl extends Activity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateSettingsIcons() {
+        invalidateOptionsMenu();
+    }
+
+    private void startSettingsActivity() {
+        final Intent intent = new Intent(this, Settings.class);
+        startActivity(intent);
     }
 
     public static boolean activityRunning() {
@@ -222,14 +296,14 @@ public class MainControl extends Activity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "activity result");
+        Logger.d(TAG, "activity result");
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == StorageManager.REQUEST_LINK_TO_DBX) {
                 DropBox.authenticate();
                 try {
                     MusicCollectionManager.getInstance().syncRemoteStorageWithDevice();
                 } catch (Exception e) {
-                    e.printStackTrace(); //TODO generate cool stuff
+                    e.printStackTrace();
                     toast("There has been an error synchronizing yur data.");
                 }
                 toast("Now synchronizing with remote Storage. Please Wait");
@@ -265,16 +339,23 @@ public class MainControl extends Activity {
                 counter = 0;
             }
             counter++;
-            Log.d(TAG, "UI UPDATER");
+            Logger.d(TAG, "UI UPDATER");
             CloudSynchronizationService.updateRegisteredCloudStorageSystems();
+
+            setPrevAndNextButton();
 
             if (CloudSynchronizationService.atLeastOneCloudStorageServiceIsConnected() && MusicCollectionManager.getInstance().collectionNotEmpty()) {
                 setButtonToPlayButton();
+            } else if (MusicPlayer.getCurrentlyPlayingSong() != null) {
+                setButtonToStopButton();
             }
             if (menu != null) {
-                Log.d(TAG, "menu is not null");
+                Logger.d(TAG, "menu is not null");
                 setMenuIcons();
             }
+
+            setWifiIcon();
+
             setSyncInProgressAnimation();
 
             setShiftedSongTitle();
@@ -300,6 +381,51 @@ public class MainControl extends Activity {
         }
     }
 
+    private void setButtonToStopButton() {
+        ImageView playpause = (ImageView) findViewById(R.id.imageView1);
+        if (!playpause.isClickable()) {
+            playpause.setImageResource(R.drawable.pause);
+            playpause.setClickable(true);
+
+        }
+    }
+
+
+    private void setButtonToPlayButton() {
+        ImageView playpause = (ImageView) findViewById(R.id.imageView1);
+        if (!playpause.isClickable()) {
+            playpause.setImageResource(R.drawable.play);
+            playpause.setClickable(true);
+
+        }
+    }
+
+    private void setWifiIcon() {
+        if (TrashPlayService.serviceRunning()) {
+            boolean wificonnected = TrashPlayService.wifi;
+            ImageView wifi = (ImageView) findViewById(R.id.imageView3);
+            if (wificonnected) {
+                wifi.setVisibility(View.VISIBLE);
+            } else {
+                wifi.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void setPrevAndNextButton() {
+        final ImageView nextimg = (ImageView) findViewById(R.id.next);
+        final ImageView backimg = (ImageView) findViewById(R.id.back);
+        SharedPreferences defSetting = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean trashmode = defSetting.getBoolean(SettingsConstants.APP_SETTINGS_TRASHMODE, true);
+        if (trashmode) {
+            nextimg.setVisibility(View.GONE);
+            backimg.setVisibility(View.GONE);
+        } else {
+            nextimg.setVisibility(View.VISIBLE);
+            backimg.setVisibility(View.VISIBLE);
+        }
+    }
+
     private void fillInfoBox() {
         TextView infoBox = (TextView) findViewById(R.id.infoBox);
         if (MusicPlayer.getCurrentlyPlayingSong() != null) {
@@ -318,13 +444,10 @@ public class MainControl extends Activity {
         String posix = MusicPlayer.playPosition();
         String length = MusicPlayer.playLength();
         if (length.equals("") || posix.equals("")) {
-            //TODO Number of tracks...
-
             position.setText("(" + MusicCollectionManager.getInstance().getNumberOfViableSongs() + ")");
 
         } else {
             position.setText("(" + MusicCollectionManager.getInstance().getNumberOfViableSongs() + ")" + "[" + posix + "|" + length + "]");
-
         }
     }
 
@@ -355,10 +478,10 @@ public class MainControl extends Activity {
         Song currentlyPlayingSong = MusicPlayer.getCurrentlyPlayingSong();
         if (currentlyPlayingSong != null) {
             String newdisplay = "";
-            setDisplayStringForCurrentTrackInformation(currentlyPlayingSong.getTitleInfoAsString());
-            newdisplay = currentlyPlayingSong.getTitleInfoAsString();
+            setDisplayStringForCurrentTrackInformation(SongHelper.getTitleInfoAsString(currentlyPlayingSong));
+            newdisplay = SongHelper.getTitleInfoAsString(currentlyPlayingSong);
             int shift = counter % newdisplay.length();
-            //Log.d(TAG, "shift: "+shift);
+            //Logger.d(TAG, "shift: "+shift);
             CharSequence d1 = newdisplay.subSequence(0, shift);
             String s1Str = d1.toString();
             CharSequence d2 = newdisplay.subSequence(shift, newdisplay.length());
@@ -370,34 +493,34 @@ public class MainControl extends Activity {
     }
 
     private void fillListOfNextSongs() {
-        Log.d(TAG, "fill List Of Songs");
         final List<Song> listItems = MusicCollectionManager.getInstance().getListOfNextSongs();
         if (listItems.size() > 0) {
-            Log.d(TAG, "listItems" + listItems.size());
             final List<String> spinnerArray = new ArrayList<String>();
             for (Song song : listItems) {
-                spinnerArray.add(song.getTitleInfoAsStringWithPlayCount());
+                spinnerArray.add(SongHelper.getTitleInfoAsStringWithPlayCount(song));
             }
-            spinnerArray.remove(0);
-            Log.d(TAG, "x");
-            adapter = new ArrayAdapter<String>(MainControl.this, android.R.layout.simple_spinner_item, spinnerArray);
-            ListView lv = (ListView) findViewById(R.id.nextsongs);
-            lv.setAdapter(adapter);
-            adapter.notifyDataSetChanged();
+            String s = "";
+            if(MusicPlayer.getCurrentlyPlayingSong()!=null) {
+                s = spinnerArray.remove(0);
+            }
+            if (s != null && spinnerArray.get(0)!=null) {
+                adapter = new ArrayAdapter<String>(MainControl.this, android.R.layout.simple_spinner_item, spinnerArray);
+                ListView lv = (ListView) findViewById(R.id.nextsongs);
+                lv.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+            }
         }
     }
 
     private void setMenuIcons() {
-        Log.d(TAG, "setMenuIcons");
         for (StorageManager storageManager : CloudSynchronizationService.getRegisteredCloudStorageServices()) {
-            Log.d(TAG, "->");
+            Logger.d(TAG, "->");
             adjustMenuIconForCloudStorageService(storageManager);
         }
 
     }
 
     private void adjustMenuIconForCloudStorageService(StorageManager storageManager) {
-        Log.d(TAG, "adjust Menu Icons");
         for (int i = 0; i < menu.size(); i++) {
             MenuItem item = menu.getItem(i);
             if (item.getItemId() == storageManager.menuItem()) {
@@ -405,21 +528,10 @@ public class MainControl extends Activity {
                     Drawable myIcon = getResources().getDrawable(storageManager.getIconResourceConnected());
                     item.setIcon(myIcon);
                 } else {
-                    Drawable myIcon = getResources().getDrawable(storageManager.getIconResouceNotConnected());
+                    Drawable myIcon = getResources().getDrawable(storageManager.getIconResourceNotConnected());
                     item.setIcon(myIcon);
                 }
             }
-        }
-    }
-
-
-    private void setButtonToPlayButton() {
-        ImageView playpause = (ImageView) findViewById(R.id.imageView1);
-        if (!playpause.isClickable()) {
-            playpause.setImageResource(R.drawable.play);
-            //playpause.setVisibility(View.VISIBLE);
-            playpause.setClickable(true);
-
         }
     }
 }

@@ -8,5 +8,29 @@
     <string name="dropbox">DropBox</string>
     <string name="off">Off</string>
     <string name="settings">Settings</string>
+    <string name="gdrive">Google Drive</string>
+    <string name="pref_lastfm_title">Last.fm</string>
+    <string name="pref_lastfm_summary">Configure your last.fm account</string>
+    <string name="pref_lastfm_logdata">Last.fm Data</string>
+    <string name="pref_lastfm_user">Username</string>
+    <string name="pref_summary_lastfm_user"></string>
+    <string name="pref_summary_lastfm_password"></string>
+    <string name="pref_lastfm_password">Password</string>
+    <string name="pref_developers_title">Developers</string>
+    <string name="pref_logging">Logging</string>
+    <string name="pref_logging_summary">Activates DDMS-logging</string>
+    <string name="pref_logging_file">Write to logfile</string>
+    <string name="be_advised_short">Be advised that this application stores your account data.</string>
+    <string name="be_advised_google_mail">Be advised that this application stores your account data.\n\nPlease use an application specific password.\nGoogle Mail allows for 2-factor authentication and account specific passwords. Find out more under http://www.google.com/landing/2step/\n</string>
+    <string name="pref_app_settings">TrashPlayer Settings</string>
+    <string name="pref_app_detail_logdata">TrashPlayer Settings</string>
+    <string name="pref_app_detail_summary">Configure the behaviour of the TrashPlayer</string>
+    <string name="pref_appdata_trashmode">TrashMode Activated</string>
+    <string name="pref_summary_pref_appdata_trashmode">Use the app in Trashmode</string>
+    <string name="pref_app_playlistusage_settings">Configure Playlists</string>
+    <string name="pref_app_playlistusage_summary">What playlists do you want to use</string>
+    <string name="statistics">Statistics</string>
+    <string name="badges">Achievements</string>
+    <string name="social">Social</string>
 
 </resources>

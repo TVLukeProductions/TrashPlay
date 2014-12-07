@@ -36,6 +36,9 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:name="de.lukeslog.trashplay.ui.Settings"></activity>
+        <activity android:name="de.lukeslog.trashplay.ui.Statistics"></activity>
+        <activity android:name="de.lukeslog.trashplay.ui.Badges"></activity>
         <service
             android:name="com.dropbox.sync.android.DbxSyncService"
             android:enabled="true"

@@ -31,18 +31,15 @@ public class CloudSynchronizationService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "...");
     }
 
     public static void updateRegisteredCloudStorageSystems() {
-        //TODO: This should probably be the only place to manually go through these classes.
         if (DropBox.getInstance().isConnected()) {
             registerService(DropBox.getInstance());
         }
     }
 
     public static void registerService(StorageManager cloudStorageService) {
-        Log.d(TAG, "register cloudStorage Service" + registeredCloudStorageServices.size());
 
         boolean alreadyRegistered = alreadyRegsitered(cloudStorageService);
         if(!alreadyRegistered) {
@@ -65,16 +62,19 @@ public class CloudSynchronizationService extends Service {
     }
 
     public static boolean atLeastOneCloudStorageServiceIsConnected() {
-        Log.d(TAG, "at leastOne Cloud Storage Service Connected?");
-        Log.d(TAG, "" + registeredCloudStorageServices.size());
         for (StorageManager c : registeredCloudStorageServices) {
-            Log.d(TAG, "...");
             if (c.isConnected()) {
-                Log.d(TAG, "yes");
                 return true;
             }
         }
-        Log.d(TAG, "no");
         return false;
+    }
+
+    public static void resetSyncFlag() {
+        Log.d(TAG, "resetAllSyncFlags");
+        updateRegisteredCloudStorageSystems();
+        for (StorageManager c : registeredCloudStorageServices) {
+            c.resetSyncInProgress();
+        }
     }
 }

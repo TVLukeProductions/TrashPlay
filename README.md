@@ -29,11 +29,11 @@ An diesem Ort entshet die neue Version der App.
 * SongSelection
 ** Default Wahrscheinlichkeits-SongSelector
 ** EqualsPlaySongSelector
-# Was sie bald können wird
 * Persitenz von Informationen über Songs
-
-* bessere sync animation
+* Optinal Next and Previous Button
+# Was sie bald können wird
 * Sammeln von persönlichen Statistiken
+* bessere sync animation
 * Exportfunktion 
 * Settings Activity anlegen
 * Scrobblen zum persönlichen Last.fm account

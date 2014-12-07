@@ -1,5 +1,6 @@
 package de.lukeslog.trashplay.support;
 
+import android.content.SharedPreferences;
 import android.os.Environment;
 import android.util.Log;
 
@@ -19,13 +20,14 @@ public class Logger
 {
     public static void i(String TAG, String m)
     {
-        if(TrashPlayService.settings!=null)
+        SharedPreferences settings = TrashPlayService.getDefaultSettings();
+        if(settings!=null)
         {
-            if (TrashPlayService.settings.getBoolean("pref_looging", false))
+            if (settings.getBoolean("pref_looging", false))
             {
                 Log.i(TAG, m);
             }
-            if (TrashPlayService.settings.getBoolean("pref_looging_file", false))
+            if (settings.getBoolean("pref_looging_file", false))
             {
                 store(TAG, m);
             }
@@ -38,13 +40,14 @@ public class Logger
 
     public static void d(String TAG, String m)
     {
-        if(TrashPlayService.settings!=null)
+        SharedPreferences settings = TrashPlayService.getDefaultSettings();
+        if(settings!=null)
         {
-            if (TrashPlayService.settings.getBoolean("pref_looging", false))
+            if (settings.getBoolean("pref_looging", false))
             {
                 Log.d(TAG, m);
             }
-            if (TrashPlayService.settings.getBoolean("pref_looging_file", false))
+            if (settings.getBoolean("pref_looging_file", false))
             {
                 store(TAG, m);
             }
@@ -57,13 +60,14 @@ public class Logger
 
     public static void e(String TAG, String m)
     {
-        if(TrashPlayService.settings!=null)
+        SharedPreferences settings = TrashPlayService.getDefaultSettings();
+        if(settings!=null)
         {
-            if (TrashPlayService.settings.getBoolean("pref_looging", false))
+            if (settings.getBoolean("pref_looging", false))
             {
                 Log.e(TAG, m);
             }
-            if (TrashPlayService.settings.getBoolean("pref_looging_file", false))
+            if (settings.getBoolean("pref_looging_file", false))
             {
                 store(TAG, m);
             }
@@ -76,13 +80,14 @@ public class Logger
 
     public static void v(String TAG, String m)
     {
-        if(TrashPlayService.settings!=null)
+        SharedPreferences settings = TrashPlayService.getDefaultSettings();
+        if(settings!=null)
         {
-            if (TrashPlayService.settings.getBoolean("pref_looging", false))
+            if (settings.getBoolean("pref_looging", false))
             {
                 Log.v(TAG, m);
             }
-            if (TrashPlayService.settings.getBoolean("pref_looging_file", false))
+            if (settings.getBoolean("pref_looging_file", false))
             {
                 store(TAG, m);
             }
@@ -95,13 +100,14 @@ public class Logger
 
     public static void w(String TAG, String m)
     {
-        if(TrashPlayService.settings!=null)
+        SharedPreferences settings = TrashPlayService.getDefaultSettings();
+        if(settings!=null)
         {
-            if (TrashPlayService.settings.getBoolean("pref_looging", false))
+            if (settings.getBoolean("pref_looging", false))
             {
                 Log.w(TAG, m);
             }
-            if (TrashPlayService.settings.getBoolean("pref_looging_file", false))
+            if (settings.getBoolean("pref_looging_file", false))
             {
                 store(TAG, m);
             }
@@ -114,13 +120,14 @@ public class Logger
 
     public static void wtf(String TAG, String m)
     {
-        if(TrashPlayService.settings!=null)
+        SharedPreferences settings = TrashPlayService.getDefaultSettings();
+        if(settings!=null)
         {
-            if (TrashPlayService.settings.getBoolean("pref_looging", false))
+            if (settings.getBoolean("pref_looging", false))
             {
                 Log.wtf(TAG, m);
             }
-            if (TrashPlayService.settings.getBoolean("pref_looging_file", false))
+            if (settings.getBoolean("pref_looging_file", false))
             {
                 store(TAG, m);
             }

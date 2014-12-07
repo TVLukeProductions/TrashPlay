@@ -14,6 +14,7 @@ public class TrashPlayLastFM extends LastFM
 {
     public static void scrobble(final String artist, final String song)
     {
+        Log.d(TAG, "scrobble to TrashPlay...");
         new Thread(new Runnable()
         {
             public void run()

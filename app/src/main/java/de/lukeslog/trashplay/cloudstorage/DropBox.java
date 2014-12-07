@@ -21,19 +21,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.lukeslog.trashplay.R;
-import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
 import de.lukeslog.trashplay.service.TrashPlayService;
 
-
 public class DropBox extends StorageManager {
 
-    public static final String TAG = TrashPlayConstants.TAG;
+    public static final String STORAGE_TYPE = StorageManager.STORAGE_TYPE_DROPBOX;
+
     final static private Session.AccessType ACCESS_TYPE = Session.AccessType.DROPBOX;
     private static DropboxAPI<AndroidAuthSession> mDBApi;
 
     private static DropBox instance = null;
-    //TODO make constructor Private and make this a singleton
+
     private DropBox() {
 
     }
@@ -53,7 +52,6 @@ public class DropBox extends StorageManager {
     @Override
     protected List<String> searchForPlayListFolderInRemoteStorageImplementation() throws Exception {
         List<String> playListFolders = new ArrayList<String>();
-        Log.d(TAG, "DropBox finding PlayList folders");
         Entry dropBoxDir1 = mDBApi.metadata("/", 0, null, true, null);
         if (dropBoxDir1.isDir) {
             for (Entry topFolder : dropBoxDir1.contents) {
@@ -74,9 +72,7 @@ public class DropBox extends StorageManager {
         Log.d(TAG, "getListOfFiles With Allowed Ending");
         ArrayList<String> fileList = new ArrayList<String>();
         String givenPath = "/" + folderPath;
-        Log.d(TAG, "five folderPath " + givenPath);
         Entry folder = mDBApi.metadata(givenPath, 0, null, true, null);
-        Log.d(TAG, "folderpath " + folder.path);
         if (folder.isDir) {
             for (Entry file : folder.contents) {
                 if (!file.isDir) {
@@ -93,7 +89,6 @@ public class DropBox extends StorageManager {
                 }
             }
         }
-        Log.d(TAG, "done.");
         return fileList;
     }
 
@@ -111,8 +106,6 @@ public class DropBox extends StorageManager {
         String filePath = "/"+path + "/" + fileName;
         Entry folder = mDBApi.metadata(filePath, 0, null, true, null);
         String modified = folder.modified;
-        Log.d(TAG, "last Modiefied: "+modified);
-        //
         DateTime actualModificationTime = getDateTimeFromDropBoxModificationTimeString(modified);
         Log.d(TAG, actualModificationTime.getDayOfMonth()+"."+actualModificationTime.getMonthOfYear()+"."+actualModificationTime.getYear()+" "+actualModificationTime.getHourOfDay()+" "+actualModificationTime.getMinuteOfHour());
         if(actualModificationTime.isAfter(lastChange)) {
@@ -122,7 +115,7 @@ public class DropBox extends StorageManager {
     }
 
     @Override
-    public int getIconResouceNotConnected() {
+    public int getIconResourceNotConnected() {
         return R.drawable.dropbox;
     }
 
@@ -139,6 +132,17 @@ public class DropBox extends StorageManager {
     @Override
     public int menuItem() {
         return R.id.dropbox;
+    }
+
+    @Override
+    public String getStorageType() {
+        return STORAGE_TYPE;
+    }
+
+    @Override
+    public void resetSyncInProgress() {
+        Log.d(TAG, "RESET SYNC");
+        syncInProgress=false;
     }
 
     private String downloadSpecificFileFromDropBox(String fileName, String filePath) throws DropboxException {
@@ -247,14 +251,11 @@ public class DropBox extends StorageManager {
 
     @Override
     public boolean isConnected() {
-        Log.d(TAG, "is DropBox connected");
         if (TrashPlayService.serviceRunning()) {
-            Log.d(TAG, ""+!TrashPlayService.getContext().settings.getString("DB_KEY", "").equals(""));
             return !TrashPlayService.getContext().settings.getString("DB_KEY", "").equals("");
         } else {
             Log.d(TAG, "DropBoxisConnected() sez: TrashPlayService not Running");
         }
-        Log.d(TAG, "nope");
         return false;
     }
 

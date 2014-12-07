@@ -1,36 +1,44 @@
 package de.lukeslog.trashplay.playlist;
 
+import android.util.Log;
+
 import java.util.ArrayList;
-import java.util.HashMap;
+
+import de.lukeslog.trashplay.constants.TrashPlayConstants;
+import de.lukeslog.trashplay.support.Logger;
 
 public class EqualPlaySongSelector extends SongSelector {
 
+    public static final String TAG = TrashPlayConstants.TAG;
     public static final int AT_LEAST_X_SONGS=20;
+
     @Override
     public Song getASong() {
-        HashMap<String, Song> songst = MusicCollectionManager.getInstance().getListOfSongs();
-        ArrayList<Song> songs = new ArrayList<Song>();
-        for(Song song : songst.values()) {
-            songs.add(song);
-        }
+        ArrayList<Song> songs = MusicCollectionManager.getInstance().getListOfSongs();
         ArrayList<Song> songsWithTheLeastPlay = getSongsWithTheLeastPlay(songs);
-
-        int randomSongNumber = (int) (Math.random() * (songsWithTheLeastPlay.size()));
-        Song[] theSongs = songsWithTheLeastPlay.toArray(new Song[songsWithTheLeastPlay.size()]);
-        Song possibleSong = theSongs[randomSongNumber];
-        return possibleSong;
+        if(!songsWithTheLeastPlay.isEmpty()) {
+            int randomSongNumber = (int) (Math.random() * (songsWithTheLeastPlay.size()));
+            Song[] theSongs = songsWithTheLeastPlay.toArray(new Song[songsWithTheLeastPlay.size()]);
+            Song possibleSong = theSongs[randomSongNumber];
+            Logger.d(TAG, possibleSong.getFileName());
+            return possibleSong;
+        }
+        return null;
     }
 
     private ArrayList<Song> getSongsWithTheLeastPlay(ArrayList<Song> songs) {
-        int lowestPlayCount = getLowestPlayCount(songs);
-        ArrayList<Song> songsWithLeastPlay = getSongsWithNPlays(songs, lowestPlayCount);
-        int max = AT_LEAST_X_SONGS;
-        if(songs.size()<AT_LEAST_X_SONGS) {
-            max = songs.size();
-        }
-        while(songsWithLeastPlay.size()<max) {
-            lowestPlayCount++;
-            songsWithLeastPlay.addAll(getSongsWithNPlays(songs, lowestPlayCount));
+        ArrayList<Song> songsWithLeastPlay = new ArrayList<Song>();
+        if(songs.size()>0) {
+            int lowestPlayCount = getLowestPlayCount(songs);
+            songsWithLeastPlay = getSongsWithNPlays(songs, lowestPlayCount);
+            int max = AT_LEAST_X_SONGS;
+            if (songs.size() < AT_LEAST_X_SONGS) {
+                max = songs.size();
+            }
+            while (songsWithLeastPlay.size() < max) {
+                lowestPlayCount++;
+                songsWithLeastPlay.addAll(getSongsWithNPlays(songs, lowestPlayCount));
+            }
         }
         return songsWithLeastPlay;
     }

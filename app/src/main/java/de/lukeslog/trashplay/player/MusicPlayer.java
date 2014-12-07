@@ -93,6 +93,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         if (song == null) {
             Log.d(TAG, "playmp3 got null");
             TrashPlayService.getContext().toast("Something went wrong.");
+            stop();
         } else {
             boolean mExternalStorageAvailable = false;
             String state = Environment.getExternalStorageState();
@@ -125,8 +126,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     }
 
     private boolean needToScrobble() {
-        return false;
-        //return (!artist.equals("") && !title.equals(""));
+        return (!artist.equals("") && !title.equals(""));
     }
 
     private void setTrackInfo(Song song) {
@@ -147,7 +147,6 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     }
 
     private void scrobbleTrack() {
-        //TODO: Scrobble to trashplay and private account
         TrashPlayLastFM.scrobble(artist, title);
         if (TrashPlayService.serviceRunning()) {
             PersonalLastFM.scrobble(artist, title, TrashPlayService.getContext().settings);

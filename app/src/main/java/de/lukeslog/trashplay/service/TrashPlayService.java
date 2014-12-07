@@ -14,6 +14,7 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -38,6 +39,13 @@ public class TrashPlayService extends Service {
 
     private static TrashPlayService ctx;
 
+    public static SharedPreferences getDefaultSettings() {
+        if(TrashPlayService.serviceRunning()) {
+            return PreferenceManager.getDefaultSharedPreferences(TrashPlayService.getContext());
+        }
+        return null;
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -49,6 +57,8 @@ public class TrashPlayService extends Service {
         ctx=this;
         if (MainControl.activityRunning()) {
 
+            resetSyncFlagForRemote();
+
             Notification notification = createNotification("... running");
             startForeground(5646, notification);
 
@@ -57,11 +67,16 @@ public class TrashPlayService extends Service {
             startUpdater();
 
             startMusicPlayerService();
+
             return START_STICKY;
         } else {
             stopSelf();
             return START_NOT_STICKY;
         }
+    }
+
+    private void resetSyncFlagForRemote() {
+        CloudSynchronizationService.resetSyncFlag();
     }
 
     private void startMusicPlayerService() {
