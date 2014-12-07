@@ -28,8 +28,8 @@ An diesem Ort entshet die neue Version der App.
 * Menge der Songs in der Main Activity Anzeigen
 * Infobox zwischen Playbutton und Liste
 * SongSelection
-** Default Wahrscheinlichkeits-SongSelector
-** EqualsPlaySongSelector
+ * Default Wahrscheinlichkeits-SongSelector
+ * EqualsPlaySongSelector
 * Persitenzlayer
 * Mit dem Song weitermachen, mitdem man aufgehört hat
 * Plays zählen pr Song
