@@ -84,12 +84,12 @@ public class MainControl extends Activity {
                 Logger.d(TAG, "click");
                 if (TrashPlayService.serviceRunning()) {
                     if (MusicPlayer.getCurrentlyPlayingSong() != null) {
-                        sendBroadcastToStopMusic();
+                        TrashPlayService.getContext().sendBroadcastToStopMusic();
 
                         TrashPlayService.getContext().stop();
                         MainControl.this.finish();
                     } else {
-                        sendBroadcastToStartMusic();
+                        TrashPlayService.getContext().sendBroadcastToStartMusic();
 
                         playpause.setImageResource(R.drawable.pause);
                         setPlayButtonClicked(true);
@@ -103,7 +103,7 @@ public class MainControl extends Activity {
             @Override
             public void onClick(View v) {
                 Logger.d(TAG, "clockkkk");
-                sendBroadcastToStartNextSong();
+                TrashPlayService.getContext().sendBroadcastToStartNextSong();
             }
         });
         backimg.setOnClickListener(new View.OnClickListener() {
@@ -111,7 +111,7 @@ public class MainControl extends Activity {
             @Override
             public void onClick(View view) {
                 Logger.d(TAG, "claaackkkk");
-                sendBroadcastToGoBack();
+                TrashPlayService.getContext().sendBroadcastToGoBack();
             }
         });
         nextimg.setClickable(true);
@@ -122,38 +122,6 @@ public class MainControl extends Activity {
 
         uiUpdater.run();
     }
-
-    private void sendBroadcastToPause() {
-        Logger.d(TAG, "send Broadcast to Pause");
-        sendBroadcast(MusicPlayer.ACTION_PAUSE_SONG);
-    }
-
-    private void sendBroadcastToGoBack() {
-        Logger.d(TAG, "send Broadcast to go back");
-        sendBroadcast(MusicPlayer.ACTION_PREV_SONG);
-    }
-
-    private void sendBroadcastToStartNextSong() {
-        Logger.d(TAG, "send Broadcast to Start the Next Song");
-        sendBroadcast(MusicPlayer.ACTION_NEXT_SONG);
-    }
-
-    private void sendBroadcastToStartMusic() {
-        Logger.d(TAG, "send Broadcast to Start the Music");
-        sendBroadcast(MusicPlayer.ACTION_START_MUSIC);
-    }
-
-    private void sendBroadcastToStopMusic() {
-        sendBroadcast(MusicPlayer.ACTION_STOP_MUSIC);
-    }
-
-    private void sendBroadcast(String action) {
-        Logger.d(TAG, "SEND BROADCAST");
-        Intent actionIntent = new Intent();
-        actionIntent.setAction(action);
-        TrashPlayService.getContext().sendBroadcast(actionIntent);
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -301,7 +269,7 @@ public class MainControl extends Activity {
             if (requestCode == StorageManager.REQUEST_LINK_TO_DBX) {
                 DropBox.authenticate();
                 try {
-                    MusicCollectionManager.getInstance().syncRemoteStorageWithDevice();
+                    MusicCollectionManager.getInstance().syncRemoteStorageWithDevice(true);
                 } catch (Exception e) {
                     e.printStackTrace();
                     toast("There has been an error synchronizing yur data.");
@@ -339,22 +307,32 @@ public class MainControl extends Activity {
                 counter = 0;
             }
             counter++;
-            Logger.d(TAG, "UI UPDATER");
             CloudSynchronizationService.updateRegisteredCloudStorageSystems();
 
             setPrevAndNextButton();
 
-            if (CloudSynchronizationService.atLeastOneCloudStorageServiceIsConnected() && MusicCollectionManager.getInstance().collectionNotEmpty()) {
-                setButtonToPlayButton();
-            } else if (MusicPlayer.getCurrentlyPlayingSong() != null) {
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctx);
+            boolean listenalong = settings.getBoolean("listenalong", false);
+
+            if (MusicPlayer.getCurrentlyPlayingSong() != null) {
                 setButtonToStopButton();
+            } else if (listenalong && MusicCollectionManager.getInstance().radiofile != null) {
+                setButtonToStopButton();
+                ImageView playpause = (ImageView) findViewById(R.id.imageView1);
+                playpause.setClickable(false);
+
+            } else if (CloudSynchronizationService.atLeastOneCloudStorageServiceIsConnected() && MusicCollectionManager.getInstance().collectionNotEmpty()) {
+                setButtonToPlayButton();
             }
+
             if (menu != null) {
                 Logger.d(TAG, "menu is not null");
                 setMenuIcons();
             }
 
             setWifiIcon();
+
+            setRadioIcon();
 
             setSyncInProgressAnimation();
 
@@ -381,20 +359,28 @@ public class MainControl extends Activity {
         }
     }
 
+    private void setRadioIcon() {
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctx);
+        boolean radioMode = settings.getBoolean(SettingsConstants.APP_SETTING_RADIO_MODE, false);
+        ImageView radio = (ImageView) findViewById(R.id.radioimg);
+        if (radioMode) {
+            radio.setVisibility(View.VISIBLE);
+        } else {
+            radio.setVisibility(View.GONE);
+        }
+    }
+
     private void setButtonToStopButton() {
         ImageView playpause = (ImageView) findViewById(R.id.imageView1);
-        if (!playpause.isClickable()) {
-            playpause.setImageResource(R.drawable.pause);
-            playpause.setClickable(true);
-
-        }
+        playpause.setImageResource(R.drawable.pause);
+        playpause.setClickable(true);
     }
 
 
     private void setButtonToPlayButton() {
         ImageView playpause = (ImageView) findViewById(R.id.imageView1);
+        playpause.setImageResource(R.drawable.play);
         if (!playpause.isClickable()) {
-            playpause.setImageResource(R.drawable.play);
             playpause.setClickable(true);
 
         }
@@ -500,10 +486,10 @@ public class MainControl extends Activity {
                 spinnerArray.add(SongHelper.getTitleInfoAsStringWithPlayCount(song));
             }
             String s = "";
-            if(MusicPlayer.getCurrentlyPlayingSong()!=null) {
+            if (MusicPlayer.getCurrentlyPlayingSong() != null) {
                 s = spinnerArray.remove(0);
             }
-            if (s != null && spinnerArray.get(0)!=null) {
+            if (s != null && spinnerArray.get(0) != null) {
                 adapter = new ArrayAdapter<String>(MainControl.this, android.R.layout.simple_spinner_item, spinnerArray);
                 ListView lv = (ListView) findViewById(R.id.nextsongs);
                 lv.setAdapter(adapter);

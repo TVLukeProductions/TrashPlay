@@ -10,5 +10,7 @@ public class SettingsConstants
     public static final String LASTFM_PSW = "pref_lastfm_pasword";
     public static final String APP_SETTINGS = "pref_app_settings";
     public static final String APP_SETTINGS_TRASHMODE = "pref_appdata_trashmode";
+    public static final String APP_SETTING_RADIO_MODE = "pref_appdata_radiomode";
+    public static final String APP_SETTING_RADIO_NAME = "pref_appdata_radioname";
 }
 

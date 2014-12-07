@@ -47,6 +47,7 @@
         <service android:name="de.lukeslog.trashplay.service.TrashPlayService" />
         <service android:name="de.lukeslog.trashplay.player.MusicPlayer" />
         <service android:name="de.lukeslog.trashplay.cloudstorage.CloudSynchronizationService" />
+        <service android:name="de.lukeslog.trashplay.badges.BadgeCollectionManager" />
     </application>
 
 </manifest>

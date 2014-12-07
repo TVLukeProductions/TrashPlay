@@ -24,6 +24,7 @@ import de.lukeslog.trashplay.cloudstorage.DropBox;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
+import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.ui.MainControl;
 
 public class TrashPlayService extends Service {
@@ -57,12 +58,11 @@ public class TrashPlayService extends Service {
         ctx=this;
         if (MainControl.activityRunning()) {
 
-            resetSyncFlagForRemote();
+            //resetSyncFlagForRemote();
+            registerWifiReceiver();
 
             Notification notification = createNotification("... running");
             startForeground(5646, notification);
-
-            registerWifiReceiver();
 
             startUpdater();
 
@@ -190,12 +190,16 @@ public class TrashPlayService extends Service {
 
         @Override
         public void run() {
-            Log.d(TAG, "ServiceRunner: run");
+       //     Log.d(TAG, "ServiceRunner: run");
             if(counter%60==0)
             {
                 Log.d(TAG, "ServiceRunner: Time to try to synchronize and Stuff");
                 try {
-                    MusicCollectionManager.getInstance().syncRemoteStorageWithDevice();
+                    boolean lookForNewPlaylists=false;
+                    if(counter%180==0){
+                        lookForNewPlaylists=true;
+                    }
+                    MusicCollectionManager.getInstance().syncRemoteStorageWithDevice(lookForNewPlaylists);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -233,6 +237,11 @@ public class TrashPlayService extends Service {
                     if (networkInfo.getState() == NetworkInfo.State.CONNECTED) {
                         if (serviceRunning()) {
                             TrashPlayService.wifi = true;
+                            try {
+                                MusicCollectionManager.getInstance().syncRemoteStorageWithDevice(false);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     } else {
                         if (serviceRunning()) {
@@ -243,5 +252,36 @@ public class TrashPlayService extends Service {
             }
 
         }
+    }
+
+    public void sendBroadcastToPause() {
+        Logger.d(TAG, "send Broadcast to Pause");
+        sendBroadcast(MusicPlayer.ACTION_PAUSE_SONG);
+    }
+
+    public void sendBroadcastToGoBack() {
+        Logger.d(TAG, "send Broadcast to go back");
+        sendBroadcast(MusicPlayer.ACTION_PREV_SONG);
+    }
+
+    public void sendBroadcastToStartNextSong() {
+        Logger.d(TAG, "send Broadcast to Start the Next Song");
+        sendBroadcast(MusicPlayer.ACTION_NEXT_SONG);
+    }
+
+    public void sendBroadcastToStartMusic() {
+        Logger.d(TAG, "send Broadcast to Start the Music");
+        sendBroadcast(MusicPlayer.ACTION_START_MUSIC);
+    }
+
+    public void sendBroadcastToStopMusic() {
+        sendBroadcast(MusicPlayer.ACTION_STOP_MUSIC);
+    }
+
+    private void sendBroadcast(String action) {
+        Logger.d(TAG, "SEND BROADCAST");
+        Intent actionIntent = new Intent();
+        actionIntent.setAction(action);
+        TrashPlayService.getContext().sendBroadcast(actionIntent);
     }
 }

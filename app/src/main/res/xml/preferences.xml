@@ -21,6 +21,18 @@
                 android:summary="@string/pref_summary_pref_appdata_trashmode"
                 android:defaultValue="true">
             </CheckBoxPreference>
+            <CheckBoxPreference
+                android:title="@string/pref_appdata_radiomode"
+                android:key="pref_appdata_radiomode"
+                android:summary="@string/pref_summary_pref_appdata_radiomode"
+                android:defaultValue="false">
+            </CheckBoxPreference>
+            <EditTextPreference
+                android:title="@string/pref_appdata_radioname"
+                android:key="pref_appdata_radioname"
+                android:summary="@string/pref_summary_pref_appdata_radioname"
+                android:defaultValue="">
+            </EditTextPreference>
         </PreferenceScreen>
     </PreferenceCategory>
     <PreferenceCategory

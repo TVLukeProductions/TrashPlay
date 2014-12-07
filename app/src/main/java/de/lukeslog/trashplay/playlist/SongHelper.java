@@ -141,14 +141,18 @@ public class SongHelper {
     public static String getTitleInfoAsString(Song song) {
         Logger.d(TAG, "getTitleInfoASString()");
         if(song!=null) {
-            Logger.d(TAG, song.getFileName());
-            if (song.getSongName().equals("") && song.getArtist().equals("")) {
-                SongHelper.getMetaData(song);
-            }
-            if (!song.getSongName().equals("") && !song.getArtist().equals("")) {
-                return song.getArtist() + " - " + song.getSongName();
-            } else {
-                return song.getFileName();
+            try {
+                Logger.d(TAG, song.getFileName());
+                if (song.getSongName().equals("") && song.getArtist().equals("")) {
+                    SongHelper.getMetaData(song);
+                }
+                if (!song.getSongName().equals("") && !song.getArtist().equals("")) {
+                    return song.getArtist() + " - " + song.getSongName();
+                } else {
+                    return song.getFileName();
+                }
+            } catch (Exception e) {
+              return null;
             }
         }
         return null;
@@ -177,8 +181,25 @@ public class SongHelper {
 
         for (Song song : result) {
             resultSong = song;
+            try {
+                song.getFileName();
+            } catch(Exception e) {
+                Log.e(TAG, "No filename in SongHelper");
+            }
         }
         realm.commitTransaction();
         return resultSong;
+    }
+
+    public static void finishedWithSong(String songName){
+        Song song = getSongByFileName(songName);
+        song.setPlays(song.getPlays() + 1);
+        long lastPlayed = song.getLastPlayed();
+        DateTime now = new DateTime();
+        long nowInMillis = now.getMillis();
+        song.setLastPlayed(nowInMillis);
+        //TODO: change the overall playcount
+        //TODO: get the average time between plays
+        //Generate other global statistics...
     }
 }

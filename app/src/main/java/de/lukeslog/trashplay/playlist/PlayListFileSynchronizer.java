@@ -15,65 +15,128 @@ import io.realm.Realm;
 public class PlayListFileSynchronizer {
 
     public static final String TAG = TrashPlayConstants.TAG;
+    public static boolean sync=false;
 
     public static void synchronize(PlayList playList) throws Exception {
         Log.d(TAG, "Synchronize Files from PlayList");
-        MusicCollectionManager.getInstance().determineNumberOfActivatedPlayLists();
-        StorageManager storage = StorageManager.getStorage(playList.getRemoteStorage());
-        ArrayList<String> listOfFileNames = storage.
-                getFileNameListWithEndings(MusicCollectionManager.getListOfAllowedFileEndings(), playList.getRemotePath());
-        Log.d(TAG, "PlayList has gotten a list of " + listOfFileNames.size() + " names");
-        for (String fileName : listOfFileNames) {
-            Log.d(TAG, "-> " + fileName);
-            boolean inCollection = MusicCollectionManager.getInstance().isSongInCollection(fileName);
-            if (!inCollection) {
-                Log.d(TAG, "not currently in the collection");
-                String localFileName = storage.downloadFile(playList.getRemotePath(), fileName);
-                Realm realm = Realm.getInstance(TrashPlayService.getContext());
-                realm.beginTransaction();
-                Song newSong = realm.createObject(Song.class);
-                newSong.setFileName(localFileName);
-                newSong.setInActiveUse(true);
-                SongHelper.getMetaData(newSong);
-                SongHelper.addSongToPlayList(newSong, playList);
-                SongHelper.refreshLastUpdate(newSong);
-                realm.commitTransaction();
-            }
-            if (inCollection) {
-                Log.d(TAG, "is in Collection but does it need to be renewed");
-                Song oldSong = MusicCollectionManager.getInstance().getSongByFileName(fileName);
-                storage.downloadFileIfNewerVersion(playList.getRemotePath(), fileName, new DateTime(oldSong.getLastUpdate()));
-            }
-            //TODO: delete those that are no longer in remote storage
-            Log.d(TAG, "now checking if a song needs to be deleted");
-            List<Song> songsInPlayList = MusicCollectionManager.getInstance().getSongsByPlayList(playList);
-            for (Song song : songsInPlayList) {
-                Log.d(TAG, song.getFileName());
-                if (!listOfFileNames.contains(song.getFileName())) {
-                    Log.d(TAG, "This Song needs to be removed from this Playlist");
-                    SongHelper.removeFromPlayList(song, playList);
+        if(!sync) {
+            try {
+                sync = true;
+                MusicCollectionManager.getInstance().determineNumberOfActivatedPlayLists();
+                StorageManager storage = StorageManager.getStorage(playList.getRemoteStorage());
+                ArrayList<String> listOfFileNames = storage.
+                        getFileNameListWithEndings(MusicCollectionManager.getListOfAllowedFileEndings(), playList.getRemotePath());
+                Log.d(TAG, "PlayList has gotten a list of " + listOfFileNames.size() + " names");
+                ArrayList<String> newSongs = new ArrayList<String>();
+                for (String fileName : listOfFileNames) {
+                    Log.d(TAG, "-> " + fileName);
+                    boolean inCollection = MusicCollectionManager.getInstance().isSongInCollection(fileName);
+                    if (!inCollection) {
+
+                        if (TrashPlayService.wifi) {
+                            String localFileName = storage.downloadFile(playList.getRemotePath(), fileName);
+                            Log.d(TAG, "back in the file Synchronizer");
+                            newSongs.add(localFileName);
+                        }
+                    }
                 }
+                Realm realm = Realm.getInstance(TrashPlayService.getContext());
+                for (String localFileName : newSongs) {
+                    try {
+                        Log.d(TAG, "try to create objects");
+                        realm.beginTransaction();
+                        Log.d(TAG, "1");
+                        Song newSong = realm.createObject(Song.class);
+                        Log.d(TAG, "2");
+                        newSong.setFileName(localFileName);
+                        Log.d(TAG, "4");
+                        SongHelper.getMetaData(newSong);
+                        Log.d(TAG, "5");
+                        SongHelper.addSongToPlayList(newSong, playList);
+                        Log.d(TAG, "6");
+                        SongHelper.refreshLastUpdate(newSong);
+                        Log.d(TAG, "7");
+                        newSong.getFileName();
+                        Log.d(TAG, "8");
+                        newSong.setInActiveUse(true);
+                        Log.d(TAG, "3");
+                        realm.commitTransaction();
+                        Log.d(TAG, "9");
+                    } catch (Exception e) {
+                        Log.e(TAG, "EXCEPTION WHEN CREATING SONG");
+                        realm.cancelTransaction();
+                    }
+                }
+                for (String localFileName : newSongs) {
+                    boolean inCollection = MusicCollectionManager.getInstance().isSongInCollection(localFileName);
+                    if (inCollection) {
+                        Log.d(TAG, "is in Collection but does it need to be renewed");
+                        if (TrashPlayService.wifi) {
+                            Song oldSong = MusicCollectionManager.getInstance().getSongByFileName(localFileName);
+                            String x = storage.downloadFileIfNewerVersion(playList.getRemotePath(), localFileName, new DateTime(oldSong.getLastUpdate()));
+                            if (!x.equals("")) {
+                                try {
+                                    realm.beginTransaction();
+                                    oldSong.setLastUpdate(new DateTime().getMillis());
+                                    realm.commitTransaction();
+                                    Log.d(TAG, "9");
+                                } catch (Exception e) {
+                                    Log.e(TAG, "EXCEPTION WHEN CREATING SONG");
+                                    realm.cancelTransaction();
+                                }
+                            }
+                        }
+                    }
+                }
+                //TODO: delete those that are no longer in remote storage
+                Log.d(TAG, "now checking if a song needs to be deleted");
+                List<Song> songsInPlayList = MusicCollectionManager.getInstance().getSongsByPlayList(playList);
+                for (
+                        Song song
+                        : songsInPlayList)
+
+                {
+                    Log.d(TAG, song.getFileName());
+                    if (!listOfFileNames.contains(song.getFileName())) {
+                        Log.d(TAG, "This Song needs to be removed from this Playlist");
+                        SongHelper.removeFromPlayList(song, playList);
+                    }
+                }
+
+                MusicCollectionManager.getInstance().
+
+                        removeSongsThatAreToBeDeleted();
+                sync = false;
+            } catch(Exception e) {
+                sync = false;
+                throw e;
             }
-            MusicCollectionManager.getInstance().removeSongsThatAreToBeDeleted();
+
         }
+
     }
 
     public static void activated(PlayList playList, boolean b) {
         List<Song> songsInPlayList = MusicCollectionManager.getInstance().getSongsByPlayList(playList);
         Realm realm = Realm.getInstance(TrashPlayService.getContext());
-        realm.beginTransaction();
-        playList.setActivated(b);
-        for (Song song : songsInPlayList) {
-            List<PlayList> isInPlayLists = song.getPlayLists();
-            boolean active = false;
-            for(PlayList playListofSong : isInPlayLists) {
-                if(playListofSong.isActivated()) {
-                    active=true;
+        try {
+            realm.beginTransaction();
+            Log.d(TAG, "setActivated to " + b);
+            playList.setActivated(b);
+            for (Song song : songsInPlayList) {
+                List<PlayList> isInPlayLists = song.getPlayLists();
+                boolean active = false;
+                for (PlayList playListOfSong : isInPlayLists) {
+                    if (playListOfSong.isActivated()) {
+                        active = true;
+                    }
                 }
+                song.setInActiveUse(active);
             }
-            song.setInActiveUse(active);
+            realm.commitTransaction();
+        } catch (Exception e) {
+            realm.cancelTransaction();
         }
-        realm.commitTransaction();
         MusicCollectionManager.getInstance().determineNumberOfActivatedPlayLists();
     }
 }

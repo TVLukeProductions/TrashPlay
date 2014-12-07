@@ -32,5 +32,10 @@
     <string name="statistics">Statistics</string>
     <string name="badges">Achievements</string>
     <string name="social">Social</string>
+    <string name="pref_appdata_listenalong">Listen Along Mode</string>
+    <string name="pref_appdata_radiomode">Radio Mode</string>
+    <string name="pref_summary_pref_appdata_radiomode">Activate your trashplayer as a radio for others</string>
+    <string name="pref_appdata_radioname">Name your radiostation</string>
+    <string name="pref_summary_pref_appdata_radioname">You have to enter a name in order to activate your radiostation</string>
 
 </resources>

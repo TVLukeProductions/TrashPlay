@@ -28,8 +28,11 @@ public class Song extends RealmObject {
     private String artist="";
     private String fileName="";
     private long lastUpdate=0l;
+    private long lastPlayed =0l;
     private int durationInSeconds = 0;
     private int plays = 0;
+
+    private String reasonForReplacementInNextPlays = "";
 
     private boolean toBeUpdated=false;
     private boolean toBeDeleted=false;
@@ -118,5 +121,21 @@ public class Song extends RealmObject {
 
     public void setInActiveUse(boolean inActiveUse) {
         this.inActiveUse = inActiveUse;
+    }
+
+    public long getLastPlayed() {
+        return lastPlayed;
+    }
+
+    public void setLastPlayed(long lastPlayed) {
+        this.lastPlayed = lastPlayed;
+    }
+
+    public String getReasonForReplacementInNextPlays() {
+        return reasonForReplacementInNextPlays;
+    }
+
+    public void setReasonForReplacementInNextPlays(String reasonForReplacementInNextPlays) {
+        this.reasonForReplacementInNextPlays = reasonForReplacementInNextPlays;
     }
 }

@@ -39,6 +39,11 @@ An diesem Ort entshet die neue Version der App.
 * Anlegen von Menu-Items für weitere Funktionen
 * Aktivieren und deaktivieren synchronisierter Playlists
 
+### 07.12.2014
+* Synchronisiertes Musikhören via DropBox
+* Lots and Lots and Lots and Lots of debugging. Die Persitenzschicht macht ordentlich Ärger. Hätt ichs doch einfach selber geschrieben.
+* Radiosymbol wenn man sendet
+
 ## ToDo
 * Sammeln von persönlichen Statistiken
 * bessere sync animation

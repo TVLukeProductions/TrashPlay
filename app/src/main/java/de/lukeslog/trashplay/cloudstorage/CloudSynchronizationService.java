@@ -41,14 +41,14 @@ public class CloudSynchronizationService extends Service {
 
     public static void registerService(StorageManager cloudStorageService) {
 
-        boolean alreadyRegistered = alreadyRegsitered(cloudStorageService);
+        boolean alreadyRegistered = alreadyRegistered(cloudStorageService);
         if(!alreadyRegistered) {
             registeredCloudStorageServices.add(cloudStorageService);
         }
 
     }
 
-    private static boolean alreadyRegsitered(StorageManager cloudStorageService) {
+    private static boolean alreadyRegistered(StorageManager cloudStorageService) {
         for (StorageManager c : registeredCloudStorageServices) {
             if (c.returnUniqueReadableName().equals(cloudStorageService.returnUniqueReadableName())) {
                 return true;

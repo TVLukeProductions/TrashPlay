@@ -27,6 +27,16 @@ public class GDrive extends StorageManager {
     }
 
     @Override
+    protected void updateRadioFileToRemoteStorage(String path) throws Exception {
+
+    }
+
+    @Override
+    protected void deleteOldRadioFiles() throws Exception {
+
+    }
+
+    @Override
     public boolean isConnected() {
         return false;
     }

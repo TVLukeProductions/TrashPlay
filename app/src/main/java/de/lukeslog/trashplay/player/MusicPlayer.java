@@ -110,8 +110,6 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                 mExternalStorageAvailable = false;
             }
             if (mExternalStorageAvailable) {
-                //TODO switch to the last song instead of the nex one
-                //TODO: Make parameter of type Song
                 if (needToScrobble()) {
                     scrobbleTrack();
                 }
@@ -119,6 +117,10 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                 try {
                     playMusic(song);
                 } catch (IOException e) {
+                    Log.e(TAG, "error1 in MusicPlayer");
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    Log.e(TAG, "error2 in MusicPlayer");
                     e.printStackTrace();
                 }
             }
@@ -147,14 +149,16 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     }
 
     private void scrobbleTrack() {
+        Log.d(TAG, "scrobble....");
         TrashPlayLastFM.scrobble(artist, title);
         if (TrashPlayService.serviceRunning()) {
+            Log.d(TAG, "Service Running...");
             PersonalLastFM.scrobble(artist, title, TrashPlayService.getContext().settings);
         }
 
     }
 
-    private void playMusic(Song song) throws IOException {
+    private void playMusic(Song song) throws Exception {
         try {
             File file = getFileFromSong(song);
             String musicPath = file.getAbsolutePath();
@@ -171,8 +175,9 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             mp.prepareAsync();
             currentlyPlayingSong = song;
         } catch (IllegalStateException e) {
+            Log.d(TAG, "illegalStateException");
             mp = null;
-            playMusic(song);
+            playmp3(MusicCollectionManager.getInstance().getNextSong());
         }
     }
 
@@ -207,8 +212,28 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     public void onPrepared(MediaPlayer mpx) {
         Logger.d(TAG, "on Prepared!");
         mpx.setOnCompletionListener(this);
-        if (mpx.getDuration() > 0) {
-            currentlyPlayingSong.setDurationInSeconds(mpx.getDuration());
+        int duration = mpx.getDuration();
+        if ( duration> 0) {
+            if(currentlyPlayingSong.getDurationInSeconds()!=duration) {
+                currentlyPlayingSong.setDurationInSeconds(duration);
+                try {
+                    MusicCollectionManager.getInstance().updateRadioFile();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            TrashPlayService.getContext().toast("time dif "+MusicCollectionManager.timeDifInMillis);
+            Log.d(TAG, "timedifstuff");
+            boolean c1 = MusicCollectionManager.timeDifInMillis>0;
+            Log.d(TAG, "a");
+            boolean c2 = MusicCollectionManager.timeDifInMillis<duration;
+            Log.d(TAG, "b");
+            if(c1 && c2) {
+                Log.d(TAG, "aye");
+                Log.d(TAG, "seek"+(int)MusicCollectionManager.timeDifInMillis);
+                mpx.seekTo((int)MusicCollectionManager.timeDifInMillis);
+            }
+            Log.d(TAG, "continue");
         }
         Logger.d(TAG, "ok, I'v set the on Completion Listener again...");
         mpx.start();
@@ -216,15 +241,25 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
 
     @Override
     public void onCompletion(MediaPlayer mpx) {
-        Logger.d(TAG, "on Completetion");
+        Logger.d(TAG, "on Completetion!");
         MusicCollectionManager.getInstance().finishedSong();
-        playmp3(MusicCollectionManager.getInstance().getNextSong());
+        stop();
+        try {
+            playmp3(MusicCollectionManager.getInstance().getNextSong());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         Logger.d(TAG, "MEDIAPLAYER ON ERROR");
-        playmp3(MusicCollectionManager.getInstance().getNextSong());
+        stop();
+        try {
+            playmp3(MusicCollectionManager.getInstance().getNextSong());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return true;
     }
 
@@ -246,7 +281,12 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             if (action.equals(ACTION_START_MUSIC)) {
                 Logger.d(TAG, "I GOT THE START MUSIC THING!");
                 // actionID = intent.getStringExtra("AmbientActionID");
-                Song nextSong = MusicCollectionManager.getInstance().getNextSong();
+                Song nextSong = null;
+                try {
+                    nextSong = MusicCollectionManager.getInstance().getNextSong();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 playmp3(nextSong);
             }
             if (action.equals(ACTION_STOP_MUSIC)) {
@@ -261,7 +301,12 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                     MusicCollectionManager.getInstance().finishedSong();
                 }
                 stop();
-                Song nextSong = MusicCollectionManager.getInstance().getNextSong();
+                Song nextSong = null;
+                try {
+                    nextSong = MusicCollectionManager.getInstance().getNextSong();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 playmp3(nextSong);
             }
             if(action.equals(ACTION_PREV_SONG)) {
@@ -277,6 +322,9 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                 int p = mp.getCurrentPosition();
                 result = getStringFromIntInSeconds(result, p);
             } catch (Exception e) {
+                if(TrashPlayService.serviceRunning()) {
+                    TrashPlayService.getContext().toast("Error1");
+                }
                 e.printStackTrace();
             }
         }
@@ -288,7 +336,9 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         p = p / 1000;
         if (p > 59) {
             m = p / 60;
-            p = p - (60 * m);
+            if(m>0) {
+                p = p - (60 * m);
+            }
         }
         if (m > 9) {
             result = result + m;
@@ -308,9 +358,12 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         String result = "";
         if (mp != null) {
             try {
-                int p = mp.getDuration();
+                int p = currentlyPlayingSong.getDurationInSeconds();
                 result = getStringFromIntInSeconds(result, p);
             } catch (Exception e) {
+                if(TrashPlayService.serviceRunning()) {
+                    TrashPlayService.getContext().toast("Error2");
+                }
                 e.printStackTrace();
             }
         }

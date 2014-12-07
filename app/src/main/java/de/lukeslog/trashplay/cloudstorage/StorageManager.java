@@ -48,7 +48,7 @@ public abstract class StorageManager {
     }
 
     protected File findOrCreateLocalTrashPlayMusicFolder() {
-        File folder = new File(Environment.getExternalStorageDirectory().getPath() + "/Music/TrashPlay");
+        File folder = new File(LOCAL_STORAGE);
         folder.mkdirs();
         return folder;
     }
@@ -67,13 +67,17 @@ public abstract class StorageManager {
      * @throws InterruptedException
      */
     public List<String> getAllPlayListFolders() throws Exception {
+        Log.d(TAG, "getAllPlaylist Folders");
         List<String> playListFolders = new ArrayList<String>();
-        if (TrashPlayService.wifi) {
+        if (TrashPlayService.wifi && !syncInProgress) {
+            Log.d(TAG, "wifi is");
             while (syncInProgress) {
                 Thread.sleep(100);
             }
+            Log.d(TAG, "setSync");
             setSyncInProgress(true);
             try {
+                Log.d(TAG, "search...");
                 playListFolders = searchForPlayListFolderInRemoteStorageImplementation();
             } catch (Exception e) {
                 setSyncInProgress(false);
@@ -132,6 +136,24 @@ public abstract class StorageManager {
         return fnl;
     }
 
+    public void updateRadioFile(String path) throws Exception {
+        while (syncInProgress) {
+            Thread.sleep(100);
+        }
+        setSyncInProgress(true);
+        try {
+            updateRadioFileToRemoteStorage(path);
+        } catch (Exception e) {
+            setSyncInProgress(false);
+            throw e;
+        }
+        setSyncInProgress(false);
+    }
+
+    protected abstract void updateRadioFileToRemoteStorage(String path) throws Exception;
+
+    protected abstract void deleteOldRadioFiles() throws Exception;
+
     public abstract boolean isConnected();
 
     protected abstract List<String> searchForPlayListFolderInRemoteStorageImplementation() throws Exception;
@@ -187,5 +209,4 @@ public abstract class StorageManager {
     }
 
     public abstract void resetSyncInProgress();
-
 }

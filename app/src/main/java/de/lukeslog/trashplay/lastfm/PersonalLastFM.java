@@ -15,16 +15,12 @@ public class PersonalLastFM {
 
     public static final String TAG = TrashPlayConstants.TAG;
 
-    public static void scrobble(final String artist, final String song, final SharedPreferences settings)
-    {
+    public static void scrobble(final String artist, final String song, final SharedPreferences settings) {
         Log.d(TAG, "scrobble personal");
-        new Thread(new Runnable()
-        {
-            public void run()
-            {
-                Session session=getSession();
-                if(session!=null)
-                {
+        new Thread(new Runnable() {
+            public void run() {
+                Session session = getSession();
+                if (session != null) {
                     int now = (int) (System.currentTimeMillis() / 1000);
                     ScrobbleResult result = Track.updateNowPlaying(artist, song, session);
                     result = Track.scrobble(artist, song, now, session);
@@ -34,16 +30,18 @@ public class PersonalLastFM {
     }
 
     protected static Session getSession() {
-        SharedPreferences defsettings = PreferenceManager.getDefaultSharedPreferences(TrashPlayService.getContext());
-        String lastfmusername = defsettings.getString(SettingsConstants.LASTFM_USER, "");
-        String lastfmpassword = defsettings.getString(SettingsConstants.LASTFM_PSW, "");
-        if(!lastfmusername.equals("") && !lastfmpassword.equals("") )
-        {
-            Log.d(TAG, "it should scrobble");
-            try {
-                return LastFM.getSession(lastfmusername, lastfmpassword);
-            } catch(Exception e) {
-                return null;
+        Log.d(TAG, "getSession");
+        if (TrashPlayService.serviceRunning()) {
+            SharedPreferences defsettings = PreferenceManager.getDefaultSharedPreferences(TrashPlayService.getContext());
+            String lastfmusername = defsettings.getString(SettingsConstants.LASTFM_USER, "");
+            String lastfmpassword = defsettings.getString(SettingsConstants.LASTFM_PSW, "");
+            if (!lastfmusername.equals("") && !lastfmpassword.equals("")) {
+                Log.d(TAG, "it should scrobble");
+                try {
+                    return LastFM.getSession(lastfmusername, lastfmpassword);
+                } catch (Exception e) {
+                    return null;
+                }
             }
         }
         return null;
