@@ -2,6 +2,9 @@ package de.lukeslog.trashplay.playlist;
 
 import android.util.Log;
 
+import com.activeandroid.query.Delete;
+import com.activeandroid.query.Select;
+
 import org.farng.mp3.MP3File;
 import org.farng.mp3.TagException;
 import org.farng.mp3.id3.ID3v1;
@@ -9,15 +12,14 @@ import org.joda.time.DateTime;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
+import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
-import io.realm.Realm;
-import io.realm.RealmList;
-import io.realm.RealmQuery;
-import io.realm.RealmResults;
 
 public class SongHelper {
 
@@ -48,12 +50,6 @@ public class SongHelper {
         if(song.getPlayLists().isEmpty()) {
             song.setToBeDeleted(true);
         }
-    }
-
-    public static void resetPlayList(Song song) {
-        RealmList<PlayList> x = song.getPlayLists();
-        x.clear();
-        song.setPlayLists(x);
     }
 
     public static void getMetaData(Song song)
@@ -172,23 +168,74 @@ public class SongHelper {
 
     public static Song getSongByFileName(String fileName) {
         Song resultSong = null;
-        Realm realm = Realm.getInstance(TrashPlayService.getContext());
-        realm.beginTransaction();
+        resultSong = new Select().from(Song.class).where("fileName = ?", fileName).executeSingle();
+        return resultSong;
+    }
 
-        RealmQuery<Song> query = realm.where(Song.class).equalTo("fileName", fileName);
-
-        RealmResults<Song> result = query.findAll();
-
-        for (Song song : result) {
-            resultSong = song;
+    static void removeSongsThatAreToBeDeleted() {
+        if (TrashPlayService.serviceRunning()) {
             try {
-                song.getFileName();
-            } catch(Exception e) {
-                Log.e(TAG, "No filename in SongHelper");
+
+                List<Song> result = new Select().from(Song.class).where("toBeDeleted = ?", "1").execute();
+
+                boolean currentlyPlayingSongIsToBeDeleted = false;
+                for (Song theSong : result) {
+                    if (theSong.isToBeDeleted() && !theSong.equals(MusicPlayer.getCurrentlyPlayingSong())) {
+                        StorageManager.deleteSongFromLocalStorage(theSong);
+                    }
+                }
+                if (!currentlyPlayingSongIsToBeDeleted) {
+                    new Delete().from(Song.class).where("toBeDeleted = ?", "1").execute();
+                }
+            } catch (Exception e) {
+                    Log.e(TAG, "Invalid Databse. Delete everything");
             }
         }
-        realm.commitTransaction();
-        return resultSong;
+    }
+
+    static List<Song> getAllSongs() {
+        List<Song> songs = new ArrayList<Song>();
+        try {
+            if (TrashPlayService.serviceRunning()) {
+                songs = new Select().from(Song.class).execute();
+            }
+        } catch (Exception e) {
+
+            Log.e(TAG, "Invalid Databse. Delete everything");
+        }
+        return songs;
+    }
+
+    public static void resetPlayList(Song song) {
+      //  RealmList<PlayList> x = song.getPlayLists();
+      //  x.clear();
+      //  song.setPlayLists(x);
+    }
+
+    public static Song createSong(String localFileName, PlayList playList) {
+        Log.d(TAG, "create Song");
+        Song newSong = new Song();
+        Log.d(TAG, "1");
+        newSong.setFileName(localFileName);
+        Log.d(TAG, "2");
+        getMetaData(newSong);
+        Log.d(TAG, "3");
+        addSongToPlayList(newSong, playList); //THIS?
+        Log.d(TAG, "4");
+        refreshLastUpdate(newSong);
+        newSong.setInActiveUse(true);
+        newSong.save();
+        return newSong;
+    }
+
+    static boolean isSongInCollection(String fileName) {
+        List<Song> allSongs = SongHelper.getAllSongs();
+        for (Song song : allSongs) {
+            if (song.getFileName().equals(fileName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void finishedWithSong(String songName){

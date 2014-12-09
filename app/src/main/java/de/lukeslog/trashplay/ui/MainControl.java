@@ -19,14 +19,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.activeandroid.ActiveAndroid;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import de.lukeslog.trashplay.R;
-import de.lukeslog.trashplay.cloudstorage.GDrive;
-import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.cloudstorage.CloudSynchronizationService;
 import de.lukeslog.trashplay.cloudstorage.DropBox;
+import de.lukeslog.trashplay.cloudstorage.GDrive;
+import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
@@ -58,6 +60,7 @@ public class MainControl extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ActiveAndroid.initialize(this);
         setContentView(R.layout.activity_main_control);
 
         ctx = this;

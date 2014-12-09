@@ -1,36 +1,43 @@
 package de.lukeslog.trashplay.playlist;
 
-import android.util.Log;
+import com.activeandroid.Model;
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
 
-import org.farng.mp3.MP3File;
-import org.farng.mp3.TagException;
-import org.farng.mp3.id3.ID3v1;
-import org.joda.time.DateTime;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
-import de.lukeslog.trashplay.cloudstorage.CloudSynchronizationService;
-import de.lukeslog.trashplay.cloudstorage.LocalStorage;
-import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
-import io.realm.RealmList;
-import io.realm.RealmObject;
-import io.realm.annotations.Ignore;
-import io.realm.annotations.RealmClass;
 
-@RealmClass
-public class Song extends RealmObject {
+@Table(name = "Songs")
+public class Song extends Model {
 
-    private RealmList<PlayList> playLists;
-    private String songName="";
-    private String artist="";
+    @Column(name = "fileName")
     private String fileName="";
+
+    @Column(name = "playLists")
+    private ArrayList<PlayList> playLists;
+
+    @Column(name = "songName")
+    private String songName="";
+
+    @Column(name = "artist")
+    private String artist="";
+
+    @Column(name = "lastUpdate")
     private long lastUpdate=0l;
+
+    @Column(name = "lastPlayed")
     private long lastPlayed =0l;
+
+    @Column(name = "durationInSeconds")
     private int durationInSeconds = 0;
+
+    @Column(name = "plays")
     private int plays = 0;
+
+    public Song() {
+
+    }
 
     private String reasonForReplacementInNextPlays = "";
 
@@ -38,7 +45,6 @@ public class Song extends RealmObject {
     private boolean toBeDeleted=false;
     private boolean inActiveUse = true;
 
-    @Ignore
     private static final String TAG = TrashPlayConstants.TAG;
 
     public void setFileName(String fileName) {
@@ -93,11 +99,11 @@ public class Song extends RealmObject {
         return durationInSeconds;
     }
 
-    public void setPlayLists(RealmList<PlayList> list) {
+    public void setPlayLists(ArrayList<PlayList> list) {
         playLists = list;
     }
 
-    public RealmList<PlayList> getPlayLists() {
+    public ArrayList<PlayList> getPlayLists() {
         return playLists;
     }
 
@@ -138,4 +144,6 @@ public class Song extends RealmObject {
     public void setReasonForReplacementInNextPlays(String reasonForReplacementInNextPlays) {
         this.reasonForReplacementInNextPlays = reasonForReplacementInNextPlays;
     }
+
+
 }

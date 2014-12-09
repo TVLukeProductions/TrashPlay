@@ -6,8 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -19,7 +19,6 @@ import org.farng.mp3.id3.ID3v1;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Objects;
 
 import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;

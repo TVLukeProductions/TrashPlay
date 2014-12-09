@@ -10,14 +10,14 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.util.Log;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import de.lukeslog.trashplay.R;
 import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
 import de.lukeslog.trashplay.playlist.PlayList;
-import de.lukeslog.trashplay.playlist.PlayListFileSynchronizer;
+import de.lukeslog.trashplay.playlist.PlayListHelper;
 import de.lukeslog.trashplay.service.TrashPlayService;
 
 public class SettingsFragment extends PreferenceFragment {
@@ -166,7 +166,7 @@ public class SettingsFragment extends PreferenceFragment {
     }
 
     private boolean localPlayListIsDeactivated() {
-        ArrayList<PlayList> playLists = MusicCollectionManager.getInstance().getAllPlayLists();
+        List<PlayList> playLists = PlayListHelper.getAllPlayLists();
         for (PlayList playList : playLists) {
             if(playList.isActivated()) {
                 activeRemotePlayList = playList;
@@ -180,7 +180,7 @@ public class SettingsFragment extends PreferenceFragment {
 
     private void playlistactivationsettings() {
         PreferenceScreen pref = (PreferenceScreen) getPreferenceManager().findPreference("pref_app_playlistusage_settings");
-        ArrayList<PlayList> playLists = MusicCollectionManager.getInstance().getAllPlayLists();
+        List<PlayList> playLists = PlayListHelper.getAllPlayLists();
         for (final PlayList playList : playLists) {
             CheckBoxPreference playlistActivationSetting = new CheckBoxPreference(getActivity());
             playlistActivationSetting.setKey("pref_activateplaylist_" + playList.getRemoteStorage() + "_" + playList.getRemotePath());
@@ -192,9 +192,9 @@ public class SettingsFragment extends PreferenceFragment {
                 public boolean onPreferenceChange(Preference preference, Object o) {
                     CheckBoxPreference x = (CheckBoxPreference) preference;
                     if (!x.isChecked()) {
-                        PlayListFileSynchronizer.activated(playList, true);
+                        PlayListHelper.activated(playList, true);
                     } else {
-                        PlayListFileSynchronizer.activated(playList, false);
+                        PlayListHelper.activated(playList, false);
                     }
                     return true;
                 }

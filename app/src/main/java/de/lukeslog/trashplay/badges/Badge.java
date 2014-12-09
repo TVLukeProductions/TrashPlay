@@ -1,10 +1,6 @@
 package de.lukeslog.trashplay.badges;
 
-import io.realm.RealmObject;
-import io.realm.annotations.RealmClass;
-
-@RealmClass
-public class Badge  extends RealmObject {
+public class Badge  {
 
     private String title="";
     private String description="";

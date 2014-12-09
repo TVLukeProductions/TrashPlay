@@ -2,8 +2,6 @@ package de.lukeslog.trashplay.cloudstorage;
 
 import android.test.InstrumentationTestCase;
 
-import junit.framework.Assert;
-
 import org.joda.time.DateTime;
 
 public class TestDropBox extends InstrumentationTestCase{

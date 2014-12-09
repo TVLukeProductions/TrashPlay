@@ -1,11 +1,7 @@
 package de.lukeslog.trashplay.cloudstorage;
 
-import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.util.Log;
-import android.view.MenuItem;
-
-import com.dropbox.client2.exception.DropboxException;
 
 import org.joda.time.DateTime;
 
@@ -14,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
-import de.lukeslog.trashplay.playlist.MusicCollectionManager;
-import de.lukeslog.trashplay.playlist.PlayList;
 import de.lukeslog.trashplay.playlist.Song;
 import de.lukeslog.trashplay.playlist.SongHelper;
 import de.lukeslog.trashplay.service.TrashPlayService;
@@ -196,7 +190,6 @@ public abstract class StorageManager {
             Log.d(TAG, "nope!");
             song.setToBeDeleted(true);
             SongHelper.resetPlayList(song);
-            MusicCollectionManager.getInstance().removeSongsThatAreToBeDeleted();
         }
         return localExists;
     }

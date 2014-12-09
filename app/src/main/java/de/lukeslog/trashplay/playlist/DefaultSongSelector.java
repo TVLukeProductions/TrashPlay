@@ -1,12 +1,11 @@
 package de.lukeslog.trashplay.playlist;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
 public class DefaultSongSelector extends SongSelector {
 
     public Song getASong() {
-        ArrayList<Song> songs = MusicCollectionManager.getInstance().getListOfSongs();
+        List<Song> songs = SongHelper.getAllSongs();
         int randomSongNumber = (int) (Math.random() * (songs.size()));
         Song[] theSongs = songs.toArray(new Song[songs.size()]);
         Song possibleSong = theSongs[randomSongNumber];

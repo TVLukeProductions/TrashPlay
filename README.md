@@ -44,6 +44,12 @@ An diesem Ort entshet die neue Version der App.
 * Lots and Lots and Lots and Lots of debugging. Die Persitenzschicht macht ordentlich Ärger. Hätt ichs doch einfach selber geschrieben.
 * Radiosymbol wenn man sendet
 
+###08.12.2014
+* ZUgriff auf Persitenzobjekte nur noch von zwei Helper KLassen für Transparenz und Refactorbarkeit
+* Realm wird jetzt durch ORMLite erstetzt
+* ORMLIte wird jetzt durch ActiveAndroid ersetzt
+* com.android.support:support-v4:20.0.0 in gradele weil ActiveAndroid sonst nicht tut
+
 ## ToDo
 * Sammeln von persönlichen Statistiken
 * bessere sync animation

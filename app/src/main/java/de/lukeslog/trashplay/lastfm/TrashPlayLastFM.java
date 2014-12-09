@@ -2,10 +2,6 @@ package de.lukeslog.trashplay.lastfm;
 
 import android.util.Log;
 
-
-import de.lukeslog.trashplay.constants.TrashPlayConstants;
-import de.umass.lastfm.Authenticator;
-import de.umass.lastfm.Caller;
 import de.umass.lastfm.Session;
 import de.umass.lastfm.Track;
 import de.umass.lastfm.scrobble.ScrobbleResult;

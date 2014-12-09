@@ -1,8 +1,7 @@
 package de.lukeslog.trashplay.playlist;
 
-import android.util.Log;
-
 import java.util.ArrayList;
+import java.util.List;
 
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.support.Logger;
@@ -14,8 +13,8 @@ public class EqualPlaySongSelector extends SongSelector {
 
     @Override
     public Song getASong() {
-        ArrayList<Song> songs = MusicCollectionManager.getInstance().getListOfSongs();
-        ArrayList<Song> songsWithTheLeastPlay = getSongsWithTheLeastPlay(songs);
+        List<Song> songs = SongHelper.getAllSongs();
+        List<Song> songsWithTheLeastPlay = getSongsWithTheLeastPlay(songs);
         if(!songsWithTheLeastPlay.isEmpty()) {
             int randomSongNumber = (int) (Math.random() * (songsWithTheLeastPlay.size()));
             Song[] theSongs = songsWithTheLeastPlay.toArray(new Song[songsWithTheLeastPlay.size()]);
@@ -26,7 +25,7 @@ public class EqualPlaySongSelector extends SongSelector {
         return null;
     }
 
-    private ArrayList<Song> getSongsWithTheLeastPlay(ArrayList<Song> songs) {
+    private List<Song> getSongsWithTheLeastPlay(List<Song> songs) {
         ArrayList<Song> songsWithLeastPlay = new ArrayList<Song>();
         if(songs.size()>0) {
             int lowestPlayCount = getLowestPlayCount(songs);
@@ -43,7 +42,7 @@ public class EqualPlaySongSelector extends SongSelector {
         return songsWithLeastPlay;
     }
 
-    private ArrayList<Song> getSongsWithNPlays(ArrayList<Song> songs, int playCount) {
+    private ArrayList<Song> getSongsWithNPlays(List<Song> songs, int playCount) {
         ArrayList<Song> songsWithNPlays = new ArrayList<Song>();
         for(Song song : songs) {
             if(song.getPlays()==playCount) {
@@ -53,7 +52,7 @@ public class EqualPlaySongSelector extends SongSelector {
         return songsWithNPlays;
     }
 
-    private int getLowestPlayCount(ArrayList<Song> songs) {
+    private int getLowestPlayCount(List<Song> songs) {
         int lowest = songs.get(0).getPlays();
         for(Song song : songs) {
             if(song.getPlays()<lowest) {

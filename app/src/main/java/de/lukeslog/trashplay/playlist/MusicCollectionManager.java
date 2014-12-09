@@ -8,24 +8,16 @@ import org.joda.time.DateTime;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
-import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.cloudstorage.DropBox;
+import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
-import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.service.TrashPlayService;
-import de.lukeslog.trashplay.service.TrashPlayServiceNotRunningException;
 import de.lukeslog.trashplay.support.SettingsConstants;
-import io.realm.Realm;
-import io.realm.RealmQuery;
-import io.realm.RealmResults;
 
 /**
  * This class is a singleton which is in charge of managing the access of the music player to the
@@ -166,7 +158,7 @@ public class MusicCollectionManager {
                 int subtractor = 0;
                 if (i < 10) {
                     Log.d(TAG, "->");
-                    Song s = getSongByFileName(fname);
+                    Song s = SongHelper.getSongByFileName(fname);
                     Log.d(TAG, "-->");
                     nextSongs.set(i - subtractor, s);
                     Log.d(TAG, "--->");
@@ -220,7 +212,7 @@ public class MusicCollectionManager {
                 edit.putString("radioSongs", nextSongsinRadioWithTimeStamps);
                 edit.commit();
                 Log.d(TAG, "....");
-                ArrayList<PlayList> allplaylists = getAllPlayLists();
+                List<PlayList> allplaylists = PlayListHelper.getAllPlayLists();
                 for (final PlayList playList : allplaylists) {
                     Log.d(TAG, playList.getRemotePath());
                     if (playList.isActivated()) {
@@ -298,7 +290,7 @@ public class MusicCollectionManager {
                 if (nextSongFileName.equals("")) {
                     break;
                 }
-                nextSongs.add(getSongByFileName(nextSongFileName));
+                nextSongs.add(SongHelper.getSongByFileName(nextSongFileName));
             }
         }
 
@@ -347,24 +339,6 @@ public class MusicCollectionManager {
         return null;
     }
 
-    private void createNewPlayList(StorageManager storageManager, String path) throws TrashPlayServiceNotRunningException {
-        if (TrashPlayService.serviceRunning()) {
-            Realm realm = Realm.getInstance(TrashPlayService.getContext());
-            try {
-                realm.beginTransaction();
-                PlayList playlist = realm.createObject(PlayList.class);
-                playlist.setRemoteStorage(storageManager.getStorageType());
-                playlist.setRemotePath(path);
-                playlist.setActivated(true);
-                realm.commitTransaction();
-            } catch (Exception e) {
-                realm.cancelTransaction();
-            }
-        }
-        Log.e(TAG, "Trashplayservice not running?");
-        throw new TrashPlayServiceNotRunningException();
-    }
-
     public void syncRemoteStorageWithDevice(final boolean lookForNewPlayLists) throws Exception {
         if (TrashPlayService.wifi) {
             new Thread(new Runnable() {
@@ -385,10 +359,10 @@ public class MusicCollectionManager {
 
     private void synchronizePlayLists() throws Exception {
         Log.d(TAG, "Synchronize");
-        ArrayList<PlayList> allPlayLists = getAllPlayLists();
+        List<PlayList> allPlayLists = PlayListHelper.getAllPlayLists();
         Log.d(TAG, "getAll");
         for (PlayList playlist : allPlayLists) {
-            PlayListFileSynchronizer.synchronize(playlist);
+            PlayListHelper.synchronize(playlist);
             determineNumberOfViableSongs();
         }
         Log.d(TAG, "ok.");
@@ -405,7 +379,7 @@ public class MusicCollectionManager {
             for (String folderName : folderNames) {
                 Log.d(TAG, folderName);
                 if (!knownPlaylist(folderName)) {
-                    createNewPlayList(newDropBox, folderName);
+                    PlayListHelper.createNewPlayList(newDropBox, folderName);
                 }
             }
         }
@@ -413,7 +387,7 @@ public class MusicCollectionManager {
 
     private boolean knownPlaylist(String foldername) {
 
-        ArrayList<PlayList> allPlayLists = getAllPlayLists();
+        List<PlayList> allPlayLists = PlayListHelper.getAllPlayLists();
         for (PlayList playList : allPlayLists) {
             if (playList.getRemotePath().equals(foldername)) {
                 return true;
@@ -428,29 +402,9 @@ public class MusicCollectionManager {
         return fileEndings;
     }
 
-    public boolean isSongInCollection(String fileName) {
-        ArrayList<Song> allSongs = getAllSongs();
-        for (Song song : allSongs) {
-            if (song.getFileName().equals(fileName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public Song getSongByFileName(String fileName) {
-        ArrayList<Song> allSongs = getAllSongs();
-        for (Song song : allSongs) {
-            if (song.getFileName().equals(fileName)) {
-                return song;
-            }
-        }
-        return null;
-    }
-
     public List<Song> getSongsByPlayList(PlayList playList) {
         List<Song> songsInPlayList = new ArrayList<Song>();
-        List<Song> allSongs = getAllSongs();
+        List<Song> allSongs = SongHelper.getAllSongs();
         for (Song song : allSongs) {
             if (SongHelper.isInPlayList(song, playList)) {
                 songsInPlayList.add(song);
@@ -460,42 +414,12 @@ public class MusicCollectionManager {
     }
 
     public boolean collectionNotEmpty() {
-        removeSongsThatAreToBeDeleted();
+        SongHelper.removeSongsThatAreToBeDeleted();
         return !(getNumberOfViableSongs() == 0);
     }
 
-    public void removeSongsThatAreToBeDeleted() {
-        if (TrashPlayService.serviceRunning()) {
-            try {
-                Realm realm = Realm.getInstance(TrashPlayService.getContext());
-                realm.beginTransaction();
-
-                RealmQuery<Song> query = realm.where(Song.class).equalTo("toBeDeleted", true);
-
-                RealmResults<Song> result = query.findAll();
-
-                boolean currentlyPlayingSongIsToBeDeleted = false;
-                for (Song theSong : result) {
-                    if (theSong.isToBeDeleted() && !theSong.equals(MusicPlayer.getCurrentlyPlayingSong())) {
-                        StorageManager.deleteSongFromLocalStorage(theSong);
-                    }
-                }
-                if (!currentlyPlayingSongIsToBeDeleted) {
-                    result.clear();
-                }
-
-                realm.commitTransaction();
-                determineNumberOfViableSongs();
-            } catch (RuntimeException e) {
-                if (e.getLocalizedMessage().contains("Invalid database")) {
-                    Log.e(TAG, "Invalid Databse. Delete everything");
-                }
-            }
-        }
-    }
-
     public void determineNumberOfViableSongs() {
-        ArrayList<Song> songs = getAllSongs();
+        List<Song> songs = SongHelper.getAllSongs();
         int n = 0;
         for (Song s : songs) {
             if (!s.isToBeDeleted() && !s.isToBeUpdated() && s.isInActiveUse()) {
@@ -509,69 +433,6 @@ public class MusicCollectionManager {
         return numberOfViableSongs;
     }
 
-    public ArrayList<PlayList> getAllPlayLists() {
-        Log.d(TAG, "getAllPalyLists");
-        ArrayList<PlayList> playlists = new ArrayList<PlayList>();
-        try {
-            if (TrashPlayService.serviceRunning()) {
-                Log.d(TAG, "service running");
-                Realm realm = Realm.getInstance(TrashPlayService.getContext());
-                Log.d(TAG, "a");
-                realm.beginTransaction();
-                Log.d(TAG, "b");
-                RealmQuery<PlayList> query = realm.where(PlayList.class);
-                Log.d(TAG, "c");
-                RealmResults<PlayList> result = query.findAll();
-                Log.d(TAG, "x");
-                for (PlayList playlist : result) {
-                    playlists.add(playlist);
-                }
-                Log.d(TAG, "y");
-                realm.commitTransaction();
-            }
-            Log.d(TAG, "olol");
-        } catch (RuntimeException e) {
-            Log.e(TAG, "Invalid Databse? Delete everything?");
-
-        }
-        return playlists;
-    }
-
-    public ArrayList<Song> getAllSongs() {
-        ArrayList<Song> songs = new ArrayList<Song>();
-        try {
-            if (TrashPlayService.serviceRunning()) {
-                Realm realm = Realm.getInstance(TrashPlayService.getContext());
-                realm.beginTransaction();
-
-                RealmQuery<Song> query = realm.where(Song.class);
-
-                RealmResults<Song> result = query.findAll();
-
-                for (Song song : result) {
-                    try {
-                        song.getFileName();
-                        song.getDurationInSeconds();
-                        song.getArtist();
-                    } catch (Exception e) {
-                        song.removeFromRealm();
-                    }
-                    songs.add(song);
-                }
-
-                realm.commitTransaction();
-            }
-        } catch (RuntimeException e) {
-
-                Log.e(TAG, "Invalid Databse. Delete everything");
-        }
-        return songs;
-    }
-
-    public ArrayList<Song> getListOfSongs() {
-        return getAllSongs();
-    }
-
     public int getNumberOfActivePlayLists() {
         return numberOfActivatedPlayLists;
     }
@@ -579,7 +440,7 @@ public class MusicCollectionManager {
     public void determineNumberOfActivatedPlayLists() {
         Log.d(TAG, "getNumberOFActivatedPlayLIsts");
         int n = 0;
-        ArrayList<PlayList> allplayLists = getAllPlayLists();
+        List<PlayList> allplayLists = PlayListHelper.getAllPlayLists();
         for (PlayList playList : allplayLists) {
             if (playList.isActivated()) {
                 n++;

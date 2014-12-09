@@ -20,7 +20,6 @@ import android.widget.Toast;
 
 import de.lukeslog.trashplay.R;
 import de.lukeslog.trashplay.cloudstorage.CloudSynchronizationService;
-import de.lukeslog.trashplay.cloudstorage.DropBox;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;

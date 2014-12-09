@@ -1,8 +1,6 @@
 package de.lukeslog.trashplay.playlist;
 
 
-import java.util.HashMap;
-
 public abstract class SongSelector {
 
     public static final String DEFAULT_SONG_SELECTOR ="DefaultSongSelector";
