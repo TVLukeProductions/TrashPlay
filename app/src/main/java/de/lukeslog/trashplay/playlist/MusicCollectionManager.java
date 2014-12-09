@@ -96,7 +96,7 @@ public class MusicCollectionManager {
             Song song = null;
             if (nextSongs != null) {
                 song = nextSongs.get(0);
-                if (song != null) {
+                if (song != null) {  
                     Log.d(TAG, "------------->" + song.getFileName());
                 }
                 new Thread(new Runnable() {
