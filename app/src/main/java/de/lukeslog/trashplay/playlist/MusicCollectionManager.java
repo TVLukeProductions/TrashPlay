@@ -42,6 +42,7 @@ public class MusicCollectionManager {
     private ArrayList<Long> timeStampsForRadio = new ArrayList<Long>();
 
     public static long timeDifInMillis = 0l;
+    public static long lastStartTime = 0l;
 
     private ArrayList<Song> nextSongs = new ArrayList<Song>();
 
@@ -82,9 +83,14 @@ public class MusicCollectionManager {
             DateTime now = new DateTime();
             Log.d(TAG, "NOW: " + now);
             if(timeStampsForRadio!=null && timeStampsForRadio.get(0)!=null) {
+                if(timeStampsForRadio.size()>1 && timeStampsForRadio.get(0)==lastStartTime){
+                    timeStampsForRadio.remove(0);
+                    nextSongs.remove(0);
+                }
                 DateTime then = new DateTime(timeStampsForRadio.get(0));
                 Log.d(TAG, "PLAY TIME:" + then);
                 timeDifInMillis = now.getMillis() - then.getMillis();
+                lastStartTime = timeStampsForRadio.get(0);
                 Log.d(TAG, "" + (timeDifInMillis / 1000));
             }
             Song song = null;
