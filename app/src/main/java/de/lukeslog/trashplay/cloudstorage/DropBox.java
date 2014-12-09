@@ -89,8 +89,14 @@ public class DropBox extends StorageManager {
         for (Entry possibleStation : possibleStations) {
             if (!possibleStation.isDir && possibleStation.fileName().endsWith(".station")) {
                 Log.d(TAG, "FOUND A RADIO STATION!");
-                stationNames = stationNames + possibleStation.fileName() + " ";
-                Log.d(TAG, "Stationnames" + stationNames);
+                DateTime now = new DateTime();
+                DateTime actualModificationTime = getDateTimeFromDropBoxModificationTimeString(possibleStation.modified);
+                if (now.minusHours(1).isBefore(actualModificationTime)) {
+                    mDBApi.delete(possibleStation.path);
+                } else {
+                    stationNames = stationNames + possibleStation.fileName() + " ";
+                    Log.d(TAG, "Stationnames" + stationNames);
+                }
             }
         }
         Log.d(TAG, "Radiostations " + stationNames);
@@ -178,9 +184,10 @@ public class DropBox extends StorageManager {
         Log.d(TAG, "getListOfFiles With Allowed Ending");
         ArrayList<String> fileList = new ArrayList<String>();
         String givenPath = "/" + folderPath;
-        if (mDBApi != null) {
+        if (mDBApi == null) {
             getDropBoxAPI();
         }
+        Log.d(TAG, "olol");
         Entry folder = mDBApi.metadata(givenPath, 0, null, true, null);
         if (folder.isDir) {
             for (Entry file : folder.contents) {

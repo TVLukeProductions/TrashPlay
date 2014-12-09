@@ -106,6 +106,9 @@ public abstract class StorageManager {
         setSyncInProgress(true);
         try {
             result = downloadFileIfNewerVersionFromRemoteStorage(path, fileName, lastChange);
+            if(!result.equals("")){
+                SongHelper.refreshLastUpdate(fileName);
+            }
         } catch (Exception e) {
             setSyncInProgress(false);
             throw e;

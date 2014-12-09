@@ -423,7 +423,7 @@ public class MainControl extends Activity {
             infoBox.setText("Press Play To Start");
         } else if (!CloudSynchronizationService.atLeastOneCloudStorageServiceIsConnected()) {
             infoBox.setText("Not connected to any storage with Playlists");
-        } else if (MusicCollectionManager.getInstance().getNumberOfViableSongs() == 0) {
+        } else if (SongHelper.getNumberOfViableSongs() == 0) {
             infoBox.setText("No songs");
         }
     }
@@ -433,10 +433,10 @@ public class MainControl extends Activity {
         String posix = MusicPlayer.playPosition();
         String length = MusicPlayer.playLength();
         if (length.equals("") || posix.equals("")) {
-            position.setText("(" + MusicCollectionManager.getInstance().getNumberOfViableSongs() + ")");
+            position.setText("(" + SongHelper.getNumberOfViableSongs() + ")");
 
         } else {
-            position.setText("(" + MusicCollectionManager.getInstance().getNumberOfViableSongs() + ")" + "[" + posix + "|" + length + "]");
+            position.setText("(" + SongHelper.getNumberOfViableSongs() + ")" + "[" + posix + "|" + length + "]");
         }
     }
 

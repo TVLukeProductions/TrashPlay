@@ -25,13 +25,18 @@ public class SongHelper {
 
     public static final String TAG = TrashPlayConstants.TAG;
 
+    private static int numberOfViableSongs = 0;
+    private static boolean freshStart = true;
+
     public static boolean localFileExists(Song song) {
         return StorageManager.doesFileExists(song);
     }
 
     public static void addSongToPlayList(Song song, PlayList playList) {
         Log.d(TAG, "Add Song To PlayList "+playList.getRemotePath());
-        song.getPlayLists().add(playList);
+        Log.d(TAG, "Current Playlist encoding: "+song.getPlayLists());
+        song.setPlayLists(song.getPlayLists() + PlayListHelper.getPlayListEncodingString(playList) + " ");
+        Log.d(TAG, "NOW: "+song.getPlayLists());
     }
 
     public static void refreshLastUpdate(String songFileName) {
@@ -43,13 +48,15 @@ public class SongHelper {
     public static void refreshLastUpdate(Song song) {
         DateTime now = new DateTime();
         song.setLastUpdate(now.getMillis());
+        song.save();
     }
 
     public static void removeFromPlayList(Song song, PlayList playList) {
-        song.getPlayLists().remove(playList);
+        song.getPlayLists().replace("", PlayListHelper.getPlayListEncodingString(playList));
         if(song.getPlayLists().isEmpty()) {
             song.setToBeDeleted(true);
         }
+        song.save();
     }
 
     public static void getMetaData(Song song)
@@ -163,13 +170,38 @@ public class SongHelper {
     }
 
     public static boolean isInPlayList(Song song, PlayList playList) {
-        return song.getPlayLists().contains(playList);
+        String playlists = song.getPlayLists();
+        if(playlists.contains(PlayListHelper.getPlayListEncodingString(playList))) {
+            return true;
+        }
+        return false;
     }
 
     public static Song getSongByFileName(String fileName) {
         Song resultSong = null;
         resultSong = new Select().from(Song.class).where("fileName = ?", fileName).executeSingle();
         return resultSong;
+    }
+
+    public static void determineNumberOfViableSongs() {
+        SongHelper.removeSongsThatAreToBeDeleted();
+        List<Song> songs = SongHelper.getAllSongs();
+        int n = 0;
+        for (Song s : songs) {
+            if (!s.isToBeDeleted() && !s.isToBeUpdated() && s.isInActiveUse()) {
+                n++;
+            }
+        }
+        numberOfViableSongs = n;
+    }
+
+
+    public static int getNumberOfViableSongs() {
+        if(freshStart){
+            determineNumberOfViableSongs();
+            freshStart=false;
+        }
+        return numberOfViableSongs;
     }
 
     static void removeSongsThatAreToBeDeleted() {
@@ -188,12 +220,13 @@ public class SongHelper {
                     new Delete().from(Song.class).where("toBeDeleted = ?", "1").execute();
                 }
             } catch (Exception e) {
-                    Log.e(TAG, "Invalid Databse. Delete everything");
+                    Log.e(TAG, "Invalid Databse. Delete everything 2");
             }
         }
     }
 
     static List<Song> getAllSongs() {
+        Log.d(TAG, "get all songs");
         List<Song> songs = new ArrayList<Song>();
         try {
             if (TrashPlayService.serviceRunning()) {
@@ -201,31 +234,39 @@ public class SongHelper {
             }
         } catch (Exception e) {
 
-            Log.e(TAG, "Invalid Databse. Delete everything");
+            Log.e(TAG, "Invalid Databse. Delete everything 1");
         }
         return songs;
     }
 
     public static void resetPlayList(Song song) {
-      //  RealmList<PlayList> x = song.getPlayLists();
-      //  x.clear();
-      //  song.setPlayLists(x);
+        song.setPlayLists("");
     }
 
     public static Song createSong(String localFileName, PlayList playList) {
-        Log.d(TAG, "create Song");
-        Song newSong = new Song();
-        Log.d(TAG, "1");
-        newSong.setFileName(localFileName);
-        Log.d(TAG, "2");
-        getMetaData(newSong);
-        Log.d(TAG, "3");
-        addSongToPlayList(newSong, playList); //THIS?
-        Log.d(TAG, "4");
-        refreshLastUpdate(newSong);
-        newSong.setInActiveUse(true);
-        newSong.save();
-        return newSong;
+        if(playList!=null) {
+            Log.d(TAG, "lets first find out if we know this song");
+            Song s = getSongByFileName(localFileName);
+            if (s != null) {
+                addSongToPlayList(s, playList);
+                return s;
+            } else {
+                Log.d(TAG, "create Song");
+                Song newSong = new Song();
+                Log.d(TAG, "1");
+                newSong.setFileName(localFileName);
+                Log.d(TAG, "2");
+                getMetaData(newSong);
+                Log.d(TAG, "3");
+                addSongToPlayList(newSong, playList);
+                Log.d(TAG, "4");
+                refreshLastUpdate(newSong);
+                newSong.setInActiveUse(true);
+                newSong.save();
+                return newSong;
+            }
+        }
+        return null;
     }
 
     static boolean isSongInCollection(String fileName) {
@@ -248,5 +289,37 @@ public class SongHelper {
         //TODO: change the overall playcount
         //TODO: get the average time between plays
         //Generate other global statistics...
+    }
+
+    public static List<PlayList> getAllPlayListsFromSong(Song song) {
+
+        List<PlayList> result = new ArrayList<PlayList>();
+
+        try {
+            String playListString = song.getPlayLists();
+            String[] playListStrings = playListString.split(",");
+            for (String playlistString : playListStrings) {
+                playlistString = playListString.trim();
+                Log.d(TAG, "playListString: "+playlistString);
+                if (playlistString.length() > 5) { //O.M.G
+                    String[] parts = playListString.split("/");
+                    if(parts.length==2) {
+                        String remotestorage = parts[0];
+                        String remotepath = parts[1];
+                        Log.d(TAG, "remotestorage=" + remotestorage);
+                        Log.d(TAG, "remotepath=" + remotepath);
+                        List<PlayList> playlists = PlayListHelper.getAllPlayLists();
+                        for (PlayList playlist : playlists) {
+                            if (playlist.getRemotePath().equals(remotepath) && playlist.getRemoteStorage().equals(remotestorage)) {
+                                result.add(playlist);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch(Exception e) {
+            Log.e(TAG, "exception when retrieving palylists");
+        }
+        return result;
     }
 }

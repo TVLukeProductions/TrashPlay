@@ -45,10 +45,14 @@ An diesem Ort entshet die neue Version der App.
 * Radiosymbol wenn man sendet
 
 ###08.12.2014
-* ZUgriff auf Persitenzobjekte nur noch von zwei Helper KLassen für Transparenz und Refactorbarkeit
+* Zugriff auf Persitenzobjekte nur noch von zwei Helper KLassen für Transparenz und Refactorbarkeit
 * Realm wird jetzt durch ORMLite erstetzt
 * ORMLIte wird jetzt durch ActiveAndroid ersetzt
 * com.android.support:support-v4:20.0.0 in gradele weil ActiveAndroid sonst nicht tut
+
+###09.12.2004
+* Die umstellung auf Active Android zuende bringen
+* Speichern der Playlists in Songs nur serialisiert. Weil n-n Realtionships in ActiveAndroid nicht vernünfig sind. Gnaaaaa.
 
 ## ToDo
 * Sammeln von persönlichen Statistiken

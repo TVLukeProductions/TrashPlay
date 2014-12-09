@@ -32,7 +32,6 @@ public class MusicCollectionManager {
 
     private static MusicCollectionManager instance = null;
 
-    private int numberOfViableSongs = 0;
     private int numberOfActivatedPlayLists = 0;
 
     private long startTimeOfCurrentSong = 0l;
@@ -75,17 +74,19 @@ public class MusicCollectionManager {
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
         boolean listenalong = settings.getBoolean("listenalong", false);
         if (listenalong) {
-            if (radiofile == null) {
+            if(radioFileHasChanged) {
                 parseRadioFile();
             }
             Log.d(TAG, "Next Song for Radio People...");
             Log.d(TAG, "continue");
             DateTime now = new DateTime();
             Log.d(TAG, "NOW: " + now);
-            DateTime then = new DateTime(timeStampsForRadio.get(0));
-            Log.d(TAG, "PLAY TIME:" + then);
-            timeDifInMillis = now.getMillis() - then.getMillis();
-            Log.d(TAG, "" + (timeDifInMillis / 1000));
+            if(timeStampsForRadio!=null && timeStampsForRadio.get(0)!=null) {
+                DateTime then = new DateTime(timeStampsForRadio.get(0));
+                Log.d(TAG, "PLAY TIME:" + then);
+                timeDifInMillis = now.getMillis() - then.getMillis();
+                Log.d(TAG, "" + (timeDifInMillis / 1000));
+            }
             Song song = null;
             if (nextSongs != null) {
                 song = nextSongs.get(0);
@@ -130,6 +131,8 @@ public class MusicCollectionManager {
     }
 
     private void parseRadioFile() {
+        Log.d(TAG, "parseradiofile....");
+
         if (nextSongs.size() < 10) {
             for (int i = nextSongs.size(); i < 10; i++) {
                 nextSongs.add(null);
@@ -306,10 +309,10 @@ public class MusicCollectionManager {
     private Song replaceSongForReasons(Song possibleSong) {
         Log.d(TAG, "replaceForReasons...");
         Log.d(TAG, "check if song needs to be replaced (" + SongHelper.getTitleInfoAsString(possibleSong) + ")");
-        if (getNumberOfViableSongs() > 0 && getNumberOfActivePlayLists() > 0) {
+        if (SongHelper.getNumberOfViableSongs() > 0 && getNumberOfActivePlayLists() > 0) {
             Log.d(TAG, "number if viable songs is more than 0, thats good");
             if (possibleSong == null) {
-                determineNumberOfViableSongs();
+                SongHelper.determineNumberOfViableSongs();
                 return pickASong();
             }
             try {
@@ -339,7 +342,7 @@ public class MusicCollectionManager {
         return null;
     }
 
-    public void syncRemoteStorageWithDevice(final boolean lookForNewPlayLists) throws Exception {
+    public void syncRemoteStorageWithDevice(final boolean lookForNewPlayLists){
         if (TrashPlayService.wifi) {
             new Thread(new Runnable() {
                 public void run() {
@@ -350,6 +353,7 @@ public class MusicCollectionManager {
                         synchronizePlayLists();
                     } catch (Exception e) {
                         Log.e(TAG, "Exception while trying to sync.");
+                        syncRemoteStorageWithDevice(lookForNewPlayLists);
                         e.printStackTrace();
                     }
                 }
@@ -363,7 +367,7 @@ public class MusicCollectionManager {
         Log.d(TAG, "getAll");
         for (PlayList playlist : allPlayLists) {
             PlayListHelper.synchronize(playlist);
-            determineNumberOfViableSongs();
+            SongHelper.determineNumberOfViableSongs();
         }
         Log.d(TAG, "ok.");
     }
@@ -414,23 +418,7 @@ public class MusicCollectionManager {
     }
 
     public boolean collectionNotEmpty() {
-        SongHelper.removeSongsThatAreToBeDeleted();
-        return !(getNumberOfViableSongs() == 0);
-    }
-
-    public void determineNumberOfViableSongs() {
-        List<Song> songs = SongHelper.getAllSongs();
-        int n = 0;
-        for (Song s : songs) {
-            if (!s.isToBeDeleted() && !s.isToBeUpdated() && s.isInActiveUse()) {
-                n++;
-            }
-        }
-        numberOfViableSongs = n;
-    }
-
-    public int getNumberOfViableSongs() {
-        return numberOfViableSongs;
+        return !(SongHelper.getNumberOfViableSongs() == 0);
     }
 
     public int getNumberOfActivePlayLists() {

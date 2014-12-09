@@ -15,7 +15,7 @@ public class Song extends Model {
     private String fileName="";
 
     @Column(name = "playLists")
-    private ArrayList<PlayList> playLists;
+    private String playLists;
 
     @Column(name = "songName")
     private String songName="";
@@ -99,11 +99,11 @@ public class Song extends Model {
         return durationInSeconds;
     }
 
-    public void setPlayLists(ArrayList<PlayList> list) {
+    public void setPlayLists(String list) {
         playLists = list;
     }
 
-    public ArrayList<PlayList> getPlayLists() {
+    public String getPlayLists() {
         return playLists;
     }
 
