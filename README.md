@@ -55,7 +55,7 @@ An diesem Ort entshet die neue Version der App.
 * Speichern der Playlists in Songs nur serialisiert. Weil n-n Realtionships in ActiveAndroid nicht vernünfig sind. Gnaaaaa.
 
 ##11.12.2014
-* Die Badges als persistentes Element Hinzugefügt
+* Die Badges als persistentes Element Hinzugefügt 
 
 ## ToDo
 * Sammeln von persönlichen Statistiken
