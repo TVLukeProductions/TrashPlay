@@ -1,11 +1,24 @@
 package de.lukeslog.trashplay.badges;
 
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
+
+@Table(name = "Badge")
 public class Badge  {
 
+    @Column(name = "title")
     private String title="";
+
+    @Column(name = "description")
     private String description="";
+
+    @Column(name = "type")
     private String type="";
+
+    @Column(name = "awardsMessage")
     private String awardsMessage="";
+
+    @Column(name = "activated")
     private boolean activated=false;
 
     public String getTitle() {

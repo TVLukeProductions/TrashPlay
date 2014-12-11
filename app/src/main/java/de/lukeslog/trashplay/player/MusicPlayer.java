@@ -26,6 +26,7 @@ import de.lukeslog.trashplay.lastfm.PersonalLastFM;
 import de.lukeslog.trashplay.lastfm.TrashPlayLastFM;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
 import de.lukeslog.trashplay.playlist.Song;
+import de.lukeslog.trashplay.playlist.SongHelper;
 import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
 
@@ -358,6 +359,15 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         if (mp != null) {
             try {
                 int p = currentlyPlayingSong.getDurationInSeconds();
+                if(p==0l){
+                   try{
+                       p= mp.getDuration();
+                       currentlyPlayingSong.setDurationInSeconds(p);
+                   } catch(Exception e) {
+                       Log.d(TAG, "stupid length exceptione");
+                       p=180;
+                   }
+                }
                 result = getStringFromIntInSeconds(result, p);
             } catch (Exception e) {
                 if(TrashPlayService.serviceRunning()) {
