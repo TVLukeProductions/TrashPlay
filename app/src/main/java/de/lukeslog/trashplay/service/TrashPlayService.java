@@ -192,7 +192,7 @@ public class TrashPlayService extends Service {
 
         @Override
         public void run() {
-       //     Log.d(TAG, "ServiceRunner: run");
+       //     Logger.d(TAG, "ServiceRunner: run");
             if(counter%60==0)
             {
                 Logger.d(TAG, "ServiceRunner: Time to try to synchronize and Stuff");

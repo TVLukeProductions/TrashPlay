@@ -20,6 +20,7 @@ import de.lukeslog.trashplay.playlist.PlayList;
 import de.lukeslog.trashplay.playlist.PlayListHelper;
 import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
+import de.lukeslog.trashplay.support.SettingsConstants;
 
 public class SettingsFragment extends PreferenceFragment {
 
@@ -31,6 +32,7 @@ public class SettingsFragment extends PreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Logger.d(TAG, "preferences...");
+
         addPreferencesFromResource(R.xml.preferences);
 
         trashModeListener();
@@ -64,7 +66,7 @@ public class SettingsFragment extends PreferenceFragment {
                 String stations = settings.getString("Radio_" + activeRemotePlayList.getRemoteStorage() + "_" + activeRemotePlayList.getRemotePath(), "");
                 Logger.d(TAG, "stations");
                 stations.replace("_", "");
-                String[] theStations = stations.split(" ");
+                String[] theStations = stations.split("XX88XX88XX");
                 for (final String station : theStations) {
                     String stationName = station.replace(".station", "");
                     if (!stationName.equals("")) {
@@ -151,16 +153,25 @@ public class SettingsFragment extends PreferenceFragment {
     }
 
     private boolean radioSettingsEnabled() {
-        EditTextPreference radioName = (EditTextPreference) getPreferenceManager().findPreference("pref_appdata_radioname");
+        EditTextPreference radioName = (EditTextPreference) getPreferenceManager().findPreference(SettingsConstants.APP_SETTING_RADIO_NAME);
         radioName.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
+                EditTextPreference preference1 = (EditTextPreference) preference;
+                SharedPreferences settings = TrashPlayService.getDefaultSettings();
+                SharedPreferences.Editor edit = settings.edit();
+                edit.putString(SettingsConstants.APP_SETTING_RADIO_NAME, preference1.getEditText().getText().toString());
+                edit.commit();
                 radioSettings();
                 return true;
             }
         });
-        String radioNameString = radioName.getEditText().getText().toString();
-        if (!radioNameString.equals("")) {
+
+        SharedPreferences settings = TrashPlayService.getDefaultSettings();
+        String radioNameFromSettings = settings.getString(SettingsConstants.APP_SETTING_RADIO_NAME, "");
+        radioName.setText(radioNameFromSettings);
+
+        if (!radioNameFromSettings.equals("")) {
             int i = getNumberOfActivePlayLists();
             Logger.d(TAG, "numberOfActivePlaylists" + i);
             if (i == 1) {

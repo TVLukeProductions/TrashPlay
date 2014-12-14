@@ -46,6 +46,7 @@ public class MusicCollectionManager {
     public static long lastStartTime = 0l;
 
     private ArrayList<Song> nextSongs = new ArrayList<Song>();
+    private static ArrayList<String> history = new ArrayList<String>();
 
     private MusicCollectionManager() {
     }
@@ -71,7 +72,19 @@ public class MusicCollectionManager {
 
     }
 
+    public Song getPreviousSong() throws Exception {
+        Logger.d(TAG, "get previous Song");
+        setPlayListBackToPreviousSong();
+        return findNextSong();
+    }
+
     public Song getNextSong() throws Exception {
+        Song nextSong = findNextSong();
+        recordHistory();
+        return nextSong;
+    }
+
+    private Song findNextSong() throws Exception {
         Logger.d(TAG, "get Next Song");
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
         boolean listenalong = settings.getBoolean("listenalong", false);
@@ -92,13 +105,13 @@ public class MusicCollectionManager {
                 Logger.d(TAG, "PLAY TIME:" + then);
                 timeDifInMillis = now.getMillis() - then.getMillis();
                 lastStartTime = timeStampsForRadio.get(0);
-                Log.d(TAG, "" + (timeDifInMillis / 1000));
+                Logger.d(TAG, "" + (timeDifInMillis / 1000));
             }
             Song song = null;
             if (nextSongs != null) {
                 song = nextSongs.get(0);
                 if (song != null) {
-                    Log.d(TAG, "------------->" + song.getFileName());
+                    Logger.d(TAG, "------------->" + song.getFileName());
                 }
                 new Thread(new Runnable() {
                     public void run() {
@@ -111,11 +124,11 @@ public class MusicCollectionManager {
                 }).start();
                 if (radioFileHasChanged) {
                     parseRadioFile();
-                    Log.d(TAG, "back on top...");
+                    Logger.d(TAG, "back on top...");
                 }
-                Log.d(TAG, "--------------");
+                Logger.d(TAG, "--------------");
                 if (song != null) {
-                    Log.d(TAG, "--------------SONG NOT NULL:::");
+                    Logger.d(TAG, "--------------SONG NOT NULL:::");
                     return song;
                 }
             }
@@ -195,7 +208,7 @@ public class MusicCollectionManager {
             Logger.d(TAG, "->" + stationdata.length);
             Logger.d(TAG, stationdata[1]);
             StorageManager remoteStorage = StorageManager.getStorage(stationdata[1]);
-            Log.d(TAG, "--x--");
+            Logger.d(TAG, "--x--");
             String playlistfile = remoteStorage.downloadFile(stationdata[2] + "/Radio", stationdata[3]);
             Logger.d(TAG, StorageManager.LOCAL_STORAGE + playlistfile);
             radiofile = getStringFromFile(StorageManager.LOCAL_STORAGE + playlistfile);
@@ -475,5 +488,41 @@ public class MusicCollectionManager {
 
     public void resetNextSongs() {
         nextSongs.clear();
+    }
+
+    public String getPlayListString() {
+        SharedPreferences settings = TrashPlayService.getDefaultSettings();
+        String result =" ";
+        if (settings != null) {
+            for (int i = 0; i < 10; i++) {
+                String nextSongFileName = settings.getString("nextSong_" + i, "");
+                result = result + nextSongFileName+"XX88XX88XX";
+            }
+        }
+        return result;
+    }
+
+
+    public void recordHistory() {
+        Logger.d(TAG, "recordHistory()");
+        history.add(MusicCollectionManager.getInstance().getPlayListString());
+        if(history.size()>100){
+            history.remove(0);
+        }
+    }
+
+    public void setPlayListBackToPreviousSong() {
+        Logger.d(TAG, "setPlayListBackToPreviousSong()");
+        if(history.size()>0) {
+            nextSongs.clear();
+            String historyOfTracks = history.get(history.size()-1);
+            String [] historyArray = historyOfTracks.split("XX88XX88XX");
+                for (String nextSongFileName : historyArray) {
+                    nextSongFileName = nextSongFileName.trim();
+                    Logger.d(TAG, "----->"+nextSongFileName);
+                    nextSongs.add(SongHelper.getSongByFileName(nextSongFileName));
+            }
+            history.remove(history.size()-1);
+        }
     }
 }

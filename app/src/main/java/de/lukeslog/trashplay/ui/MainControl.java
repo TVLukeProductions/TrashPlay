@@ -61,6 +61,7 @@ public class MainControl extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Logger.d(TAG, "on Create");
         ActiveAndroid.initialize(this);
         setContentView(R.layout.activity_main_control);
 
@@ -120,9 +121,7 @@ public class MainControl extends Activity {
         });
         nextimg.setClickable(true);
         playpause.setClickable(false);
-        uiUpdater = new
-
-                UIUpdater();
+        uiUpdater = new UIUpdater();
 
         uiUpdater.run();
     }
@@ -150,19 +149,20 @@ public class MainControl extends Activity {
 
     @Override
     protected void onResume() {
+        super.onResume();
+        Logger.d(TAG, "onResume");
         DropBox.authenticate();
-        if(authenticatingDropBox) {
-            authenticatingDropBox=false;
+        if (authenticatingDropBox) {
+            authenticatingDropBox = false;
             MusicCollectionManager.getInstance().syncRemoteStorageWithDevice(true);
         }
-        super.onResume();
         uiUpdater.onResume();
     }
 
     @Override
     protected void onPause() {
-        Logger.d(TAG, "on Pause in Activity called");
         super.onPause();
+        Logger.d(TAG, "on Pause in Activity called");
         setPlayButtonClicked(false);
         uiUpdater.onPause();
     }
@@ -170,9 +170,6 @@ public class MainControl extends Activity {
     @Override
     protected void onDestroy() {
         Logger.d(TAG, "Main On Destroy");
-        if (TrashPlayService.serviceRunning()) {
-            stopService(new Intent(ctx, TrashPlayService.class));
-        }
         super.onDestroy();
     }
 
@@ -189,7 +186,7 @@ public class MainControl extends Activity {
                     toast(message);
                 } else {
                     Logger.d(TAG, "click dp");
-                    authenticatingDropBox=true;
+                    authenticatingDropBox = true;
                     DropBox.getDropBoxAPI().getSession().startAuthentication(MainControl.this);
                     toast("Connecting to Dropbox");
                 }
@@ -217,7 +214,7 @@ public class MainControl extends Activity {
                         edit.putBoolean("scrobble", false);
                         edit.commit();
                     } else {
-                        Log.d(TAG, "Scrobble was no will be yes");
+                        Logger.d(TAG, "Scrobble was no will be yes");
                         SharedPreferences.Editor edit = settings.edit();
                         edit.putBoolean("scrobble", true);
                         edit.commit();

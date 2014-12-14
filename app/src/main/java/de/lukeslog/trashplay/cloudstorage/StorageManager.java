@@ -13,6 +13,7 @@ import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.playlist.Song;
 import de.lukeslog.trashplay.playlist.SongHelper;
 import de.lukeslog.trashplay.service.TrashPlayService;
+import de.lukeslog.trashplay.support.Logger;
 
 public abstract class StorageManager {
 
@@ -61,17 +62,17 @@ public abstract class StorageManager {
      * @throws InterruptedException
      */
     public List<String> getAllPlayListFolders() throws Exception {
-        Log.d(TAG, "getAllPlaylist Folders");
+        Logger.d(TAG, "getAllPlaylist Folders");
         List<String> playListFolders = new ArrayList<String>();
         if (TrashPlayService.wifi && !syncInProgress) {
-            Log.d(TAG, "wifi is");
+            Logger.d(TAG, "wifi is");
             while (syncInProgress) {
                 Thread.sleep(100);
             }
-            Log.d(TAG, "setSync");
+            Logger.d(TAG, "setSync");
             setSyncInProgress(true);
             try {
-                Log.d(TAG, "search...");
+                Logger.d(TAG, "search...");
                 playListFolders = searchForPlayListFolderInRemoteStorageImplementation();
             } catch (Exception e) {
                 setSyncInProgress(false);
@@ -172,12 +173,12 @@ public abstract class StorageManager {
     public abstract String getStorageType();
 
     public static void deleteSongFromLocalStorage(Song song) {
-        Log.d(TAG, "delete from Local Storage "+song.getFileName());
+        Logger.d(TAG, "delete from Local Storage "+song.getFileName());
         File songFile = new File(LOCAL_STORAGE + song.getFileName());
         System.gc();
         songFile.delete();
         System.gc();
-        Log.d(TAG, "Does the song still exist?" + songFile.exists());
+        Logger.d(TAG, "Does the song still exist?" + songFile.exists());
     }
 
     public boolean isSyncInProgress() {
@@ -185,12 +186,12 @@ public abstract class StorageManager {
     }
 
     public static boolean doesFileExists(Song song) {
-        Log.d(TAG, "Song Filename given as "+song.getFileName());
+        Logger.d(TAG, "Song Filename given as "+song.getFileName());
         File f = new File(StorageManager.LOCAL_STORAGE + song.getFileName());
         boolean localExists = f.exists();
-        Log.d(TAG, "" + localExists);
+        Logger.d(TAG, "" + localExists);
         if (!localExists) {
-            Log.d(TAG, "nope!");
+            Logger.d(TAG, "nope!");
             song.setToBeDeleted(true);
             SongHelper.resetPlayList(song);
         }

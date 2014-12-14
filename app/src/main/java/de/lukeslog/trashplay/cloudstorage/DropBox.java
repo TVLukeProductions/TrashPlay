@@ -60,13 +60,13 @@ public class DropBox extends StorageManager {
 
     @Override
     protected List<String> searchForPlayListFolderInRemoteStorageImplementation() throws Exception {
-        Log.d(TAG, "DropBoxsearch...");
+        Logger.d(TAG, "DropBoxsearch...");
         List<String> playListFolders = new ArrayList<String>();
         if (mDBApi != null) {
             Entry dropBoxDir1 = mDBApi.metadata("/", 0, null, true, null);
             if (dropBoxDir1.isDir) {
                 for (Entry topFolder : dropBoxDir1.contents) {
-                    Log.d(TAG, "" + topFolder.fileName());
+                    Logger.d(TAG, "" + topFolder.fileName());
                     if (topFolder.isDir) {
                         Entry folder = mDBApi.metadata("/" + topFolder.fileName(), 0, null, true, null);
                         if (isAPlayListFolder(folder)) {
@@ -114,7 +114,7 @@ public class DropBox extends StorageManager {
                     Logger.d(TAG, "DELETE RADIO? " + possibleStation.path);
                     mDBApi.delete(possibleStation.path);
                 } else {
-                    stationNames = stationNames + possibleStation.fileName() + " ";
+                    stationNames = stationNames + possibleStation.fileName() + "XX88XX88XX";
                     Logger.d(TAG, "Stationnames" + stationNames);
                 }
             }
@@ -158,7 +158,7 @@ public class DropBox extends StorageManager {
                     }
 
                     //write Data into File
-                    Log.d(TAG, file.getAbsolutePath());
+                    Logger.d(TAG, file.getAbsolutePath());
                     try {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
                         writer.write(radioSongs);
@@ -169,27 +169,27 @@ public class DropBox extends StorageManager {
 
                     InputStream stream = new FileInputStream(file);
 
-                    Log.d(TAG, path);
+                    Logger.d(TAG, path);
                     Entry playlistFolder = mDBApi.metadata("/" + path, 0, null, true, null);
                     checkAndCreateNecessarySubFolders(playlistFolder);
                     Entry folder = mDBApi.metadata("/" + path + "/Radio", 0, null, true, null);
                     List<Entry> files = folder.contents;
                     for (Entry entry : files) {
-                        Log.d(TAG, entry.fileName());
+                        Logger.d(TAG, entry.fileName());
                         if (entry.fileName().equals(radioName + ".station")) {
-                            Log.d(TAG, "exists");
+                            Logger.d(TAG, "exists");
 
                             mDBApi.putFileOverwrite("/" + path + "/Radio/" + radioName + ".station", stream, file.length(), null);
                             return;
                         }
                     }
-                    Log.d(TAG, "/" + path + "/Radio/" + radioName + ".station");
-                    Log.d(TAG, "" + file.length());
+                    Logger.d(TAG, "/" + path + "/Radio/" + radioName + ".station");
+                    Logger.d(TAG, "" + file.length());
                     mDBApi.putFile("/" + path + "/Radio/" + radioName + ".station", stream, file.length(), null, null);
                 }
             }
         } else {
-            Log.d(TAG, "Dropbox wasn't ready yet....");
+            Logger.d(TAG, "Dropbox wasn't ready yet....");
         }
     }
 
@@ -218,12 +218,12 @@ public class DropBox extends StorageManager {
                 if (!file.isDir) {
                     String filename = file.fileName();
 
-                    Log.d(TAG, file.path);
-                    Log.d(TAG, file.modified);
+                    Logger.d(TAG, file.path);
+                    Logger.d(TAG, file.modified);
 
                     boolean allowed = hasAllowedFileEnding(listOfAllowedFileEndings, filename);
                     if (allowed) {
-                        Log.d(TAG, filename);
+                        Logger.d(TAG, filename);
                         fileList.add(filename);
                     }
                 }
@@ -372,27 +372,19 @@ public class DropBox extends StorageManager {
         Logger.d(TAG, "check and create: " + folder.fileName());
         boolean radioFolder = false;
         boolean christmasFolder = false;
-        Logger.d(TAG, "A");
         List<Entry> folderContents = folder.contents;
-        Logger.d(TAG, "B");
         if (folderContents != null) {
-            Logger.d(TAG, "C");
             for (Entry content : folderContents) {
-                Logger.d(TAG, "D");
                 if (content.isDir) {
-                    Logger.d(TAG, "e");
                     if (content.fileName().equals("Radio")) {
-                        Logger.d(TAG, "F");
                         radioFolder = true;
                     }
                     if (content.fileName().equals("Christmas")) {
-                        Logger.d(TAG, "G");
                         christmasFolder = true;
                     }
                 }
             }
         }
-        Logger.d(TAG, "X");
         String fileName = folder.fileName();
         if (!fileName.startsWith("/")) {
             fileName = "/" + fileName;
@@ -404,7 +396,6 @@ public class DropBox extends StorageManager {
             } catch (Exception e) {
                 Logger.e(TAG, "EXCEPTION" + e);
             }
-            Logger.d(TAG, "DONE");
         }
         if (!christmasFolder) {
             Logger.d(TAG, "create ChristmasFolder.");
@@ -413,7 +404,6 @@ public class DropBox extends StorageManager {
             } catch (Exception e) {
                 Logger.e(TAG, "EXCEPTION" + e);
             }
-            Logger.d(TAG, "DONE");
         }
     }
 

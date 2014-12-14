@@ -19,6 +19,7 @@ import org.farng.mp3.id3.ID3v1;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
@@ -31,11 +32,11 @@ import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
 
 public class MusicPlayer extends Service implements OnPreparedListener, OnCompletionListener, MediaPlayer.OnErrorListener {
-    public static final String ACTION_START_MUSIC = "startmusic";
-    public static final String ACTION_STOP_MUSIC = "stopmusic";
-    public static final String ACTION_NEXT_SONG = "nextSong";
-    public static final String ACTION_PREV_SONG = "prevSong";
-    public static final String ACTION_PAUSE_SONG = "pauseSong";
+    public static final String ACTION_START_MUSIC = "trashplay_startmusic";
+    public static final String ACTION_STOP_MUSIC = "trashplay_stopmusic";
+    public static final String ACTION_NEXT_SONG = "trashplay_nextSong";
+    public static final String ACTION_PREV_SONG = "trashplay_prevSong";
+    public static final String ACTION_PAUSE_SONG = "trashplay_pauseSong";
 
     public static final String TAG = TrashPlayConstants.TAG;
 
@@ -57,7 +58,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-        //Log.d(TAG, "ClockWorkService onStartCommand()");
+        //Logger.d(TAG, "ClockWorkService onStartCommand()");
         return START_STICKY;
     }
 
@@ -137,7 +138,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             MP3File mp3 = new MP3File(file);
             ID3v1 id3 = mp3.getID3v1Tag();
             artist = id3.getArtist();
-            //Log.d(TAG, "----------->ARTIST:" + artist);
+            //Logger.d(TAG, "----------->ARTIST:" + artist);
             title = id3.getSongTitle();
         } catch (IOException e1) {
             e1.printStackTrace();
@@ -283,7 +284,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                 try {
                     nextSong = MusicCollectionManager.getInstance().getNextSong();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Logger.e(TAG, "Error while start song"+e);
                 }
                 playmp3(nextSong);
             }
@@ -303,12 +304,35 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                 try {
                     nextSong = MusicCollectionManager.getInstance().getNextSong();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Logger.e(TAG, "Error while getting next song "+e);
                 }
                 playmp3(nextSong);
             }
             if(action.equals(ACTION_PREV_SONG)) {
-
+                Logger.d(TAG, "PREVIOUS SONG REQUESTED");
+                if(currentlyPlayingSong!=null && mp !=null) {
+                    Logger.d(TAG, "POSITION: "+mp.getCurrentPosition());
+                    if(mp.getCurrentPosition()>3000)
+                    {
+                        stop();
+                        Logger.d(TAG, "restart the same song");
+                        try {
+                        playmp3(currentlyPlayingSong);
+                        } catch (Exception e) {
+                            Logger.e(TAG, "error while getting previous song 1"+e);
+                        }
+                    }
+                    else
+                    {
+                        stop();
+                        try {
+                            Logger.d(TAG, "prev");
+                            playmp3(MusicCollectionManager.getInstance().getPreviousSong());
+                        } catch (Exception e) {
+                            Logger.e(TAG, "error while getting previous song 2"+e);
+                        }
+                    }
+                }
             }
         }
     };

@@ -29,6 +29,7 @@ public class EqualPlaySongSelector extends SongSelector {
         ArrayList<Song> songsWithLeastPlay = new ArrayList<Song>();
         if(songs.size()>0) {
             int lowestPlayCount = getLowestPlayCount(songs);
+            lowestPlayCount=lowestPlayCount+5;
             songsWithLeastPlay = getSongsWithNPlays(songs, lowestPlayCount);
             int max = AT_LEAST_X_SONGS;
             if (songs.size() < AT_LEAST_X_SONGS) {
@@ -45,7 +46,7 @@ public class EqualPlaySongSelector extends SongSelector {
     private ArrayList<Song> getSongsWithNPlays(List<Song> songs, int playCount) {
         ArrayList<Song> songsWithNPlays = new ArrayList<Song>();
         for(Song song : songs) {
-            if(song.getPlays()==playCount) {
+            if(song.getPlays()<=playCount) {
                 songsWithNPlays.add(song);
             }
         }

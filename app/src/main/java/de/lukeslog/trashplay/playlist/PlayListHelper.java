@@ -46,10 +46,14 @@ public class PlayListHelper {
                             Logger.d(TAG, "back in the file Synchronizer");
                             SongHelper.createSong(localFileName, playList);
                             newSongs.add(localFileName);
+                            SongHelper.determineNumberOfViableSongs();
                         }
                     }
+                    else
+                    {
+                        SongHelper.addSongToPlayList(SongHelper.getSongByFileName(fileName), playList);
+                    }
                 }
-                SongHelper.determineNumberOfViableSongs();
                 Logger.d(TAG, "Donw woth downloading in the Song Helper... lets try to create mp3s");
                 for (String localFileName : newSongs) {
                     boolean inCollection = SongHelper.isSongInCollection(localFileName);
@@ -73,11 +77,7 @@ public class PlayListHelper {
                 //TODO: delete those that are no longer in remote storage
                 Logger.d(TAG, "now checking if a song needs to be deleted");
                 List<Song> songsInPlayList = MusicCollectionManager.getInstance().getSongsByPlayList(playList);
-                for (
-                        Song song
-                        : songsInPlayList)
-
-                {
+                for (Song song: songsInPlayList) {
                     Logger.d(TAG, song.getFileName());
                     if (!listOfFileNames.contains(song.getFileName())) {
                         Logger.d(TAG, "This Song needs to be removed from this Playlist");
@@ -115,11 +115,14 @@ public class PlayListHelper {
         try {
             Logger.d(TAG, "setActivated to " + b);
             playList.setActivated(b);
+            playList.save();
             for (Song song : songsInPlayList) {
                 List<PlayList> isInPlayLists = SongHelper.getAllPlayListsFromSong(song);
+                Logger.d(TAG, "This song is in "+isInPlayLists.size()+" playlists.");
                 boolean active = false;
                 for (PlayList playListOfSong : isInPlayLists) {
                     if (playListOfSong.isActivated()) {
+                        Logger.d(TAG, "song stays active");
                         active = true;
                     }
                 }

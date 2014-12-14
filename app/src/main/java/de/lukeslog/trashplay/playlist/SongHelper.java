@@ -35,7 +35,20 @@ public class SongHelper {
     public static void addSongToPlayList(Song song, PlayList playList) {
         Logger.d(TAG, "Add Song To PlayList "+playList.getRemotePath());
         Logger.d(TAG, "Current Playlist encoding: "+song.getPlayLists());
-        song.setPlayLists(song.getPlayLists() + PlayListHelper.getPlayListEncodingString(playList) + " ");
+        if(song.getPlayLists()!=null) {
+            String playlistString = PlayListHelper.getPlayListEncodingString(playList);
+            if (song.getPlayLists().contains(playlistString)) {
+                song.setPlayLists(song.getPlayLists().replace(playlistString, ""));
+            }
+            if (!song.getPlayLists().contains(playlistString)) {
+                song.setPlayLists(song.getPlayLists() + PlayListHelper.getPlayListEncodingString(playList) + " ");
+                song.save();
+            }
+        }
+        else
+        {
+            song.setPlayLists(PlayListHelper.getPlayListEncodingString(playList) + " ");
+        }
         Logger.d(TAG, "NOW: "+song.getPlayLists());
     }
 
@@ -43,6 +56,7 @@ public class SongHelper {
         Song song = getSongByFileName(songFileName);
         DateTime now = new DateTime();
         song.setLastUpdate(now.getMillis());
+        song.save();
     }
 
     public static void refreshLastUpdate(Song song) {
@@ -67,36 +81,36 @@ public class SongHelper {
         metadata[1]=" ";
         try
         {
-            //Log.d(TAG, "md1");
+            //Logger.d(TAG, "md1");
             MP3File mp3 = new MP3File(file);
 
-            //Log.d(TAG, "md2");
+            //Logger.d(TAG, "md2");
             ID3v1 id3 = mp3.getID3v1Tag();
-            //Log.d(TAG, "md3");
-            //Log.d(TAG, "md3d");
+            //Logger.d(TAG, "md3");
+            //Logger.d(TAG, "md3d");
             metadata[0] = id3.getArtist();
-            //Log.d(TAG, "md4");
-            //Log.d(TAG, "----------->ARTIST:"+metadata[0]);
+            //Logger.d(TAG, "md4");
+            //Logger.d(TAG, "----------->ARTIST:"+metadata[0]);
             metadata[1] = id3.getSongTitle();
-            //Log.d(TAG, "md5");
-            //Log.d(TAG, "----------->SONG:"+metadata[1]);
-            //Log.d(TAG, "md6");
+            //Logger.d(TAG, "md5");
+            //Logger.d(TAG, "----------->SONG:"+metadata[1]);
+            //Logger.d(TAG, "md6");
         }
         catch (IOException e1)
         {
             e1.printStackTrace();
             metadata[0]=file.getName();
             metadata[1]=" ";
-            //Log.d(TAG, "----------->ARTIST():"+metadata[0]);
-            //Log.d(TAG, "----------->SONG():"+metadata[1]);
+            //Logger.d(TAG, "----------->ARTIST():"+metadata[0]);
+            //Logger.d(TAG, "----------->SONG():"+metadata[1]);
         }
         catch (TagException e1)
         {
             e1.printStackTrace();
             metadata[0]=file.getName();
             metadata[1]=" ";
-            //Log.d(TAG, "----------->ARTIST():"+metadata[0]);
-            //Log.d(TAG, "----------->SONG():"+metadata[1]);
+            //Logger.d(TAG, "----------->ARTIST():"+metadata[0]);
+            //Logger.d(TAG, "----------->SONG():"+metadata[1]);
         }
         catch(Exception ex)
         {
@@ -286,6 +300,7 @@ public class SongHelper {
         song.setLastPlayed(nowInMillis);
         //TODO: change the overall playcount
         //TODO: get the average time between plays
+        song.save();
         //Generate other global statistics...
     }
 
