@@ -123,8 +123,8 @@ Over time I will find out what kind of usage the app has and will update this in
 * Support for Multiple Remote folders with music
 
 <p align="center">
-<img src="https://raw.github.com/TVLuke/TrashPlay/likeaboss/screenshots/trashplay105a.png" alt="Screenshot 1"/>
-<img src="https://raw.github.com/TVLuke/TrashPlay/likeaboss/screenshots/trashplay105b.png" alt="Screenshot 2"/>
+<img src="https://raw.githubusercontent.com/TVLukeProductions/TrashPlay/LikeABoss/screenshots/trashplay105a.png" alt="Screenshot 1"/>
+<img src="https://raw.githubusercontent.com/TVLukeProductions/TrashPlay/LikeABoss/screenshots/trashplay105b.png" alt="Screenshot 2"/>
 </p>
 
 ### Older Versions
