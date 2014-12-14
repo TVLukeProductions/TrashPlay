@@ -22,7 +22,7 @@ And the eighth and final rule: If this is your first night with the TrashPlaylis
 Trash Player is a Music Player. It's purpose is to support groups of friends who have bundled their
 music for some purpose (like a party, a road trip, any fun event or just for whatever) to play this music.
 
-Imagine you are planing a barbeque and you would like to play music where everyone can listen to songs they like.
+Imagine you are planing a barbecue and you would like to play music where everyone can listen to songs they like.
 Just open up a folder on your favorite cloud storage[1] and let them contribute. You could call such a 
 play list "Trash Playlist". Actually, you should.
 
