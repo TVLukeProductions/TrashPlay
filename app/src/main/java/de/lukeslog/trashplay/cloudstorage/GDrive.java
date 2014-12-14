@@ -5,6 +5,8 @@ import org.joda.time.DateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.lukeslog.trashplay.R;
+
 public class GDrive extends StorageManager {
 
     private static GDrive instance = null;
@@ -63,17 +65,17 @@ public class GDrive extends StorageManager {
 
     @Override
     public int getIconResourceNotConnected() {
-        return 0;
+        return R.drawable.gdrive_small_off;
     }
 
     @Override
     public int getIconResourceConnected() {
-        return 0;
+        return R.drawable.gdrive_small;
     }
 
     @Override
     public String returnUniqueReadableName() {
-        return null;
+        return "Google Drive";
     }
 
     @Override

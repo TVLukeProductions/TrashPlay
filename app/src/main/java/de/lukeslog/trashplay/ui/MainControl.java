@@ -37,6 +37,7 @@ import de.lukeslog.trashplay.playlist.SongHelper;
 import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.support.SettingsConstants;
+import de.lukeslog.trashplay.support.TrashPlayUtils;
 
 
 public class MainControl extends Activity {
@@ -136,10 +137,10 @@ public class MainControl extends Activity {
             if (item.getItemId() == R.id.lastfm) {
                 final boolean lastfmactive = settings.getBoolean("scrobble", false);
                 if (lastfmactive) {
-                    Drawable myIcon = getResources().getDrawable(R.drawable.lastfmlogoyes_small);
+                    Drawable myIcon = getResources().getDrawable(R.drawable.lastfmlogono_small);
                     item.setIcon(myIcon);
                 } else {
-                    Drawable myIcon = getResources().getDrawable(R.drawable.lastfmlogono_small);
+                    Drawable myIcon = getResources().getDrawable(R.drawable.lastfmlogoyes_small);
                     item.setIcon(myIcon);
                 }
             }
@@ -220,6 +221,8 @@ public class MainControl extends Activity {
                         edit.commit();
                     }
                     updateSettingsIcons();
+                } else {
+                    toast("You need to provide your last.fm data to activate scrobbling to your personal account.");
                 }
                 return true;
             case R.id.action_settings:
@@ -468,7 +471,11 @@ public class MainControl extends Activity {
         if (listItems.size() > 0) {
             final List<String> spinnerArray = new ArrayList<String>();
             for (Song song : listItems) {
-                spinnerArray.add(SongHelper.getTitleInfoAsStringWithPlayCount(song));
+                String title= SongHelper.getTitleInfoAsStringWithPlayCount(song);
+                if(song.getDurationInSeconds()>0) {
+                    title = "("+TrashPlayUtils.getStringFromIntInSeconds(song.getDurationInSeconds())+") "+title;
+                }
+                spinnerArray.add(title);
             }
             String s = "";
             if (MusicPlayer.getCurrentlyPlayingSong() != null) {

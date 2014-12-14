@@ -249,6 +249,7 @@ Over time I will find out what kind of usage the app has and will update this in
 * Bugfix: "App scrobbles to TrashPlays Last.fm account even if not in TrashMode"
 * Previous Button hat jetzt überhaupt erstmal eine Funktion
 * String encoding von Playlists verbessert
+* Massive verbesserungen bei Radio funktionen
 -> Release 1.0.5
 
 ## ToDo
@@ -280,8 +281,7 @@ Over time I will find out what kind of usage the app has and will update this in
 * [Dropbox android SDK](https://www.dropbox.com/developers/core/sdks/android)
 * [lastfm-java](https://code.google.com/p/lastfm-java/)
 * [Java ID3 Tag Library](http://javamusictag.sourceforge.net/)
-* [nCoap Library](https://github.com/okleine/nCoAP)
-* [quick-json](https://code.google.com/p/quick-json/)
+* [Active Android](http://www.activeandroid.com/)
 
 # License
 [CC-BY-NC](http://creativecommons.org/licenses/by-nc/4.0/)

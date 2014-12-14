@@ -1,14 +1,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/dropbox"
-        android:icon="@drawable/dropbox_small"
+        android:icon="@drawable/dropbox2_small"
         android:title="@string/dropbox"
         android:showAsAction="always"/>
     <item android:id="@+id/drive"
-        android:icon="@drawable/gdrive_small"
+        android:icon="@drawable/gdrive_small_off"
         android:title="@string/gdrive"
         android:showAsAction="always"/>
     <item android:id="@+id/lastfm"
-        android:icon="@drawable/lastfmlogono_small"
+        android:icon="@drawable/lastfmlogoyes_small"
         android:title="@string/lastfm"
         android:showAsAction="always"/>
     <item android:id="@+id/action_statistics"

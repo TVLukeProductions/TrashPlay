@@ -96,10 +96,24 @@ public class MusicCollectionManager {
             Logger.d(TAG, "continue");
             DateTime now = new DateTime();
             Logger.d(TAG, "NOW: " + now);
+            while(timeStampsForRadio.size()>nextSongs.size()){
+                timeStampsForRadio.remove(0);
+            }
             if (timeStampsForRadio != null && timeStampsForRadio.get(0) != null) {
-                if (timeStampsForRadio.size() > 1 && timeStampsForRadio.get(0) == lastStartTime) {
-                    timeStampsForRadio.remove(0);
-                    nextSongs.remove(0);
+                Logger.d(TAG, "try to find out what song to play...");
+                int amountOfSongs = timeStampsForRadio.size();
+                Logger.d(TAG, "There are still "+amountOfSongs+" songs to choose from");
+                for(int i=0; i<amountOfSongs; i++) {
+                    if(timeStampsForRadio.get(0)<=lastStartTime) {
+                        Logger.d(TAG, "Song no. "+i+" has a start time in the past! Delete from list");
+                        Long x = timeStampsForRadio.get(0);
+                        timeStampsForRadio.remove(0);
+                        nextSongs.remove(0);
+                        if(timeStampsForRadio.size()>0 && timeStampsForRadio.get(0)==x) {
+                            Logger.d(TAG, "This next song has the same start time as this one, this should mean it hasn't been played yet...");
+                            break;
+                        }
+                    }
                 }
                 DateTime then = new DateTime(timeStampsForRadio.get(0));
                 Logger.d(TAG, "PLAY TIME:" + then);
@@ -116,16 +130,17 @@ public class MusicCollectionManager {
                 new Thread(new Runnable() {
                     public void run() {
                         try {
+                            Thread.sleep(20000);
                             getRadioStationFile();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                        if (radioFileHasChanged) {
+                            parseRadioFile();
+                            Logger.d(TAG, "back on top...");
+                        }
                     }
                 }).start();
-                if (radioFileHasChanged) {
-                    parseRadioFile();
-                    Logger.d(TAG, "back on top...");
-                }
                 Logger.d(TAG, "--------------");
                 if (song != null) {
                     Logger.d(TAG, "--------------SONG NOT NULL:::");
@@ -180,15 +195,18 @@ public class MusicCollectionManager {
                 Logger.d(TAG, timestampstring);
                 int subtractor = 0;
                 if (i < 10) {
-                    Logger.d(TAG, "->");
-                    Song s = SongHelper.getSongByFileName(fname);
-                    Logger.d(TAG, "-->");
-                    nextSongs.set(i - subtractor, s);
-                    Logger.d(TAG, "--->");
-                    timeStampsForRadio.set(i - subtractor, Long.parseLong(timestampstring));
-                    Logger.d(TAG, "x");
-                    if (s == null) {
-                        subtractor++;
+                    long starttime = Long.parseLong(timestampstring);
+                    if(starttime>=lastStartTime) {
+                        Logger.d(TAG, "->");
+                        Song s = SongHelper.getSongByFileName(fname);
+                        Logger.d(TAG, "-->");
+                        nextSongs.set(i - subtractor, s);
+                        Logger.d(TAG, "--->");
+                        timeStampsForRadio.set(i - subtractor, Long.parseLong(timestampstring));
+                        Logger.d(TAG, "x");
+                        if (s == null) {
+                            subtractor++;
+                        }
                     }
                 }
             }
@@ -199,6 +217,7 @@ public class MusicCollectionManager {
 
     public void getRadioStationFile() throws Exception {
         Logger.d(TAG, "getRadioStationFile");
+        String oldradiofile = radiofile;
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
         String radioStation = settings.getString("radiostation", "");
         Logger.d(TAG, "radiostation" + radioStation);
@@ -212,7 +231,10 @@ public class MusicCollectionManager {
             String playlistfile = remoteStorage.downloadFile(stationdata[2] + "/Radio", stationdata[3]);
             Logger.d(TAG, StorageManager.LOCAL_STORAGE + playlistfile);
             radiofile = getStringFromFile(StorageManager.LOCAL_STORAGE + playlistfile);
-            radioFileHasChanged = true;
+            if(!oldradiofile.equals(radiofile)) {
+                Logger.d(TAG, "RADIOFILE HAS CHANGED");
+                radioFileHasChanged = true;
+            }
         }
     }
 

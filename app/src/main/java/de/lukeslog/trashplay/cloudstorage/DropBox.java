@@ -266,12 +266,12 @@ public class DropBox extends StorageManager {
 
     @Override
     public int getIconResourceNotConnected() {
-        return R.drawable.dropbox;
+        return R.drawable.dropbox2;
     }
 
     @Override
     public int getIconResourceConnected() {
-        return R.drawable.dropbox2;
+        return R.drawable.dropbox;
     }
 
     @Override

@@ -30,6 +30,7 @@ import de.lukeslog.trashplay.playlist.Song;
 import de.lukeslog.trashplay.playlist.SongHelper;
 import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
+import de.lukeslog.trashplay.support.TrashPlayUtils;
 
 public class MusicPlayer extends Service implements OnPreparedListener, OnCompletionListener, MediaPlayer.OnErrorListener {
     public static final String ACTION_START_MUSIC = "trashplay_startmusic";
@@ -342,36 +343,13 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         if (mp != null) {
             try {
                 int p = mp.getCurrentPosition();
-                result = getStringFromIntInSeconds(result, p);
+                result = TrashPlayUtils.getStringFromIntInSeconds(p);
             } catch (Exception e) {
                 if(TrashPlayService.serviceRunning()) {
                     TrashPlayService.getContext().toast("Error1");
                 }
                 e.printStackTrace();
             }
-        }
-        return result;
-    }
-
-    private static String getStringFromIntInSeconds(String result, int p) {
-        int m = 0;
-        p = p / 1000;
-        if (p > 59) {
-            m = p / 60;
-            if(m>0) {
-                p = p - (60 * m);
-            }
-        }
-        if (m > 9) {
-            result = result + m;
-        } else {
-            result = result + "0" + m;
-        }
-        result = result + ":";
-        if (p > 9) {
-            result = result + p;
-        } else {
-            result = result + "0" + p;
         }
         return result;
     }
@@ -390,7 +368,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                        p=180;
                    }
                 }
-                result = getStringFromIntInSeconds(result, p);
+                result = TrashPlayUtils.getStringFromIntInSeconds(p);
             } catch (Exception e) {
                 if(TrashPlayService.serviceRunning()) {
                     TrashPlayService.getContext().toast("Error2");
