@@ -30,6 +30,7 @@ import java.util.List;
 import de.lukeslog.trashplay.R;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
 import de.lukeslog.trashplay.service.TrashPlayService;
+import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.support.SettingsConstants;
 
 public class DropBox extends StorageManager {
@@ -79,27 +80,46 @@ public class DropBox extends StorageManager {
         return playListFolders;
     }
 
+    @Override
+    public void getRadioStations(String folderPath) throws Exception {
+        Logger.d(TAG, "getRadioStations...");
+        String givenPath = "/" + folderPath;
+        if (mDBApi == null) {
+            getDropBoxAPI();
+        }
+        Logger.d(TAG, "olol--");
+        Entry folder = mDBApi.metadata(givenPath, 0, null, true, null);
+        Logger.d(TAG, "--lolo");
+        getRadioStations(folder);
+    }
+
     private void getRadioStations(Entry folder) throws DropboxException {
-        Log.d(TAG, "checkForRadioStations");
+        Logger.d(TAG, "getRadioStationsRemote...");
+        checkAndCreateNecessarySubFolders(folder);
+        Logger.d(TAG, "getRadioStationsRemote...");
         String stationNames = "";
         Entry radioFolder = mDBApi.metadata("/" + folder.fileName() + "/Radio", 0, null, true, null);
-        Log.d(TAG, "x");
+        Logger.d(TAG, "x");
         List<Entry> possibleStations = radioFolder.contents;
-        Log.d(TAG, "poosible Stations " + possibleStations.size());
+        Logger.d(TAG, "poosible Stations " + possibleStations.size());
         for (Entry possibleStation : possibleStations) {
             if (!possibleStation.isDir && possibleStation.fileName().endsWith(".station")) {
-                Log.d(TAG, "FOUND A RADIO STATION!");
+                Logger.d(TAG, "FOUND A RADIO STATION! " + possibleStation.path);
                 DateTime now = new DateTime();
+                now = now.minusHours(2);
                 DateTime actualModificationTime = getDateTimeFromDropBoxModificationTimeString(possibleStation.modified);
-                if (now.minusHours(1).isBefore(actualModificationTime)) {
+                Logger.d(TAG, "ACTUAL MODIFICATION TIME->" + actualModificationTime);
+                Logger.d(TAG, "NOW" + now);
+                if (now.isAfter(actualModificationTime)) {
+                    Logger.d(TAG, "DELETE RADIO? " + possibleStation.path);
                     mDBApi.delete(possibleStation.path);
                 } else {
                     stationNames = stationNames + possibleStation.fileName() + " ";
-                    Log.d(TAG, "Stationnames" + stationNames);
+                    Logger.d(TAG, "Stationnames" + stationNames);
                 }
             }
         }
-        Log.d(TAG, "Radiostations " + stationNames);
+        Logger.d(TAG, "Radiostations " + stationNames);
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
         SharedPreferences.Editor edit = settings.edit();
         edit.putString("Radio_" + STORAGE_TYPE + "_" + folder.fileName(), stationNames);
@@ -112,14 +132,14 @@ public class DropBox extends StorageManager {
                 getDropBoxAPI();
             }
             if (mDBApi != null) {
-                Log.d(TAG, "update radio thing");
+                Logger.d(TAG, "update radio thing");
                 SharedPreferences settings = TrashPlayService.getDefaultSettings();
                 String radioName = settings.getString(SettingsConstants.APP_SETTING_RADIO_NAME, "");
                 radioName = radioName.replace("_", "");
-                Log.d(TAG, "" + radioName);
+                Logger.d(TAG, "" + radioName);
                 String radioSongs = settings.getString("radioSongs", "");
                 if (!radioName.equals("")) {
-                    Log.d(TAG, "updating " + radioName);
+                    Logger.d(TAG, "updating " + radioName);
 
                     //create File
                     File tempfolder = new File(LOCAL_STORAGE + "/radio/");
@@ -128,7 +148,7 @@ public class DropBox extends StorageManager {
                     File file = new File(LOCAL_STORAGE + "/radio/tempradio.txt");
 
                     //create that file on the harddrive
-                    Log.d(TAG, "have new file");
+                    Logger.d(TAG, "have new file");
                     try {
                         out = new BufferedOutputStream(new FileOutputStream(file));
                     } finally {
@@ -150,6 +170,8 @@ public class DropBox extends StorageManager {
                     InputStream stream = new FileInputStream(file);
 
                     Log.d(TAG, path);
+                    Entry playlistFolder = mDBApi.metadata("/" + path, 0, null, true, null);
+                    checkAndCreateNecessarySubFolders(playlistFolder);
                     Entry folder = mDBApi.metadata("/" + path + "/Radio", 0, null, true, null);
                     List<Entry> files = folder.contents;
                     for (Entry entry : files) {
@@ -181,14 +203,16 @@ public class DropBox extends StorageManager {
     //TODO: Users should not be calling this directly.
     @Override
     public ArrayList<String> getFileNameListWithEndingsFromRemoteStorage(List<String> listOfAllowedFileEndings, String folderPath) throws Exception {
-        Log.d(TAG, "getListOfFiles With Allowed Ending");
+        Logger.d(TAG, "getListOfFiles With Allowed Ending");
         ArrayList<String> fileList = new ArrayList<String>();
         String givenPath = "/" + folderPath;
         if (mDBApi == null) {
             getDropBoxAPI();
         }
-        Log.d(TAG, "olol");
+        Logger.d(TAG, "olol");
         Entry folder = mDBApi.metadata(givenPath, 0, null, true, null);
+        checkAndCreateNecessarySubFolders(folder);
+        getRadioStations(folder);
         if (folder.isDir) {
             for (Entry file : folder.contents) {
                 if (!file.isDir) {
@@ -224,19 +248,19 @@ public class DropBox extends StorageManager {
         }
         createTrashPlayFolderIFNotExisting();
         String filePath = "/" + path + "/" + fileName;
-        Log.d(TAG, "Download " + filePath);
+        Logger.d(TAG, "Download " + filePath);
         Entry folder = mDBApi.metadata(filePath, 0, null, true, null);
-        Log.d(TAG, "->");
+        Logger.d(TAG, "->");
         String modified = folder.modified;
-        Log.d(TAG, "->2");
+        Logger.d(TAG, "->2");
         DateTime actualModificationTime = getDateTimeFromDropBoxModificationTimeString(modified);
-        Log.d(TAG, "->3");
-        Log.d(TAG, actualModificationTime.getDayOfMonth() + "." + actualModificationTime.getMonthOfYear() + "." + actualModificationTime.getYear() + " " + actualModificationTime.getHourOfDay() + " " + actualModificationTime.getMinuteOfHour());
+        Logger.d(TAG, "->3");
+        Logger.d(TAG, actualModificationTime.getDayOfMonth() + "." + actualModificationTime.getMonthOfYear() + "." + actualModificationTime.getYear() + " " + actualModificationTime.getHourOfDay() + " " + actualModificationTime.getMinuteOfHour());
         if (actualModificationTime.isAfter(lastChange)) {
-            Log.d(TAG, "->4");
+            Logger.d(TAG, "->4");
             return downloadSpecificFileFromDropBox(fileName, filePath);
         }
-        Log.d(TAG, "Return nothing");
+        Logger.d(TAG, "Return nothing");
         return "";
     }
 
@@ -267,25 +291,25 @@ public class DropBox extends StorageManager {
 
     @Override
     public void resetSyncInProgress() {
-        Log.d(TAG, "RESET SYNC");
+        Logger.d(TAG, "RESET SYNC");
         syncInProgress = false;
     }
 
     private String downloadSpecificFileFromDropBox(String fileName, String filePath) throws DropboxException {
-        Log.d(TAG, "try to download a file");
+        Logger.d(TAG, "try to download a file");
         FileOutputStream outputStream = null;
         File file = new File(LOCAL_STORAGE + fileName);
-        Log.d(TAG, "have new file");
+        Logger.d(TAG, "have new file");
         try {
             outputStream = new FileOutputStream(file);
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e(TAG, "EXCEPTION");
+            Logger.e(TAG, "EXCEPTION");
         }
 
-        Log.d(TAG, "filepath " + filePath);
+        Logger.d(TAG, "filepath " + filePath);
         mDBApi.getFile(filePath, null, outputStream, null);
-        Log.d(TAG, "I guess the download is done...");
+        Logger.d(TAG, "I guess the download is done...");
         return file.getName();
     }
 
@@ -323,19 +347,19 @@ public class DropBox extends StorageManager {
 
 
     private boolean isAPlayListFolder(Entry folder) throws DropboxException {
-        Log.d(TAG, folder.fileName() + " " + folder.isDir);
+        Logger.d(TAG, folder.fileName() + " " + folder.isDir);
         List<Entry> folderContents = folder.contents;
         if (folderContents != null) {
             for (Entry content : folderContents) {
                 if (!content.isDir) {
-                    Log.d(TAG, ">" + content.fileName());
+                    Logger.d(TAG, ">" + content.fileName());
                     if (content.fileName().startsWith(".trashplay")) {
-                        Log.d(TAG, "FOOOUND ONE!");
+                        Logger.d(TAG, "FOOOUND ONE!");
                         checkAndCreateNecessarySubFolders(folder);
                         return true;
                     }
-                    if (content.fileName().matches("^[a-zA-Z].*$") || content.fileName().matches("^\\d.*$")) {
-                        Log.d(TAG, "OVER!");
+                    if (content.fileName().matches("^[a-zA-Z].*$")) {
+                        Logger.d(TAG, "OVER!");
                         return false;
                     }
                 }
@@ -345,26 +369,51 @@ public class DropBox extends StorageManager {
     }
 
     private void checkAndCreateNecessarySubFolders(Entry folder) throws DropboxException {
+        Logger.d(TAG, "check and create: " + folder.fileName());
         boolean radioFolder = false;
         boolean christmasFolder = false;
+        Logger.d(TAG, "A");
         List<Entry> folderContents = folder.contents;
+        Logger.d(TAG, "B");
         if (folderContents != null) {
+            Logger.d(TAG, "C");
             for (Entry content : folderContents) {
+                Logger.d(TAG, "D");
                 if (content.isDir) {
+                    Logger.d(TAG, "e");
                     if (content.fileName().equals("Radio")) {
+                        Logger.d(TAG, "F");
                         radioFolder = true;
                     }
                     if (content.fileName().equals("Christmas")) {
+                        Logger.d(TAG, "G");
                         christmasFolder = true;
                     }
                 }
             }
         }
+        Logger.d(TAG, "X");
+        String fileName = folder.fileName();
+        if (!fileName.startsWith("/")) {
+            fileName = "/" + fileName;
+        }
         if (!radioFolder) {
-            mDBApi.createFolder("/" + folder.fileName() + "/Radio");
+            Logger.d(TAG, "create Radio Folder.");
+            try {
+                mDBApi.createFolder(fileName + "/Radio");
+            } catch (Exception e) {
+                Logger.e(TAG, "EXCEPTION" + e);
+            }
+            Logger.d(TAG, "DONE");
         }
         if (!christmasFolder) {
-            mDBApi.createFolder("/" + folder.fileName() + "/Christmas");
+            Logger.d(TAG, "create ChristmasFolder.");
+            try {
+                mDBApi.createFolder(fileName + "/Christmas");
+            } catch (Exception e) {
+                Logger.e(TAG, "EXCEPTION" + e);
+            }
+            Logger.d(TAG, "DONE");
         }
     }
 
@@ -374,7 +423,7 @@ public class DropBox extends StorageManager {
     }
 
     public static DropboxAPI<AndroidAuthSession> getDropBoxAPI() {
-        Log.d(TAG, "getDropBoxAPI");
+        Logger.d(TAG, "getDropBoxAPI");
         if (mDBApi == null) {
             getDropboxAPI();
             try {
@@ -390,7 +439,7 @@ public class DropBox extends StorageManager {
         SharedPreferences settings = null;
         if (TrashPlayService.serviceRunning()) {
             settings = TrashPlayService.getContext().settings;
-            Log.d(TAG, "getDPAPI");
+            Logger.d(TAG, "getDPAPI");
             AppKeyPair appKeys = new AppKeyPair(DropBoxConstants.appKey, DropBoxConstants.appSecret);
             AndroidAuthSession session = new AndroidAuthSession(appKeys, ACCESS_TYPE);
             mDBApi = new DropboxAPI<AndroidAuthSession>(session);
@@ -401,7 +450,7 @@ public class DropBox extends StorageManager {
             mDBApi.getSession().setAccessTokenPair(access);
             return mDBApi;
         } else {
-            Log.d(TAG, "TrashPlayService was not running.");
+            Logger.d(TAG, "TrashPlayService was not running.");
         }
         return null;
     }
@@ -411,7 +460,7 @@ public class DropBox extends StorageManager {
         if (TrashPlayService.serviceRunning()) {
             return !TrashPlayService.getContext().settings.getString("DB_KEY", "").equals("");
         } else {
-            Log.d(TAG, "DropBoxisConnected() sez: TrashPlayService not Running");
+            Logger.d(TAG, "DropBoxisConnected() sez: TrashPlayService not Running");
         }
         return false;
     }
@@ -442,23 +491,23 @@ public class DropBox extends StorageManager {
     }
 
     public static void authenticate() {
-        Log.d(TAG, "AUTHENTICATE");
+        Logger.d(TAG, "AUTHENTICATE");
         try {
             if (DropBox.getDropBoxAPI().getSession().authenticationSuccessful()) {
                 try {
                     DropBox.getDropBoxAPI().getSession().finishAuthentication();
-                    Log.d(TAG, "lol");
+                    Logger.d(TAG, "lol");
                     AccessTokenPair tokens = DropBox.getDropBoxAPI().getSession().getAccessTokenPair();
-                    Log.d(TAG, "tada");
+                    Logger.d(TAG, "tada");
                     DropBox.storeKeys(tokens.key, tokens.secret);
 
-                    CloudSynchronizationService.registerService(new DropBox());
+                    CloudSynchronizationService.registerService(DropBox.getInstance());
                 } catch (IllegalStateException e) {
-                    Log.i("DbAuthLog", " Error authenticating", e);
+                    Logger.e(TAG, "Error authenticating");
                 }
             }
         } catch (Exception e) {
-            Log.d(TAG, "probably a null pointer exception from the dropbox...");
+            Logger.d(TAG, "probably a null pointer exception from the dropbox...");
         }
     }
 }

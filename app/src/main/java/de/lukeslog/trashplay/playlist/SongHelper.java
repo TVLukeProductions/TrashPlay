@@ -33,10 +33,10 @@ public class SongHelper {
     }
 
     public static void addSongToPlayList(Song song, PlayList playList) {
-        Log.d(TAG, "Add Song To PlayList "+playList.getRemotePath());
-        Log.d(TAG, "Current Playlist encoding: "+song.getPlayLists());
+        Logger.d(TAG, "Add Song To PlayList "+playList.getRemotePath());
+        Logger.d(TAG, "Current Playlist encoding: "+song.getPlayLists());
         song.setPlayLists(song.getPlayLists() + PlayListHelper.getPlayListEncodingString(playList) + " ");
-        Log.d(TAG, "NOW: "+song.getPlayLists());
+        Logger.d(TAG, "NOW: "+song.getPlayLists());
     }
 
     public static void refreshLastUpdate(String songFileName) {
@@ -142,10 +142,8 @@ public class SongHelper {
     }
 
     public static String getTitleInfoAsString(Song song) {
-        Logger.d(TAG, "getTitleInfoASString()");
         if(song!=null) {
             try {
-                Logger.d(TAG, song.getFileName());
                 if (song.getSongName().equals("") && song.getArtist().equals("")) {
                     SongHelper.getMetaData(song);
                 }
@@ -220,13 +218,13 @@ public class SongHelper {
                     new Delete().from(Song.class).where("toBeDeleted = ?", "1").execute();
                 }
             } catch (Exception e) {
-                    Log.e(TAG, "Invalid Databse. Delete everything 2");
+                    Logger.e(TAG, "Invalid Databse. Delete everything 2");
             }
         }
     }
 
     static List<Song> getAllSongs() {
-        Log.d(TAG, "get all songs");
+        Logger.d(TAG, "get all songs");
         List<Song> songs = new ArrayList<Song>();
         try {
             if (TrashPlayService.serviceRunning()) {
@@ -245,21 +243,21 @@ public class SongHelper {
 
     public static Song createSong(String localFileName, PlayList playList) {
         if(playList!=null) {
-            Log.d(TAG, "lets first find out if we know this song");
+            Logger.d(TAG, "lets first find out if we know this song");
             Song s = getSongByFileName(localFileName);
             if (s != null) {
                 addSongToPlayList(s, playList);
                 return s;
             } else {
-                Log.d(TAG, "create Song");
+                Logger.d(TAG, "create Song");
                 Song newSong = new Song();
-                Log.d(TAG, "1");
+                Logger.d(TAG, "1");
                 newSong.setFileName(localFileName);
-                Log.d(TAG, "2");
+                Logger.d(TAG, "2");
                 getMetaData(newSong);
-                Log.d(TAG, "3");
+                Logger.d(TAG, "3");
                 addSongToPlayList(newSong, playList);
-                Log.d(TAG, "4");
+                Logger.d(TAG, "4");
                 refreshLastUpdate(newSong);
                 newSong.setInActiveUse(true);
                 newSong.save();
@@ -300,14 +298,14 @@ public class SongHelper {
             String[] playListStrings = playListString.split(",");
             for (String playlistString : playListStrings) {
                 playlistString = playListString.trim();
-                Log.d(TAG, "playListString: "+playlistString);
+                Logger.d(TAG, "playListString: "+playlistString);
                 if (playlistString.length() > 5) { //O.M.G
                     String[] parts = playListString.split("/");
                     if(parts.length==2) {
                         String remotestorage = parts[0];
                         String remotepath = parts[1];
-                        Log.d(TAG, "remotestorage=" + remotestorage);
-                        Log.d(TAG, "remotepath=" + remotepath);
+                        Logger.d(TAG, "remotestorage=" + remotestorage);
+                        Logger.d(TAG, "remotepath=" + remotepath);
                         List<PlayList> playlists = PlayListHelper.getAllPlayLists();
                         for (PlayList playlist : playlists) {
                             if (playlist.getRemotePath().equals(remotepath) && playlist.getRemoteStorage().equals(remotestorage)) {
@@ -318,7 +316,7 @@ public class SongHelper {
                 }
             }
         } catch(Exception e) {
-            Log.e(TAG, "exception when retrieving palylists");
+            Logger.e(TAG, "exception when retrieving palylists");
         }
         return result;
     }

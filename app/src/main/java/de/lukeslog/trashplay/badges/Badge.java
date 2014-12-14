@@ -9,7 +9,7 @@ public class Badge  {
     @Column(name = "title")
     private String title="";
 
-    @Column(name = "description") 
+    @Column(name = "description")
     private String description="";
 
     @Column(name = "type")

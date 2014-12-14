@@ -204,5 +204,7 @@ public abstract class StorageManager {
         return null;
     }
 
+    public abstract void getRadioStations(String folderPath) throws Exception;
+
     public abstract void resetSyncInProgress();
 }

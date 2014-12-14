@@ -49,6 +49,7 @@ public class MainControl extends Activity {
     private int counter = 0;
 
     public static boolean playButtonClicked = false;
+    public static boolean authenticatingDropBox = true;
 
     String displayStringForCurrentTrackInformation = "";
 
@@ -150,9 +151,12 @@ public class MainControl extends Activity {
     @Override
     protected void onResume() {
         DropBox.authenticate();
+        if(authenticatingDropBox) {
+            authenticatingDropBox=false;
+            MusicCollectionManager.getInstance().syncRemoteStorageWithDevice(true);
+        }
         super.onResume();
         uiUpdater.onResume();
-
     }
 
     @Override
@@ -185,6 +189,7 @@ public class MainControl extends Activity {
                     toast(message);
                 } else {
                     Logger.d(TAG, "click dp");
+                    authenticatingDropBox=true;
                     DropBox.getDropBoxAPI().getSession().startAuthentication(MainControl.this);
                     toast("Connecting to Dropbox");
                 }
@@ -200,14 +205,14 @@ public class MainControl extends Activity {
                 }
                 return true;
             case R.id.lastfm:
-                Log.d(TAG, "lastfm...");
+                Logger.d(TAG, "lastfm...");
                 SharedPreferences defsettings = PreferenceManager.getDefaultSharedPreferences(this);
                 String lastfmusername = defsettings.getString(SettingsConstants.LASTFM_USER, "");
                 String lastfmpassword = defsettings.getString(SettingsConstants.LASTFM_PSW, "");
                 if (!lastfmpassword.equals("") && !lastfmusername.equals("")) {
                     boolean scrobbletolastfm = settings.getBoolean("scrobble", false);
                     if (scrobbletolastfm) {
-                        Log.d(TAG, "Scrobble was yes will be no");
+                        Logger.d(TAG, "Scrobble was yes will be no");
                         SharedPreferences.Editor edit = settings.edit();
                         edit.putBoolean("scrobble", false);
                         edit.commit();
@@ -265,25 +270,6 @@ public class MainControl extends Activity {
         toast.show();
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Logger.d(TAG, "activity result");
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == StorageManager.REQUEST_LINK_TO_DBX) {
-                DropBox.authenticate();
-                try {
-                    MusicCollectionManager.getInstance().syncRemoteStorageWithDevice(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    toast("There has been an error synchronizing yur data.");
-                }
-                toast("Now synchronizing with remote Storage. Please Wait");
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
-        }
-    }
-
     public static boolean isPlayButtonClicked() {
         return playButtonClicked;
     }
@@ -329,7 +315,6 @@ public class MainControl extends Activity {
             }
 
             if (menu != null) {
-                Logger.d(TAG, "menu is not null");
                 setMenuIcons();
             }
 
@@ -503,7 +488,6 @@ public class MainControl extends Activity {
 
     private void setMenuIcons() {
         for (StorageManager storageManager : CloudSynchronizationService.getRegisteredCloudStorageServices()) {
-            Logger.d(TAG, "->");
             adjustMenuIconForCloudStorageService(storageManager);
         }
 

@@ -6,6 +6,7 @@ import android.util.Log;
 
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.service.TrashPlayService;
+import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.support.SettingsConstants;
 import de.umass.lastfm.Session;
 import de.umass.lastfm.Track;
@@ -16,7 +17,7 @@ public class PersonalLastFM {
     public static final String TAG = TrashPlayConstants.TAG;
 
     public static void scrobble(final String artist, final String song, final SharedPreferences settings) {
-        Log.d(TAG, "scrobble personal");
+        Logger.d(TAG, "scrobble personal");
         new Thread(new Runnable() {
             public void run() {
                 Session session = getSession();
@@ -30,13 +31,13 @@ public class PersonalLastFM {
     }
 
     protected static Session getSession() {
-        Log.d(TAG, "getSession");
+        Logger.d(TAG, "getSession");
         if (TrashPlayService.serviceRunning()) {
             SharedPreferences defsettings = PreferenceManager.getDefaultSharedPreferences(TrashPlayService.getContext());
             String lastfmusername = defsettings.getString(SettingsConstants.LASTFM_USER, "");
             String lastfmpassword = defsettings.getString(SettingsConstants.LASTFM_PSW, "");
             if (!lastfmusername.equals("") && !lastfmpassword.equals("")) {
-                Log.d(TAG, "it should scrobble");
+                Logger.d(TAG, "it should scrobble");
                 try {
                     return LastFM.getSession(lastfmusername, lastfmpassword);
                 } catch (Exception e) {

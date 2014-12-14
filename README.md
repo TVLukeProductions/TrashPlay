@@ -54,23 +54,26 @@ An diesem Ort entshet die neue Version der App.
 * Die umstellung auf Active Android zuende bringen
 * Speichern der Playlists in Songs nur serialisiert. Weil n-n Realtionships in ActiveAndroid nicht vernünfig sind. Gnaaaaa.
 
-##11.12.2014
+###11.12.2014
 * Die Badges als persistentes Element Hinzugefügt 
+
+###13.12.2014 
+* Aus Log.d zu Logger.d usw. umgestellt für den Alpha-Betrieb
+* Wenn man TrashPlayMode reaktiviert wird die letzte Playlist wiederhergestellt bei der man es deaktiviert hatte
+* Häufigeres Synchronisieren der Radiostationenliste
+* Alte Radiostationen sollten nicht gezeigt werden
 
 ## ToDo
 * Sammeln von persönlichen Statistiken
 * bessere sync animation
 * Local Storage als Speicherort
-* Exportfunktion 
+* Exportfunktion (z.B. für Handywechsel oder sowas)
 
-
-* Bessere/Mehr Unit-Tests
+* Bessere/Mehr/Überhaupt Unit-Tests
 
 * Lokalisierung
 ** Deutsch
 ** Endlisch
-
-* Interner Mechanismus um die App upzudaten (insb. für die Testphase)?
 
 * GDrive Integration
 * Chromecast Integration

@@ -17,6 +17,7 @@ import de.lukeslog.trashplay.cloudstorage.DropBox;
 import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.service.TrashPlayService;
+import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.support.SettingsConstants;
 
 /**
@@ -57,38 +58,38 @@ public class MusicCollectionManager {
     }
 
     public void finishedSong() {
-        Log.d(TAG, "finished Song");
+        Logger.d(TAG, "finished Song");
         if (!nextSongs.isEmpty()) {
-            Log.d(TAG, "remove 0");
+            Logger.d(TAG, "remove 0");
             Song s = nextSongs.remove(0);
             try {
                 SongHelper.finishedWithSong(s.getFileName());
             } catch (Exception e) {
-                Log.e(TAG, "finishedSong in MusicCollectionManager");
+                Logger.e(TAG, "finishedSong in MusicCollectionManager");
             }
         }
 
     }
 
     public Song getNextSong() throws Exception {
-        Log.d(TAG, "get Next Song");
+        Logger.d(TAG, "get Next Song");
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
         boolean listenalong = settings.getBoolean("listenalong", false);
         if (listenalong) {
-            if(radioFileHasChanged) {
+            if (radioFileHasChanged) {
                 parseRadioFile();
             }
-            Log.d(TAG, "Next Song for Radio People...");
-            Log.d(TAG, "continue");
+            Logger.d(TAG, "Next Song for Radio People...");
+            Logger.d(TAG, "continue");
             DateTime now = new DateTime();
-            Log.d(TAG, "NOW: " + now);
-            if(timeStampsForRadio!=null && timeStampsForRadio.get(0)!=null) {
-                if(timeStampsForRadio.size()>1 && timeStampsForRadio.get(0)==lastStartTime){
+            Logger.d(TAG, "NOW: " + now);
+            if (timeStampsForRadio != null && timeStampsForRadio.get(0) != null) {
+                if (timeStampsForRadio.size() > 1 && timeStampsForRadio.get(0) == lastStartTime) {
                     timeStampsForRadio.remove(0);
                     nextSongs.remove(0);
                 }
                 DateTime then = new DateTime(timeStampsForRadio.get(0));
-                Log.d(TAG, "PLAY TIME:" + then);
+                Logger.d(TAG, "PLAY TIME:" + then);
                 timeDifInMillis = now.getMillis() - then.getMillis();
                 lastStartTime = timeStampsForRadio.get(0);
                 Log.d(TAG, "" + (timeDifInMillis / 1000));
@@ -125,9 +126,9 @@ public class MusicCollectionManager {
 
             Song song = nextSongs.get(0);
             if (song != null) {
-                Log.d(TAG, "next song: " + SongHelper.getTitleInfoAsString(song));
+                Logger.d(TAG, "next song: " + SongHelper.getTitleInfoAsString(song));
             } else {
-                Log.d(TAG, "SONG IS NULL! THIS IS FUCKED UP");
+                Logger.d(TAG, "SONG IS NULL! THIS IS FUCKED UP");
             }
             startTimeOfCurrentSong = new DateTime().getMillis();
             updateRadioFile();
@@ -137,7 +138,7 @@ public class MusicCollectionManager {
     }
 
     private void parseRadioFile() {
-        Log.d(TAG, "parseradiofile....");
+        Logger.d(TAG, "parseradiofile....");
 
         if (nextSongs.size() < 10) {
             for (int i = nextSongs.size(); i < 10; i++) {
@@ -145,14 +146,14 @@ public class MusicCollectionManager {
             }
         }
         if (timeStampsForRadio.size() < 10) {
-            Log.d(TAG, "S2 " + timeStampsForRadio.size());
+            Logger.d(TAG, "S2 " + timeStampsForRadio.size());
             for (int i = timeStampsForRadio.size(); i < 10; i++) {
                 timeStampsForRadio.add(null);
             }
         }
         if (radiofile != null) {
             String[] lines = radiofile.split("\n");
-            Log.d(TAG, "lines " + lines.length);
+            Logger.d(TAG, "lines " + lines.length);
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
                 String[] parts = line.split(" ");
@@ -162,17 +163,17 @@ public class MusicCollectionManager {
                 }
                 fname = fname.trim();
                 String timestampstring = parts[parts.length - 1];
-                Log.d(TAG, fname);
-                Log.d(TAG, timestampstring);
+                Logger.d(TAG, fname);
+                Logger.d(TAG, timestampstring);
                 int subtractor = 0;
                 if (i < 10) {
-                    Log.d(TAG, "->");
+                    Logger.d(TAG, "->");
                     Song s = SongHelper.getSongByFileName(fname);
-                    Log.d(TAG, "-->");
+                    Logger.d(TAG, "-->");
                     nextSongs.set(i - subtractor, s);
-                    Log.d(TAG, "--->");
+                    Logger.d(TAG, "--->");
                     timeStampsForRadio.set(i - subtractor, Long.parseLong(timestampstring));
-                    Log.d(TAG, "x");
+                    Logger.d(TAG, "x");
                     if (s == null) {
                         subtractor++;
                     }
@@ -180,23 +181,23 @@ public class MusicCollectionManager {
             }
             radioFileHasChanged = false;
         }
-        Log.d(TAG, "done...");
+        Logger.d(TAG, "done...");
     }
 
     public void getRadioStationFile() throws Exception {
-        Log.d(TAG, "getRadioStationFile");
+        Logger.d(TAG, "getRadioStationFile");
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
         String radioStation = settings.getString("radiostation", "");
-        Log.d(TAG, "radiostation" + radioStation);
+        Logger.d(TAG, "radiostation" + radioStation);
         if (!radioStation.equals("")) {
-            Log.d(TAG, "SPLIT");
+            Logger.d(TAG, "SPLIT");
             String[] stationdata = radioStation.split("_");
-            Log.d(TAG, "->" + stationdata.length);
-            Log.d(TAG, stationdata[1]);
+            Logger.d(TAG, "->" + stationdata.length);
+            Logger.d(TAG, stationdata[1]);
             StorageManager remoteStorage = StorageManager.getStorage(stationdata[1]);
             Log.d(TAG, "--x--");
             String playlistfile = remoteStorage.downloadFile(stationdata[2] + "/Radio", stationdata[3]);
-            Log.d(TAG, StorageManager.LOCAL_STORAGE + playlistfile);
+            Logger.d(TAG, StorageManager.LOCAL_STORAGE + playlistfile);
             radiofile = getStringFromFile(StorageManager.LOCAL_STORAGE + playlistfile);
             radioFileHasChanged = true;
         }
@@ -206,28 +207,28 @@ public class MusicCollectionManager {
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
         boolean radioMode = settings.getBoolean(SettingsConstants.APP_SETTING_RADIO_MODE, false);
         if (radioMode) {
-            Log.d(TAG, "Radiomode... update Next Songs To DB");
+            Logger.d(TAG, "Radiomode... update Next Songs To DB");
             String nextSongsinRadioWithTimeStamps = "";
             long nowlong = startTimeOfCurrentSong;
             for (Song song : nextSongs) {
                 nextSongsinRadioWithTimeStamps = nextSongsinRadioWithTimeStamps + song.getFileName() + " " + nowlong + "\n";
                 nowlong = nowlong + song.getDurationInSeconds();
             }
-            Log.d(TAG, nextSongsinRadioWithTimeStamps);
+            Logger.d(TAG, nextSongsinRadioWithTimeStamps);
             String oldRadioString = settings.getString("radioSongs", "");
             if (!nextSongsinRadioWithTimeStamps.equals(oldRadioString)) {
-                Log.d(TAG, "ololroflcopter");
+                Logger.d(TAG, "ololroflcopter");
                 SharedPreferences.Editor edit = settings.edit();
                 edit.putString("radioSongs", nextSongsinRadioWithTimeStamps);
                 edit.commit();
-                Log.d(TAG, "....");
+                Logger.d(TAG, "....");
                 List<PlayList> allplaylists = PlayListHelper.getAllPlayLists();
                 for (final PlayList playList : allplaylists) {
-                    Log.d(TAG, playList.getRemotePath());
+                    Logger.d(TAG, playList.getRemotePath());
                     if (playList.isActivated()) {
-                        Log.d(TAG, "found active playlist...");
+                        Logger.d(TAG, "found active playlist...");
                         final String path = playList.getRemotePath();
-                        Log.d(TAG, playList.getRemotePath());
+                        Logger.d(TAG, playList.getRemotePath());
                         final StorageManager storage = StorageManager.getStorage(playList.getRemoteStorage());
                         new Thread(new Runnable() {
                             public void run() {
@@ -241,7 +242,7 @@ public class MusicCollectionManager {
                     }
                 }
             } else {
-                Log.d(TAG, "nochange...");
+                Logger.d(TAG, "nochange...");
             }
 
         }
@@ -260,9 +261,9 @@ public class MusicCollectionManager {
         if (nextSongs.isEmpty()) {
             recoverNextSongsFromSettings();
         }
-        Log.d(TAG, "refresh playlist");
+        Logger.d(TAG, "refresh playlist");
         for (int i = 0; i < nextSongs.size(); i++) {
-            Log.d(TAG, "refresh");
+            Logger.d(TAG, "refresh");
             Song s = replaceSongForReasons(nextSongs.get(i));
             if (s != null) {
                 setNextSongPlayListInSettings(i, s.getFileName());
@@ -272,19 +273,19 @@ public class MusicCollectionManager {
         nextSongs.remove(null);
         if (nextSongs.size() < LENGTH_OF_PLAYLIST) {
             int numberOfSongsToAdd = LENGTH_OF_PLAYLIST - nextSongs.size();
-            Log.d(TAG, "refresh has to add " + numberOfSongsToAdd + " songs");
+            Logger.d(TAG, "refresh has to add " + numberOfSongsToAdd + " songs");
             for (int i = 0; i < numberOfSongsToAdd; i++) {
                 Song song = pickASong();
-                Log.d(TAG, "->" + i + " " + SongHelper.getTitleInfoAsString(song));
+                Logger.d(TAG, "->" + i + " " + SongHelper.getTitleInfoAsString(song));
                 setNextSongPlayListInSettings(nextSongs.size(), song.getFileName());
                 nextSongs.add(song);
             }
         }
-        Log.d(TAG, "done with playlist refreshing");
+        Logger.d(TAG, "done with playlist refreshing");
     }
 
     private void setNextSongPlayListInSettings(int i, String fileName) {
-        Log.d(TAG, "put into settings");
+        Logger.d(TAG, "put into settings");
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
         SharedPreferences.Editor edit = settings.edit();
         edit.putString("nextSong_" + i, fileName);
@@ -306,17 +307,17 @@ public class MusicCollectionManager {
     }
 
     public Song pickASong() {
-        Log.d(TAG, "pickASong()");
+        Logger.d(TAG, "pickASong()");
         SongSelector songSelector = SongSelectorFactory.getSongSelector(SongSelector.EQUAL_PLAY_SONG_SELECTOR);
         Song possibleSong = songSelector.getASong();
         return replaceSongForReasons(possibleSong);
     }
 
     private Song replaceSongForReasons(Song possibleSong) {
-        Log.d(TAG, "replaceForReasons...");
-        Log.d(TAG, "check if song needs to be replaced (" + SongHelper.getTitleInfoAsString(possibleSong) + ")");
+        Logger.d(TAG, "replaceForReasons...");
+        Logger.d(TAG, "check if song needs to be replaced (" + SongHelper.getTitleInfoAsString(possibleSong) + ")");
         if (SongHelper.getNumberOfViableSongs() > 0 && getNumberOfActivePlayLists() > 0) {
-            Log.d(TAG, "number if viable songs is more than 0, thats good");
+            Logger.d(TAG, "number if viable songs is more than 0, thats good");
             if (possibleSong == null) {
                 SongHelper.determineNumberOfViableSongs();
                 return pickASong();
@@ -324,19 +325,19 @@ public class MusicCollectionManager {
             try {
                 possibleSong.getFileName(); //if this throws a database exception.,.
             } catch (ArrayIndexOutOfBoundsException e) {
-                Log.d(TAG, "this song throws an index out of bounds exception...");
+                Logger.d(TAG, "this song throws an index out of bounds exception...");
                 return pickASong();
             }
             if (possibleSong.isToBeDeleted()) {
-                Log.d(TAG, "isToBeDeleted");
+                Logger.d(TAG, "isToBeDeleted");
                 return pickASong();
             }
             if (possibleSong.isToBeUpdated()) {
-                Log.d(TAG, "isToBeUpdated");
+                Logger.d(TAG, "isToBeUpdated");
                 return pickASong();
             }
             if (!SongHelper.localFileExists(possibleSong)) {
-                Log.d(TAG, "localFiledoesNotExist");
+                Logger.d(TAG, "localFiledoesNotExist");
                 return pickASong();
             }
             if (!possibleSong.isInActiveUse()) {
@@ -348,7 +349,7 @@ public class MusicCollectionManager {
         return null;
     }
 
-    public void syncRemoteStorageWithDevice(final boolean lookForNewPlayLists){
+    public void syncRemoteStorageWithDevice(final boolean lookForNewPlayLists) {
         if (TrashPlayService.wifi) {
             new Thread(new Runnable() {
                 public void run() {
@@ -358,7 +359,7 @@ public class MusicCollectionManager {
                         }
                         synchronizePlayLists();
                     } catch (Exception e) {
-                        Log.e(TAG, "Exception while trying to sync.");
+                        Logger.e(TAG, "Exception while trying to sync.");
                         syncRemoteStorageWithDevice(lookForNewPlayLists);
                         e.printStackTrace();
                     }
@@ -368,38 +369,46 @@ public class MusicCollectionManager {
     }
 
     private void synchronizePlayLists() throws Exception {
-        Log.d(TAG, "Synchronize");
+        Logger.d(TAG, "Synchronize");
         List<PlayList> allPlayLists = PlayListHelper.getAllPlayLists();
-        Log.d(TAG, "getAll");
+        Logger.d(TAG, "getAll");
         for (PlayList playlist : allPlayLists) {
             PlayListHelper.synchronize(playlist);
             SongHelper.determineNumberOfViableSongs();
         }
-        Log.d(TAG, "ok.");
+        Logger.d(TAG, "ok.");
     }
 
     private void findRemotePlayListFoldersAndCreateNewPlayLists() throws Exception {
+        Logger.d(TAG, "findRemotePlayListFoldersAndCreateNewPlayLists()");
         if (DropBox.getInstance().isConnected()) {
 
             DropBox newDropBox = DropBox.getInstance();
 
             List<String> folderNames = newDropBox.getAllPlayListFolders();
-            Log.d(TAG, "Done with the search");
-            Log.d(TAG, "returned with a list of " + folderNames.size());
+            Logger.d(TAG, "Done with the search");
+            Logger.d(TAG, "returned with a list of " + folderNames.size());
             for (String folderName : folderNames) {
-                Log.d(TAG, folderName);
+                Logger.d(TAG, folderName);
                 if (!knownPlaylist(folderName)) {
-                    PlayListHelper.createNewPlayList(newDropBox, folderName);
+                    if (!TrashPlayService.getContext().isInRadioMode()) {
+                        Logger.d(TAG, "create New PlayList since we are not in radiomode");
+                        PlayListHelper.createNewPlayList(newDropBox, folderName);
+                    }
+                    else {
+                        Logger.d(TAG, "a new playlist was found but not downloaded since we are in radiomode");
+                        TrashPlayService.getContext().toast("a new playlist was found but not downloaded since we are in radiomode");
+                    }
                 }
             }
         }
     }
 
-    private boolean knownPlaylist(String foldername) {
+    private boolean knownPlaylist(String folderName) {
 
         List<PlayList> allPlayLists = PlayListHelper.getAllPlayLists();
         for (PlayList playList : allPlayLists) {
-            if (playList.getRemotePath().equals(foldername)) {
+            if (playList.getRemotePath().equals(folderName)) {
                 return true;
             }
         }
@@ -432,7 +441,7 @@ public class MusicCollectionManager {
     }
 
     public void determineNumberOfActivatedPlayLists() {
-        Log.d(TAG, "getNumberOFActivatedPlayLIsts");
+        Logger.d(TAG, "getNumberOFActivatedPlayLIsts");
         int n = 0;
         List<PlayList> allplayLists = PlayListHelper.getAllPlayLists();
         for (PlayList playList : allplayLists) {
@@ -440,38 +449,31 @@ public class MusicCollectionManager {
                 n++;
             }
         }
-        Log.d(TAG, "->" + n);
+        Logger.d(TAG, "->" + n);
         numberOfActivatedPlayLists = n;
     }
 
     public String getStringFromFile(String filePath) throws Exception {
-        Log.d(TAG, "-");
         File fl = new File(filePath);
-        Log.d(TAG, "-");
         FileInputStream fin = new FileInputStream(fl);
-        Log.d(TAG, "-");
         String ret = convertStreamToString(fin);
-        Log.d(TAG, "-");
         //Make sure you close all streams.
         fin.close();
-        Log.d(TAG, "-");
         return ret;
     }
 
     public static String convertStreamToString(InputStream is) throws Exception {
-        Log.d(TAG, "--");
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        Log.d(TAG, "--");
         StringBuilder sb = new StringBuilder();
-        Log.d(TAG, "--");
         String line = null;
         while ((line = reader.readLine()) != null) {
-            Log.d(TAG, "---");
             sb.append(line).append("\n");
         }
-        Log.d(TAG, "--");
         reader.close();
-        Log.d(TAG, "--");
         return sb.toString();
+    }
+
+    public void resetNextSongs() {
+        nextSongs.clear();
     }
 }

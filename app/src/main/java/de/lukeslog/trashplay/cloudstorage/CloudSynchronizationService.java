@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
+import de.lukeslog.trashplay.support.Logger;
 
 //TODO: This may not be a service
 public class CloudSynchronizationService extends Service {
@@ -71,7 +72,7 @@ public class CloudSynchronizationService extends Service {
     }
 
     public static void resetSyncFlag() {
-        Log.d(TAG, "resetAllSyncFlags");
+        Logger.d(TAG, "resetAllSyncFlags");
         updateRegisteredCloudStorageSystems();
         for (StorageManager c : registeredCloudStorageServices) {
             c.resetSyncInProgress();

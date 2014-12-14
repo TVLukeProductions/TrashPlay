@@ -3,6 +3,7 @@ package de.lukeslog.trashplay.lastfm;
 import android.util.Log;
 
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
+import de.lukeslog.trashplay.support.Logger;
 import de.umass.lastfm.Authenticator;
 import de.umass.lastfm.Caller;
 import de.umass.lastfm.Session;
@@ -41,8 +42,8 @@ public class LastFM {
                         {
                             Track trackinfo = Track.getInfo(artist, song, LastFMConstants.key);
                             String imageurl = trackinfo.getImageURL(null);
-                            Log.d(TAG, "imageurl->"+imageurl);
-                            Log.d(TAG, "duration: "+trackinfo.getDuration());
+                            Logger.d(TAG, "imageurl->" + imageurl);
+                            Logger.d(TAG, "duration: "+trackinfo.getDuration());
                         }
                     }
                     catch(Exception e)

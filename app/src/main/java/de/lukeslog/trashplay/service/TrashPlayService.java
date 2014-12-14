@@ -16,6 +16,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import de.lukeslog.trashplay.R;
@@ -24,6 +26,7 @@ import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
 import de.lukeslog.trashplay.support.Logger;
+import de.lukeslog.trashplay.support.SettingsConstants;
 import de.lukeslog.trashplay.ui.MainControl;
 
 public class TrashPlayService extends Service {
@@ -85,12 +88,12 @@ public class TrashPlayService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "notification should have been shown (main Service)");
+        Logger.d(TAG, "notification should have been shown (main Service)");
     }
 
     public void stop()
     {
-        Log.d(TAG, "Service player stop");
+        Logger.d(TAG, "Service player stop");
         if(MainControl.isPlayButtonClicked())
         {
             MusicPlayer.stopeverything();
@@ -107,7 +110,7 @@ public class TrashPlayService extends Service {
         stopNotification();
         stopUpdater();
         ctx = null;
-        Log.d(TAG, "bye!");
+        Logger.d(TAG, "bye!");
         super.onDestroy();
         //sometimes this stuff does not close even if everything has been shut down. this is a dirty hack to end all dirty hacks.
         //TODO: from time to time I should check if I can live without this
@@ -192,7 +195,7 @@ public class TrashPlayService extends Service {
        //     Log.d(TAG, "ServiceRunner: run");
             if(counter%60==0)
             {
-                Log.d(TAG, "ServiceRunner: Time to try to synchronize and Stuff");
+                Logger.d(TAG, "ServiceRunner: Time to try to synchronize and Stuff");
                 try {
                     boolean lookForNewPlaylists=false;
                     if(counter%180==0){
@@ -203,6 +206,7 @@ public class TrashPlayService extends Service {
                     e.printStackTrace();
                 }
             }
+            collectStatistics();
             counter++;
 
             handler.removeCallbacks(this);
@@ -210,7 +214,7 @@ public class TrashPlayService extends Service {
         }
 
         public void onPause() {
-            Log.d(TAG, "updater on Pause in Service");
+            Logger.d(TAG, "updater on Pause in Service");
             handler.removeCallbacks(this);
         }
 
@@ -218,6 +222,11 @@ public class TrashPlayService extends Service {
             handler.removeCallbacks(this); // remove the old callback
             handler.postDelayed(this, delay); // register a new one
         }
+    }
+
+    private void collectStatistics() {
+        //TODO: Continuous runtime
+        //Total Runtime
     }
 
     public static TrashPlayService getContext() {
@@ -228,7 +237,7 @@ public class TrashPlayService extends Service {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "WIFI BROADCAST RECEIVER onReceive");
+            Logger.d(TAG, "WIFI BROADCAST RECEIVER onReceive");
 
             NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
             if (networkInfo != null) {
@@ -282,5 +291,11 @@ public class TrashPlayService extends Service {
         Intent actionIntent = new Intent();
         actionIntent.setAction(action);
         TrashPlayService.getContext().sendBroadcast(actionIntent);
+    }
+
+    public boolean isInRadioMode() {
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctx);
+        boolean radioMode = settings.getBoolean(SettingsConstants.APP_SETTING_RADIO_MODE, false);
+        return radioMode;
     }
 }

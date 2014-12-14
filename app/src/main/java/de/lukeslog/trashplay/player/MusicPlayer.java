@@ -91,7 +91,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
 
     private void playmp3(Song song) {
         if (song == null) {
-            Log.d(TAG, "playmp3 got null");
+            Logger.d(TAG, "playmp3 got null");
             TrashPlayService.getContext().toast("Something went wrong.");
             stop();
         } else {
@@ -117,10 +117,10 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                 try {
                     playMusic(song);
                 } catch (IOException e) {
-                    Log.e(TAG, "error1 in MusicPlayer");
+                    Logger.e(TAG, "error1 in MusicPlayer");
                     e.printStackTrace();
                 } catch (Exception e) {
-                    Log.e(TAG, "error2 in MusicPlayer");
+                    Logger.e(TAG, "error2 in MusicPlayer");
                     e.printStackTrace();
                 }
             }
@@ -149,10 +149,10 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     }
 
     private void scrobbleTrack() {
-        Log.d(TAG, "scrobble....");
+        Logger.d(TAG, "scrobble....");
         TrashPlayLastFM.scrobble(artist, title);
         if (TrashPlayService.serviceRunning()) {
-            Log.d(TAG, "Service Running...");
+            Logger.d(TAG, "Service Running...");
             PersonalLastFM.scrobble(artist, title, TrashPlayService.getContext().settings);
         }
 
@@ -175,7 +175,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             mp.prepareAsync();
             currentlyPlayingSong = song;
         } catch (IllegalStateException e) {
-            Log.d(TAG, "illegalStateException");
+            Logger.d(TAG, "illegalStateException");
             mp = null;
             playmp3(MusicCollectionManager.getInstance().getNextSong());
         }
@@ -189,7 +189,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     }
 
     public void stop() {
-        Log.d(TAG, "stop Media Player Service");
+        Logger.d(TAG, "stop Media Player Service");
         try {
             mp.stop();
         } catch (Exception e) {
@@ -223,17 +223,15 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                 }
             }
             TrashPlayService.getContext().toast("time dif "+MusicCollectionManager.timeDifInMillis);
-            Log.d(TAG, "timedifstuff");
+            Logger.d(TAG, "timedifstuff");
             boolean c1 = MusicCollectionManager.timeDifInMillis>0;
-            Log.d(TAG, "a");
+            Logger.d(TAG, "a");
             boolean c2 = MusicCollectionManager.timeDifInMillis<duration;
-            Log.d(TAG, "b");
             if(c1 && c2) {
-                Log.d(TAG, "aye");
-                Log.d(TAG, "seek"+(int)MusicCollectionManager.timeDifInMillis);
+                Logger.d(TAG, "seek"+(int)MusicCollectionManager.timeDifInMillis);
                 mpx.seekTo((int)MusicCollectionManager.timeDifInMillis);
             }
-            Log.d(TAG, "continue");
+            Logger.d(TAG, "continue");
         }
         Logger.d(TAG, "ok, I'v set the on Completion Listener again...");
         mpx.start();
@@ -364,7 +362,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                        p= mp.getDuration();
                        currentlyPlayingSong.setDurationInSeconds(p);
                    } catch(Exception e) {
-                       Log.d(TAG, "stupid length exceptione");
+                       Logger.d(TAG, "stupid length exceptione");
                        p=180;
                    }
                 }

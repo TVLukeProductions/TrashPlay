@@ -2,6 +2,7 @@ package de.lukeslog.trashplay.lastfm;
 
 import android.util.Log;
 
+import de.lukeslog.trashplay.support.Logger;
 import de.umass.lastfm.Session;
 import de.umass.lastfm.Track;
 import de.umass.lastfm.scrobble.ScrobbleResult;
@@ -10,7 +11,7 @@ public class TrashPlayLastFM extends LastFM
 {
     public static void scrobble(final String artist, final String song)
     {
-        Log.d(TAG, "scrobble to TrashPlay...");
+        Logger.d(TAG, "scrobble to TrashPlay...");
         new Thread(new Runnable()
         {
             public void run()

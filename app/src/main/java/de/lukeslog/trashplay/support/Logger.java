@@ -141,7 +141,7 @@ public class Logger
     private static boolean store(String TAG, String m)
     {
         DateTime d = new DateTime();
-        String log="trashplay.txt";
+        String log="TrashPlayLogFile.txt";
         File Root = Environment.getExternalStorageDirectory();
         if(Root.canWrite())
         {
