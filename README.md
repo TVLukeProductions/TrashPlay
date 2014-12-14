@@ -113,7 +113,7 @@ Over time I will find out what kind of usage the app has and will update this in
 
 ### Current
 
-#### 1.0.5 b - Like A Boss (14.12.2014)
+#### 1.0.4 b / 1.0.5 b - Like A Boss (14.12.2014)
 
 * Rewrote entire code base
 * Persitence layer
