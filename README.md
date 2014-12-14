@@ -1,3 +1,7 @@
+<p align="center">
+<img src="https://raw.github.com/TVLuke/TrashPlay/master/res/drawable-hdpi/ic_launcher.png" alt="Logo"/>
+</p>
+
 # Trash Player 1.0 - Like A Boss
 ### All the features you always hated and many more.
 
@@ -37,14 +41,14 @@ The Trash Player gets its music from cloud storage services. It also supports lo
 have to be in a specific folder of you mobile device.
 
 You can put files into the folder Music/TrashPlay/local if you want to store them only locally and 
-they will show up in your TrashPlayList as a seperate,local, play list [2].
+they will show up in your TrashPlayList as a separate,local, play list [2].
 
 Otherwise you have to connect to one of the cloud storage services like DropBox or google Drive [1] 
 and download music. Trash Player will download all mp3s from the folders you have denoted as 
 TrashPlayer download lists. 
 
 How do I do this? Just put a file that starts with ".trashplay" into your folder, it could for 
-example be an empty txt file. 
+example be an empty txt file called ".trashplay.txt". 
 
 #OK, it seems to synchronize with my cloud storage service, but it takes forever!
 You probably have a lot of files. Just wait. If it lasts longer than 5 hours, tell your doc... I 
@@ -59,17 +63,17 @@ This should not delete any of your play lists.
 "Why will you not let me skip this stupid track someone else has put into the folder?"
 "Well that's just the way of the Trash Player."
 "But there has to be a way!"
-"Easy there captain kirk, there kind of is, just read the next question."
+"Easy there Captain Kirk, there kind of is, just read the next question."
 
 # Whats Trash Mode?
-Trash Mode is the standard mode of your Trash Player. It means randomly selected songs with no posibility of skipping.
+Trash Mode is the standard mode of your Trash Player. It means randomly selected songs with no possibility of skipping.
 However, you can deactivate TrashMode. You will be given a "next" and a "previous" button".
 
-Note: If you return to trashMode, the paly list for the next 10 songs will revert to those that where in line when you 
+Note: If you return to trashMode, the play list for the next 10 songs will revert to those that where in line when you 
 deactivated TrashMode because on the TrashPlaylist, there is no skipping.
  
-# What is radio?
-No all things that require a Trash Playlist take place at a single place. There may be road trips with multiple
+# What is "Radio"?
+Not all things that require a Trash Playlist take place at a single place. There may be road trips with multiple
 cars or hackathons in multiple cities or whatever.
 
 With radio you can start a radio and other Trash Players can join, then all of them will play the 
@@ -77,7 +81,7 @@ same songs at (roughly) the same moment.
 
 You can not always start a radio. Since others will want to "check in" your radio the app needs to 
 make sure that they have the same songs you have, so you can only start a radio if:
-* you currently have only ne playlist activated (settings -> configue Playlists)
+* you currently have only ne playlist activated (settings -> configure Playlists)
 * This single activated playlist is not local
 
 You also need to give the station a name.
@@ -87,7 +91,7 @@ Yes, you need to turn of synchronization for this folder. Click on the DropBox l
 Mac, go to settings,a dn deactivate synchronization for the "Radio"-Folder.
 
 #What kind of data-usage will using or broadcasting radio entail?
-Its not a lot, but off course your app has to send its play list into the web or download someone elses.
+Its not a lot, but off course your app has to send its play list into the web or download someone else's.
 There is no correct answer here but my guess would be that you would have to use radio outside of 
 wifi for about 4 days to get 1 mb of data... but I might be wrong.
 
@@ -104,6 +108,72 @@ Over time I will find out what kind of usage the app has and will update this in
 [1] Currently Trash Player supports only DropBox
 [2] This feature is not yet fully implemented.
 [3] https://github.com/TVLukeProductions/TrashPlay/tree/LikeABoss
+
+## Release History
+
+### Current
+
+#### 1.0.5 b - Like A Boss (14.12.2014)
+
+* Rewrote entire code base
+* Persitence layer
+* Posibility to deactivate trash Mode
+* Scrobbling to TrashPlay and Private last.fm account
+* Introducing Trash-Play Radio: You play songs from the playlists and other can listen to the same music at the same time at another place
+* Support for Multiple Remote folders with music
+
+<p align="center">
+<img src="https://raw.github.com/TVLuke/TrashPlay/likeaboss/screenshots/trashplay105a.png" alt="Screenshot 1"/>
+<img src="https://raw.github.com/TVLuke/TrashPlay/likeaboss/screenshots/trashplay105b.png" alt="Screenshot 2"/>
+</p>
+
+### Older Versions
+#### v 0.2.b Hund im Betastadium (17.01.2014) 
+* Some UI Improvements
+* **BUG FIXES**
+* The last version was restarting from time to time and would just play music. This one does not
+* Reliability
+
+<p align="center">
+<img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/trashplay02b_a.png" alt="Screenshot 1"/>
+<img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/trashplay02b_b.png" alt="Screenshot 2"/>
+</p>
+
+#### v 0.1.dayum (11.01.2014) 
+* The volume control is now only turing up to 10% if the loudness was done to 0%. The previous strategy turned out to suck for headphone users.
+* changes in UI
+* List of coming songs
+* **Bug Fixes**
+* Some minor fixes for convenience
+* Checking if files are changed or deleted before playing (this used to get the app into some hickups)
+
+#### v 0.1.roflcopter (02.01.2014) 
+* Play music
+* Shut down on stop
+* Display title of the current track
+* Dropbox connection possible
+* Creates _DropBoxTrashPlaylistDerHoelle_ folder if it does not exist.
+* Syncing with the _DropBoxTrashPlaylistDerHoelle_ folder
+* stops syncing when you leave the Wifi
+* only show play button if play is actually an option
+* Scrobbling to last.fm
+* No Silence. Music will be turned up again at once.
+* Remember last song and continue with that song when restarted
+
+<p align="center">
+<img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191841.png" alt="Screenshot 1"/>
+<img src="https://raw.github.com/TVLuke/TrashPlay/master/screenshots/device-2014-01-02-191103.png" alt="Screenshot 2"/>
+</p>
+
+#### v 0.1.deinemudda (31.12.2013)
+* Play music
+* Shut down on stop
+* DropBox connection possible
+* Syncing with the _DropBoxTrashPlaylistDerHoelle_ folder
+* stops syncing when you leave the Wifi
+* only show play button if play is actually an option
+* Scrobbling to last.fm
+* No Silence. Music will be turned up again after a few minutes.
 
 ##Changelog
 ### 03.12.2014
@@ -204,3 +274,14 @@ Over time I will find out what kind of usage the app has and will update this in
 * Social Interaction
 * Non Mobile Java version, die in der Dropbox liegt
 * Die Android Klasse SyncAdapter nutzen um zukünftige CloudStorage sachen vernünftig zu wrappen
+
+#Kudos
+## This App uses:
+* [Dropbox android SDK](https://www.dropbox.com/developers/core/sdks/android)
+* [lastfm-java](https://code.google.com/p/lastfm-java/)
+* [Java ID3 Tag Library](http://javamusictag.sourceforge.net/)
+* [nCoap Library](https://github.com/okleine/nCoAP)
+* [quick-json](https://code.google.com/p/quick-json/)
+
+# License
+[CC-BY-NC](http://creativecommons.org/licenses/by-nc/4.0/)
