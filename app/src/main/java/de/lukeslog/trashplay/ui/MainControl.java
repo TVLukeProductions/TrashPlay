@@ -8,14 +8,15 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,7 +38,6 @@ import de.lukeslog.trashplay.playlist.SongHelper;
 import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.support.SettingsConstants;
-import de.lukeslog.trashplay.support.TrashPlayUtils;
 
 
 public class MainControl extends Activity {
@@ -46,8 +46,10 @@ public class MainControl extends Activity {
     public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 
     public static Activity ctx;
+    SongListAdapter songlistadapter;
     private Menu menu = null;
     private int counter = 0;
+    List<Song> oldsonglist = new ArrayList<Song>();
 
     public static boolean playButtonClicked = false;
     public static boolean authenticatingDropBox = true;
@@ -288,7 +290,7 @@ public class MainControl extends Activity {
 
     private class UIUpdater implements Runnable {
         private Handler handler = new Handler();
-        public static final int delay = 1000;
+        public static final int delay = 500;
 
         @Override
         public void run() {
@@ -310,7 +312,7 @@ public class MainControl extends Activity {
                 ImageView playpause = (ImageView) findViewById(R.id.imageView1);
                 playpause.setClickable(false);
 
-            } else if (CloudSynchronizationService.atLeastOneCloudStorageServiceIsConnected() && MusicCollectionManager.getInstance().collectionNotEmpty()) {
+            } else if (MusicCollectionManager.getInstance().collectionNotEmpty()) {
                 setButtonToPlayButton();
             }
 
@@ -324,13 +326,15 @@ public class MainControl extends Activity {
 
             setSyncInProgressAnimation();
 
-            setShiftedSongTitle();
+            setSongTitleAndArtist();
 
             setPlayTimes();
 
             fillListOfNextSongs();
 
             fillInfoBox();
+
+            setProgressBar();
 
             handler.removeCallbacks(this); // remove the old callback
             handler.postDelayed(this, delay); // register a new one
@@ -344,6 +348,15 @@ public class MainControl extends Activity {
         public void onResume() {
             handler.removeCallbacks(this); // remove the old callback
             handler.postDelayed(this, delay); // register a new one
+        }
+    }
+
+    private void setProgressBar() {
+        ProgressBar progress = (ProgressBar) findViewById(R.id.progress);
+        double posix = MusicPlayer.playPosition();
+        double length = MusicPlayer.playLength();
+        if(length>0.0) {
+            progress.setProgress((int) (posix / (length / 100.0)));
         }
     }
 
@@ -403,20 +416,23 @@ public class MainControl extends Activity {
     private void fillInfoBox() {
         TextView infoBox = (TextView) findViewById(R.id.infoBox);
         if (MusicPlayer.getCurrentlyPlayingSong() != null) {
-            infoBox.setText("Up Next");
+            infoBox.setVisibility(View.GONE);
         } else if (MusicCollectionManager.getInstance().collectionNotEmpty()) {
+            infoBox.setVisibility(View.VISIBLE);
             infoBox.setText("Press Play To Start");
         } else if (!CloudSynchronizationService.atLeastOneCloudStorageServiceIsConnected()) {
+            infoBox.setVisibility(View.VISIBLE);
             infoBox.setText("Not connected to any storage with Playlists");
         } else if (SongHelper.getNumberOfViableSongs() == 0) {
+            infoBox.setVisibility(View.VISIBLE);
             infoBox.setText("No songs");
         }
     }
 
     private void setPlayTimes() {
         TextView position = (TextView) findViewById(R.id.posi);
-        String posix = MusicPlayer.playPosition();
-        String length = MusicPlayer.playLength();
+        String posix = MusicPlayer.playPositionAsTimeString();
+        String length = MusicPlayer.playLengthAsTimeString();
         if (length.equals("") || posix.equals("")) {
             position.setText("(" + SongHelper.getNumberOfViableSongs() + ")");
 
@@ -447,46 +463,35 @@ public class MainControl extends Activity {
         }
     }
 
-    private void setShiftedSongTitle() {
-        //TODO: this method does not perform correctly. Please write some unit tests.
+    private void setSongTitleAndArtist() {
         Song currentlyPlayingSong = MusicPlayer.getCurrentlyPlayingSong();
         if (currentlyPlayingSong != null) {
-            String newdisplay = "";
-            setDisplayStringForCurrentTrackInformation(SongHelper.getTitleInfoAsString(currentlyPlayingSong));
-            newdisplay = SongHelper.getTitleInfoAsString(currentlyPlayingSong);
-            int shift = counter % newdisplay.length();
-            //Logger.d(TAG, "shift: "+shift);
-            CharSequence d1 = newdisplay.subSequence(0, shift);
-            String s1Str = d1.toString();
-            CharSequence d2 = newdisplay.subSequence(shift, newdisplay.length());
-            String s2Str = d2.toString();
-            String ndx = s2Str + "+++" + s1Str;
-            TextView textView1 = (TextView) findViewById(R.id.songinfo);
-            textView1.setText(ndx);
+            TextView songInfo= (TextView) findViewById(R.id.songinfo);
+            TextView artistInfo= (TextView) findViewById(R.id.artistinfo);
+            songInfo.setText(currentlyPlayingSong.getSongName());
+            artistInfo.setText(currentlyPlayingSong.getArtist());
         }
     }
 
     private void fillListOfNextSongs() {
-        final List<Song> listItems = MusicCollectionManager.getInstance().getListOfNextSongs();
-        if (listItems.size() > 0) {
-            final List<String> spinnerArray = new ArrayList<String>();
-            for (Song song : listItems) {
-                String title= SongHelper.getTitleInfoAsStringWithPlayCount(song);
-                if(song.getDurationInSeconds()>0) {
-                    title = "("+TrashPlayUtils.getStringFromIntInSeconds(song.getDurationInSeconds())+") "+title;
+
+        List<Song> songList = new ArrayList<Song>(MusicCollectionManager.getInstance().getListOfNextSongs());
+        if(MusicPlayer.getCurrentlyPlayingSong()!=null) {
+            songList.remove(0);
+        }
+        if(!songList.equals(oldsonglist)) {
+            oldsonglist = songList;
+            ListView listViewWithAlarms = (ListView) findViewById(R.id.nextsongs);
+            songlistadapter = new SongListAdapter(ctx, songList);
+            listViewWithAlarms.setAdapter(songlistadapter);
+            songlistadapter.notifyDataSetChanged();
+            listViewWithAlarms.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                    Logger.d(TAG, "longclick");
+                    return true;
                 }
-                spinnerArray.add(title);
-            }
-            String s = "";
-            if (MusicPlayer.getCurrentlyPlayingSong() != null) {
-                s = spinnerArray.remove(0);
-            }
-            if (s != null && spinnerArray.get(0) != null) {
-                adapter = new ArrayAdapter<String>(MainControl.this, android.R.layout.simple_spinner_item, spinnerArray);
-                ListView lv = (ListView) findViewById(R.id.nextsongs);
-                lv.setAdapter(adapter);
-                adapter.notifyDataSetChanged();
-            }
+            });
         }
     }
 

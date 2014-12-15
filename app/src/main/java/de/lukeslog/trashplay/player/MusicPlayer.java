@@ -229,9 +229,14 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             boolean c1 = MusicCollectionManager.timeDifInMillis>0;
             Logger.d(TAG, "a");
             boolean c2 = MusicCollectionManager.timeDifInMillis<duration;
-            if(c1 && c2) {
+            boolean c3 = MusicCollectionManager.timeDifInMillis<30000;
+            if(c1 && c2 && c3) {
                 Logger.d(TAG, "seek"+(int)MusicCollectionManager.timeDifInMillis);
-                mpx.seekTo((int)MusicCollectionManager.timeDifInMillis);
+                if(MusicCollectionManager.timeDifInMillis>5000) {
+                    mpx.seekTo((int)MusicCollectionManager.timeDifInMillis-5000);
+                } else {
+                    mpx.seekTo((int) MusicCollectionManager.timeDifInMillis);
+                }
             }
             Logger.d(TAG, "continue");
         }
@@ -338,7 +343,30 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         }
     };
 
-    public static String playPosition() {
+    public static int playPosition() {
+        if (mp != null) {
+           return mp.getCurrentPosition();
+        }
+        return 0;
+    }
+
+    public static int playLength() {
+        int p =0;
+        if (mp != null) {
+            try {
+                p = currentlyPlayingSong.getDurationInSeconds();
+                if (p == 0) {
+                    p = mp.getDuration();
+                    currentlyPlayingSong.setDurationInSeconds(p);
+                }
+            } catch (Exception e) {
+                return 0;
+            }
+        }
+        return p;
+    }
+
+    public static String playPositionAsTimeString() {
         String result = "";
         if (mp != null) {
             try {
@@ -354,7 +382,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         return result;
     }
 
-    public static String playLength() {
+    public static String playLengthAsTimeString() {
         String result = "";
         if (mp != null) {
             try {

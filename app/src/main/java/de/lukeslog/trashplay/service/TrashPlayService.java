@@ -56,6 +56,7 @@ public class TrashPlayService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Logger.d(TAG, "SERVICE On Start Command");
         settings = getSharedPreferences(PREFS_NAME, 0);
         ctx=this;
         if (MainControl.activityRunning()) {
@@ -297,5 +298,11 @@ public class TrashPlayService extends Service {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctx);
         boolean radioMode = settings.getBoolean(SettingsConstants.APP_SETTING_RADIO_MODE, false);
         return radioMode;
+    }
+
+    public boolean isInTrashMode() {
+        SharedPreferences defSetting = PreferenceManager.getDefaultSharedPreferences(ctx);
+        boolean trashmode = defSetting.getBoolean(SettingsConstants.APP_SETTINGS_TRASHMODE, true);
+        return trashmode;
     }
 }

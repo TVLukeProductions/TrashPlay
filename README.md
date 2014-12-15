@@ -252,6 +252,13 @@ Over time I will find out what kind of usage the app has and will update this in
 * Massive verbesserungen bei Radio funktionen
 -> Release 1.0.5
 
+### 15.12.2014
+* Bugfix : "PlayButton does not show up outside of Wifi"
+* Complete UI Overhaul
+* Bugfix: "Long titles and artist names are cut off" (requires users to delete all stored data)
+
+-> Release 1.0.6
+
 ## ToDo
 * Sammeln von persönlichen Statistiken
 * bessere sync animation

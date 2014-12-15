@@ -26,7 +26,6 @@ public class SongHelper {
     public static final String TAG = TrashPlayConstants.TAG;
 
     private static int numberOfViableSongs = 0;
-    private static boolean freshStart = true;
 
     public static boolean localFileExists(Song song) {
         return StorageManager.doesFileExists(song);
@@ -77,8 +76,31 @@ public class SongHelper {
     {
         File file = new File(StorageManager.LOCAL_STORAGE+song.getFileName());
         String[] metadata = new String[2];
+        //first, get stuff from the filename
+
         metadata[0]=file.getName();
         metadata[1]=" ";
+
+        String tempsong="";
+        String tempartist ="";
+        String fn = file.getName();
+        if(fn.contains("-") && fn.endsWith("mp3"))
+        {
+            fn=fn.replace(".mp3", "");
+            String[] spl = fn.split("-");
+            if(spl.length==2)
+            {
+                metadata[0]=spl[0];
+                metadata[0]=metadata[0].trim();
+                metadata[1]=spl[1];
+                metadata[1]=metadata[1].trim();
+                Logger.d(TAG, "----------->ARTIST():"+spl[0]);
+                Logger.d(TAG, "----------->SONG():"+spl[1]);
+                tempsong=metadata[1];
+                tempartist = metadata[0];
+            }
+        }
+         //try to get the ID3 Tag... but this is mostly shit...
         try
         {
             //Logger.d(TAG, "md1");
@@ -115,21 +137,11 @@ public class SongHelper {
         catch(Exception ex)
         {
             Logger.e(TAG, "There has been an exception while extracting ID3 Tag Information from the MP3");
-            String fn = file.getName();
-            fn.replace("�", "-"); //wired symbols that look alike
+            fn = file.getName();
             if(fn.contains("-") && fn.endsWith("mp3"))
             {
-                fn=fn.replace(".mp3", "");
-                String[] spl = fn.split("-");
-                if(spl.length==2)
-                {
-                    metadata[0]=spl[0];
-                    metadata[0]=metadata[0].trim();
-                    metadata[1]=spl[1];
-                    metadata[1]=metadata[1].trim();
-                    Logger.d(TAG, "----------->ARTIST():"+spl[0]);
-                    Logger.d(TAG, "----------->SONG():"+spl[1]);
-                }
+                metadata[0]=tempartist;
+                metadata[1]=tempsong;
             }
             else
             {
@@ -139,17 +151,21 @@ public class SongHelper {
                 Logger.d(TAG, "----------->SONG():"+metadata[1]);
             }
         }
+        if(metadata[0].length()<tempartist.length() || metadata[1].length()<tempsong.length()) {
+            metadata[0]=tempartist;
+            metadata[1]=tempsong;
+        }
         //This is unsafe insofar as that songs or artists names might actually have on a vowel + "?" but thats less likely than it being a
         //false interpretation of the good damn id3 lib given that (at least right now) lots of German stuff is in the
         //trashplaylist
         for(int i=0; i<metadata.length; i++)
         {
-            metadata[i]=metadata[i].replace("A?", "�");
-            metadata[i]=metadata[i].replace("a?", "�");
-            metadata[i]=metadata[i].replace("U?", "�");
-            metadata[i]=metadata[i].replace("u?", "�");
-            metadata[i]=metadata[i].replace("O?", "�");
-            metadata[i]=metadata[i].replace("o?", "�");
+            metadata[i]=metadata[i].replace("A?", "Ä");
+            metadata[i]=metadata[i].replace("a?", "ä");
+            metadata[i]=metadata[i].replace("U?", "Ü");
+            metadata[i]=metadata[i].replace("u?", "ü");
+            metadata[i]=metadata[i].replace("O?", "Ö");
+            metadata[i]=metadata[i].replace("o?", "ö");
         }
         song.setArtist(metadata[0]);
         song.setSongName(metadata[1]);
@@ -209,15 +225,16 @@ public class SongHelper {
 
 
     public static int getNumberOfViableSongs() {
-        if(freshStart){
+        if(numberOfViableSongs==0){
             determineNumberOfViableSongs();
-            freshStart=false;
         }
         return numberOfViableSongs;
     }
 
     static void removeSongsThatAreToBeDeleted() {
+        Logger.d(TAG, "removeSongsThatAreToBeDeleted()");
         if (TrashPlayService.serviceRunning()) {
+            Logger.d(TAG, "service is running()");
             try {
 
                 List<Song> result = new Select().from(Song.class).where("toBeDeleted = ?", "1").execute();
@@ -234,6 +251,8 @@ public class SongHelper {
             } catch (Exception e) {
                     Logger.e(TAG, "Invalid Databse. Delete everything 2");
             }
+        } else {
+            Logger.d(TAG, "service is NOT running");
         }
     }
 

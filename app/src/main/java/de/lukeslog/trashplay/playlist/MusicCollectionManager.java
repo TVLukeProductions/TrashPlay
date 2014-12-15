@@ -64,7 +64,9 @@ public class MusicCollectionManager {
             Logger.d(TAG, "remove 0");
             Song s = nextSongs.remove(0);
             try {
-                SongHelper.finishedWithSong(s.getFileName());
+                if(TrashPlayService.getContext().isInTrashMode()) {
+                    SongHelper.finishedWithSong(s.getFileName());
+                }
             } catch (Exception e) {
                 Logger.e(TAG, "finishedSong in MusicCollectionManager");
             }
@@ -234,6 +236,8 @@ public class MusicCollectionManager {
             if(!oldradiofile.equals(radiofile)) {
                 Logger.d(TAG, "RADIOFILE HAS CHANGED");
                 radioFileHasChanged = true;
+            } else {
+                Logger.d(TAG, "RADIOFILE HAS NOT CHANGED");
             }
         }
     }
