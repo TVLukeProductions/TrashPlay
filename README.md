@@ -259,6 +259,8 @@ Over time I will find out what kind of usage the app has and will update this in
 
 -> Release 1.0.6
 
+* "Ducking" Volume for notification sounds or navigation
+
 ## ToDo
 * Sammeln von persönlichen Statistiken
 * bessere sync animation
