@@ -74,7 +74,7 @@ public class SettingsFragment extends PreferenceFragment {
                         CheckBoxPreference radio = new CheckBoxPreference(getActivity());
                         radio.setKey("Radio_" + activeRemotePlayList.getRemoteStorage() + "_" + activeRemotePlayList.getRemotePath() + "_" + station);
                         radio.setEnabled(true);
-                        radio.setSummary("Check if you want to use this playlist");
+                        radio.setSummary("Check if you want to listen to this radio station.");
                         radio.setTitle(stationName);
                         try {
                             Preference oldpref = getPreferenceManager().findPreference("Radio_" + activeRemotePlayList.getRemoteStorage() + "_" + activeRemotePlayList.getRemotePath() + "_" + station);
@@ -214,16 +214,18 @@ public class SettingsFragment extends PreferenceFragment {
             CheckBoxPreference playlistActivationSetting = new CheckBoxPreference(getActivity());
             playlistActivationSetting.setKey("pref_activateplaylist_" + playList.getRemoteStorage() + "_" + playList.getRemotePath());
             playlistActivationSetting.setEnabled(true);
-            playlistActivationSetting.setSummary("Check if you want to use this playlist");
+            int n=0;
+            n= PlayListHelper.getNumberOfSongsInPlayList(playList);
+            playlistActivationSetting.setSummary("Check if you want to use this playlist\n"+n+" songs.");
             playlistActivationSetting.setTitle(playList.getRemotePath() + " (" + playList.getRemoteStorage() + ")");
             playlistActivationSetting.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object o) {
                     CheckBoxPreference x = (CheckBoxPreference) preference;
                     if (!x.isChecked()) {
-                        PlayListHelper.activated(playList, true);
+                        PlayListHelper.setActivated(playList, true);
                     } else {
-                        PlayListHelper.activated(playList, false);
+                        PlayListHelper.setActivated(playList, false);
                     }
                     return true;
                 }

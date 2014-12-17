@@ -8,12 +8,14 @@
             android:key="pref_app_playlistusage_settings"
             android:title="@string/pref_app_playlistusage_settings"
             android:summary="@string/pref_app_playlistusage_summary"
+            android:icon="@drawable/ic_action_list"
             android:persistent="true">
         </PreferenceScreen>
         <PreferenceScreen
             android:key="pref_app_detail_setting"
             android:title="@string/pref_app_detail_logdata"
             android:summary="@string/pref_app_detail_summary"
+            android:icon="@drawable/ic_action_settings"
             android:persistent="true">
             <CheckBoxPreference
                 android:title="@string/pref_appdata_trashmode"
@@ -21,6 +23,13 @@
                 android:summary="@string/pref_summary_pref_appdata_trashmode"
                 android:defaultValue="true">
             </CheckBoxPreference>
+            <ListPreference
+                android:key="pref_songselector"
+                android:title="@string/pref_songselector"
+                android:entryValues="@array/pref_songselector_names"
+                android:entries="@array/pref_songselector_entries"
+                android:defaultValue="@string/pref_songselector_default">
+            </ListPreference>
             <CheckBoxPreference
                 android:title="@string/pref_appdata_radiomode"
                 android:key="pref_appdata_radiomode"
@@ -42,6 +51,7 @@
             android:key="pref_lastfm_detail_settings"
             android:title="@string/pref_lastfm_logdata"
             android:summary="@string/pref_lastfm_summary"
+            android:icon="@drawable/lastfmlogoyes_small"
             android:persistent="true">
             <Preference
                 android:key="pref_static_field_key"
@@ -65,11 +75,13 @@
             android:title="@string/pref_logging"
             android:key="pref_looging"
             android:summary="@string/pref_logging_summary"
+            android:icon="@drawable/ic_action_tag"
             android:defaultValue="false">
         </CheckBoxPreference>
         <CheckBoxPreference
             android:title="@string/pref_logging_file"
             android:key="pref_looging_file"
+            android:icon="@drawable/ic_action_paste"
             android:defaultValue="false">
         </CheckBoxPreference>
     </PreferenceCategory>

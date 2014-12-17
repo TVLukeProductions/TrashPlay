@@ -13,43 +13,91 @@
         android:orientation="vertical"
         android:paddingRight="20dp"
         android:paddingLeft="20dp"
-        android:background="#000000" >
+        android:background="#000000"
+        android:id="@+id/ololroflcopter">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#FFFFFF"
         android:layout_marginBottom="5dp"
-        android:background="#000000" >
+        android:background="#000000">
+
+        <TextView
+            android:id="@+id/posi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:fontFamily="sans-serif-thin"
+            android:text="(000)"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <ImageView
             android:id="@+id/imageView3"
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:src="@drawable/wifi" />
+            android:src="@drawable/wifi"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
 
         <ImageView
             android:id="@+id/radioimg"
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:src="@drawable/radio" />
+            android:src="@drawable/radio"
+            android:layout_toLeftOf="@+id/imageView3" />
 
         <ImageView
             android:id="@+id/imageView2"
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:src="@drawable/synchronize1" />
+            android:src="@drawable/synchronize1"
+            android:layout_toLeftOf="@+id/radioimg"/>
+
+     </RelativeLayout>
 
         <TextView
-            android:id="@+id/posi"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/line"
+            android:layout_marginBottom="5dp"
+            android:background="#A4F373"/>
+
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:fontFamily="sans-serif-thin"
-            android:text="(000) [00:00|00:00] "
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:paddingRight="20dp"
+            android:paddingLeft="20dp"
+            android:background="#000000">
 
-     </LinearLayout>
+            <ImageView
+                android:id="@+id/imageView1"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/ic_launcher" />
+
+            <ImageView
+                android:id="@+id/back"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="false"
+                android:src="@drawable/ic_action_playback_prev" />
+
+            <ImageView
+                android:id="@+id/next"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:src="@drawable/ic_action_playback_next"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
+
+
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/songinfo"
@@ -75,53 +123,61 @@
             android:layout_marginBottom="5dp"
             android:textAppearance="?android:attr/textAppearanceSmall"/>
 
-        <ProgressBar
-            style="?android:attr/progressBarStyleHorizontal"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:id="@+id/progress"
-            android:layout_gravity="center_horizontal"
-            android:max="100"
-            android:progress="0"
-            android:indeterminate="false"
-            android:progressDrawable="@drawable/greenprogress"/>
+            android:layout_height="17dp"
+            android:background="#000000" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:paddingTop="9dp"
+                android:paddingLeft="35dp"
+                android:paddingRight="35dp"
+                android:textColor="#FFFFFF"
+                android:background="#000000" >
+
+                <ProgressBar
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:id="@+id/progress"
+                    android:layout_gravity="center_horizontal"
+                    android:max="100"
+                    android:progress="100"
+                    android:indeterminate="false"
+                    android:progressDrawable="@drawable/greenprogress"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/posisingle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="false"
+                android:textColor="#FFFFFF"
+                android:fontFamily="sans-serif-thin"
+                android:text="     "
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <TextView
+                android:id="@+id/lengthsingle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:textColor="#FFFFFF"
+                android:fontFamily="sans-serif-thin"
+                android:text="      "
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        </RelativeLayout>
 
     </LinearLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingRight="20dp"
-        android:paddingLeft="20dp"
-        android:background="#000000">
-
-        <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:src="@drawable/ic_launcher" />
-
-        <ImageView
-            android:id="@+id/back"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="false"
-            android:src="@drawable/ic_action_playback_prev" />
-
-        <ImageView
-            android:id="@+id/next"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:src="@drawable/ic_action_playback_next"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
-
-
-    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -137,7 +193,7 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:id="@+id/line"
+        android:id="@+id/lineX"
         android:background="#A4F373"/>
 
         <TextView

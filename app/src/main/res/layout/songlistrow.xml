@@ -33,4 +33,13 @@
         android:fontFamily="sans-serif-thin"
         android:text="Small Text"
         android:id="@+id/artistname" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#A8A8A8"
+        android:fontFamily="sans-serif-thin"
+        android:text="Small Text"
+        android:id="@+id/additional" />
 </LinearLayout>

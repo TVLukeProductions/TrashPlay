@@ -77,8 +77,8 @@ public class MainControl extends Activity {
         final ImageView backimg = (ImageView) findViewById(R.id.back);
         ImageView sync = (ImageView) findViewById(R.id.imageView2);
         ImageView wifi = (ImageView) findViewById(R.id.imageView3);
-        sync.setVisibility(View.GONE);
-        wifi.setVisibility(View.GONE);
+        sync.setImageResource(R.drawable.transp);
+        wifi.setImageResource(R.drawable.transp);
         SharedPreferences defSetting = PreferenceManager.getDefaultSharedPreferences(this);
         boolean trashmode = defSetting.getBoolean(SettingsConstants.APP_SETTINGS_TRASHMODE, true);
         if (trashmode) {
@@ -307,10 +307,10 @@ public class MainControl extends Activity {
 
             if (MusicPlayer.getCurrentlyPlayingSong() != null) {
                 setButtonToStopButton();
-            } else if (listenalong && MusicCollectionManager.getInstance().radiofile != null) {
+            } else if (listenalong && MusicCollectionManager.getInstance().radiofile != null && MusicPlayer.getCurrentlyPlayingSong() != null) {
                 setButtonToStopButton();
                 ImageView playpause = (ImageView) findViewById(R.id.imageView1);
-                playpause.setClickable(false);
+                playpause.setClickable(true);
 
             } else if (MusicCollectionManager.getInstance().collectionNotEmpty()) {
                 setButtonToPlayButton();
@@ -366,8 +366,9 @@ public class MainControl extends Activity {
         ImageView radio = (ImageView) findViewById(R.id.radioimg);
         if (radioMode) {
             radio.setVisibility(View.VISIBLE);
+            radio.setImageResource(R.drawable.radio);
         } else {
-            radio.setVisibility(View.GONE);
+            radio.setImageResource(R.drawable.transp);
         }
     }
 
@@ -392,9 +393,9 @@ public class MainControl extends Activity {
             boolean wificonnected = TrashPlayService.wifi;
             ImageView wifi = (ImageView) findViewById(R.id.imageView3);
             if (wificonnected) {
-                wifi.setVisibility(View.VISIBLE);
+                wifi.setImageResource(R.drawable.wifi);
             } else {
-                wifi.setVisibility(View.GONE);
+                wifi.setImageResource(R.drawable.transp);
             }
         }
     }
@@ -431,14 +432,18 @@ public class MainControl extends Activity {
 
     private void setPlayTimes() {
         TextView position = (TextView) findViewById(R.id.posi);
+        TextView positionSingle = (TextView) findViewById(R.id.posisingle);
+        TextView lengthSingle = (TextView) findViewById(R.id.lengthsingle);
         String posix = MusicPlayer.playPositionAsTimeString();
         String length = MusicPlayer.playLengthAsTimeString();
         if (length.equals("") || posix.equals("")) {
             position.setText("(" + SongHelper.getNumberOfViableSongs() + ")");
 
         } else {
-            position.setText("(" + SongHelper.getNumberOfViableSongs() + ")" + "[" + posix + "|" + length + "]");
+            position.setText("(" + SongHelper.getNumberOfViableSongs() + ")");
         }
+        positionSingle.setText(posix);
+        lengthSingle.setText(length);
     }
 
     private void setSyncInProgressAnimation() {
@@ -459,7 +464,7 @@ public class MainControl extends Activity {
             sync.setVisibility(View.VISIBLE);
         } else {
             ImageView sync = (ImageView) findViewById(R.id.imageView2);
-            sync.setVisibility(View.GONE);
+            sync.setImageResource(R.drawable.transp);
         }
     }
 

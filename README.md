@@ -240,16 +240,21 @@ Over time I will find out what kind of usage the app has and will update this in
 -> Release 1.0.1
 
 ### 14.12.2014
-* Bugfix: "App crash on oriantation change".
+* Bugfix[Critical]: "App crash on oriantation change".
+
 -> Release 1.0.2
+
 * Bugfix: No RadioMode when multiple playlists, even if one is turned off
+
 -> Release 1.0.4
+
 * Bugfix: "Radiostations can not have a space in their name"
 * Bugfix: "Songs that are in one deactivated playlist do not show up"
 * Bugfix: "App scrobbles to TrashPlays Last.fm account even if not in TrashMode"
 * Previous Button hat jetzt überhaupt erstmal eine Funktion
 * String encoding von Playlists verbessert
 * Massive verbesserungen bei Radio funktionen
+
 -> Release 1.0.5
 
 ### 15.12.2014
@@ -260,6 +265,29 @@ Over time I will find out what kind of usage the app has and will update this in
 -> Release 1.0.6
 
 * "Ducking" Volume for notification sounds or navigation
+
+### 16.12.2014
+* Bugfix "Mediaplayer would skip tracks if onPreparedListener fired twice"
+* Further UI Improvements
+* Settings-Icons
+* Playlists show number of songs
+
+-> Release 1.0.7
+
+### 17.12.2014
+* Bugfix [Critical]: "Outside of Wifi next song is never played"
+
+-> Release 1.0.8
+
+* Notification zeigt jetzt Songnamen
+* Notification für neue Radiostationen
+* Some Improvements on Radio (which is still full of strange stuff!)
+* Additional Info zu den Songs (Länge, Wie oft gespielt, wann das letzte mal gespielt)
+* Songlänge war aus Gründen nicht persistent
+* Feste Position für Icons (Synchro, Wifi, Radio)
+* Auswahl des Random Selectors in den Settings
+
+-> Release 1.0.9
 
 ## ToDo
 * Sammeln von persönlichen Statistiken

@@ -121,9 +121,16 @@ public class DropBox extends StorageManager {
         }
         Logger.d(TAG, "Radiostations " + stationNames);
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
+        String oldRadioString = settings.getString("Radio_" + STORAGE_TYPE + "_" + folder.fileName(), "");
+        Logger.d(TAG, "oldRadioString: "+oldRadioString);
         SharedPreferences.Editor edit = settings.edit();
         edit.putString("Radio_" + STORAGE_TYPE + "_" + folder.fileName(), stationNames);
         edit.commit();
+        String newRadioString = settings.getString("Radio_" + STORAGE_TYPE + "_" + folder.fileName(), "");
+        Logger.d(TAG, "newRadioString: "+newRadioString);
+        if(!oldRadioString.equals(newRadioString)) {
+            TrashPlayService.getContext().createRadioNotification("New Radio Station");
+        }
     }
 
     public void updateRadioFileToRemoteStorage(String path) throws Exception {

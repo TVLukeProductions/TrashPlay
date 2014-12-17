@@ -64,7 +64,7 @@ public class MusicCollectionManager {
             Logger.d(TAG, "remove 0");
             Song s = nextSongs.remove(0);
             try {
-                if(TrashPlayService.getContext().isInTrashMode()) {
+                if (TrashPlayService.getContext().isInTrashMode()) {
                     SongHelper.finishedWithSong(s.getFileName());
                 }
             } catch (Exception e) {
@@ -81,13 +81,14 @@ public class MusicCollectionManager {
     }
 
     public Song getNextSong() throws Exception {
+        Logger.d(TAG, "getNextSong");
         Song nextSong = findNextSong();
         recordHistory();
         return nextSong;
     }
 
     private Song findNextSong() throws Exception {
-        Logger.d(TAG, "get Next Song");
+        Logger.d(TAG, "find Next Song");
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
         boolean listenalong = settings.getBoolean("listenalong", false);
         if (listenalong) {
@@ -98,20 +99,22 @@ public class MusicCollectionManager {
             Logger.d(TAG, "continue");
             DateTime now = new DateTime();
             Logger.d(TAG, "NOW: " + now);
-            while(timeStampsForRadio.size()>nextSongs.size()){
+            while (timeStampsForRadio.size() > nextSongs.size()) {
                 timeStampsForRadio.remove(0);
             }
             if (timeStampsForRadio != null && timeStampsForRadio.get(0) != null) {
                 Logger.d(TAG, "try to find out what song to play...");
                 int amountOfSongs = timeStampsForRadio.size();
-                Logger.d(TAG, "There are still "+amountOfSongs+" songs to choose from");
-                for(int i=0; i<amountOfSongs; i++) {
-                    if(timeStampsForRadio.get(0)<=lastStartTime) {
-                        Logger.d(TAG, "Song no. "+i+" has a start time in the past! Delete from list");
-                        Long x = timeStampsForRadio.get(0);
+                Logger.d(TAG, "There are still " + amountOfSongs + " songs to choose from");
+                for (int i = 0; i < amountOfSongs; i++) {
+                    if (timeStampsForRadio.get(0) <= lastStartTime) {
+                        Logger.d(TAG, "Song no. " + i + " has a start time in the past! Delete from list");
+                        long x = timeStampsForRadio.get(0);
+                        Logger.d(TAG, "" + x);
                         timeStampsForRadio.remove(0);
                         nextSongs.remove(0);
-                        if(timeStampsForRadio.size()>0 && timeStampsForRadio.get(0)==x) {
+                        Logger.d(TAG, "" + timeStampsForRadio.get(0));
+                        if (timeStampsForRadio.size() > 0 && timeStampsForRadio.get(0) == x) {
                             Logger.d(TAG, "This next song has the same start time as this one, this should mean it hasn't been played yet...");
                             break;
                         }
@@ -198,7 +201,7 @@ public class MusicCollectionManager {
                 int subtractor = 0;
                 if (i < 10) {
                     long starttime = Long.parseLong(timestampstring);
-                    if(starttime>=lastStartTime) {
+                    if (starttime >= lastStartTime) {
                         Logger.d(TAG, "->");
                         Song s = SongHelper.getSongByFileName(fname);
                         Logger.d(TAG, "-->");
@@ -233,7 +236,7 @@ public class MusicCollectionManager {
             String playlistfile = remoteStorage.downloadFile(stationdata[2] + "/Radio", stationdata[3]);
             Logger.d(TAG, StorageManager.LOCAL_STORAGE + playlistfile);
             radiofile = getStringFromFile(StorageManager.LOCAL_STORAGE + playlistfile);
-            if(!oldradiofile.equals(radiofile)) {
+            if (!oldradiofile.equals(radiofile)) {
                 Logger.d(TAG, "RADIOFILE HAS CHANGED");
                 radioFileHasChanged = true;
             } else {
@@ -290,7 +293,26 @@ public class MusicCollectionManager {
     public ArrayList<Song> getListOfNextSongs() {
         if (TrashPlayService.serviceRunning()) {
             if (nextSongs.isEmpty()) {
-                recoverNextSongsFromSettings();
+                SharedPreferences settings = TrashPlayService.getDefaultSettings();
+                boolean listenalong = settings.getBoolean("listenalong", false);
+                if (listenalong) {
+                    if (radiofile == null) {
+                        new Thread(new Runnable() {
+                            public void run() {
+                                try {
+                                    getRadioStationFile();
+                                    parseRadioFile();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }).start();
+                    } else {
+                        parseRadioFile();
+                    }
+                } else {
+                    recoverNextSongsFromSettings();
+                }
             }
         }
         return nextSongs;
@@ -304,11 +326,13 @@ public class MusicCollectionManager {
         for (int i = 0; i < nextSongs.size(); i++) {
             Logger.d(TAG, "refresh");
             Song s = replaceSongForReasons(nextSongs.get(i));
+            Logger.d(TAG, "back in refresh");
             if (s != null) {
                 setNextSongPlayListInSettings(i, s.getFileName());
                 nextSongs.set(i, s);
             }
         }
+        Logger.d(TAG, "x");
         nextSongs.remove(null);
         if (nextSongs.size() < LENGTH_OF_PLAYLIST) {
             int numberOfSongsToAdd = LENGTH_OF_PLAYLIST - nextSongs.size();
@@ -347,7 +371,9 @@ public class MusicCollectionManager {
 
     public Song pickASong() {
         Logger.d(TAG, "pickASong()");
-        SongSelector songSelector = SongSelectorFactory.getSongSelector(SongSelector.EQUAL_PLAY_SONG_SELECTOR);
+        SharedPreferences settings = TrashPlayService.getDefaultSettings();
+        String songSelectorName = settings.getString("pref_songselector", SongSelector.EQUAL_PLAY_SONG_SELECTOR);
+        SongSelector songSelector = SongSelectorFactory.getSongSelector(songSelectorName);
         Song possibleSong = songSelector.getASong();
         return replaceSongForReasons(possibleSong);
     }
@@ -404,6 +430,21 @@ public class MusicCollectionManager {
                     }
                 }
             }).start();
+        } else {
+            new Thread(new Runnable() {
+                public void run() {
+                    List<PlayList> allPlayLists = PlayListHelper.getAllPlayLists();
+                    Logger.d(TAG, "getAll");
+                    for (PlayList playlist : allPlayLists) {
+                        StorageManager storage = StorageManager.getStorage(playlist.getRemoteStorage());
+                        try {
+                            storage.getRadioStations(playlist.getRemotePath());
+                        } catch (Exception e) {
+                            Logger.e(TAG, "Exception while trying to get Radio Stations.");
+                        }
+                    }
+                }
+            }).start();
         }
     }
 
@@ -433,8 +474,7 @@ public class MusicCollectionManager {
                     if (!TrashPlayService.getContext().isInRadioMode()) {
                         Logger.d(TAG, "create New PlayList since we are not in radiomode");
                         PlayListHelper.createNewPlayList(newDropBox, folderName);
-                    }
-                    else {
+                    } else {
                         Logger.d(TAG, "a new playlist was found but not downloaded since we are in radiomode");
                         TrashPlayService.getContext().toast("a new playlist was found but not downloaded since we are in radiomode");
                     }
@@ -476,6 +516,9 @@ public class MusicCollectionManager {
     }
 
     public int getNumberOfActivePlayLists() {
+        if (numberOfActivatedPlayLists == 0) {
+            determineNumberOfActivatedPlayLists();
+        }
         return numberOfActivatedPlayLists;
     }
 
@@ -518,11 +561,11 @@ public class MusicCollectionManager {
 
     public String getPlayListString() {
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
-        String result =" ";
+        String result = " ";
         if (settings != null) {
             for (int i = 0; i < 10; i++) {
                 String nextSongFileName = settings.getString("nextSong_" + i, "");
-                result = result + nextSongFileName+"XX88XX88XX";
+                result = result + nextSongFileName + "XX88XX88XX";
             }
         }
         return result;
@@ -532,23 +575,23 @@ public class MusicCollectionManager {
     public void recordHistory() {
         Logger.d(TAG, "recordHistory()");
         history.add(MusicCollectionManager.getInstance().getPlayListString());
-        if(history.size()>100){
+        if (history.size() > 100) {
             history.remove(0);
         }
     }
 
     public void setPlayListBackToPreviousSong() {
         Logger.d(TAG, "setPlayListBackToPreviousSong()");
-        if(history.size()>0) {
+        if (history.size() > 0) {
             nextSongs.clear();
-            String historyOfTracks = history.get(history.size()-1);
-            String [] historyArray = historyOfTracks.split("XX88XX88XX");
-                for (String nextSongFileName : historyArray) {
-                    nextSongFileName = nextSongFileName.trim();
-                    Logger.d(TAG, "----->"+nextSongFileName);
-                    nextSongs.add(SongHelper.getSongByFileName(nextSongFileName));
+            String historyOfTracks = history.get(history.size() - 1);
+            String[] historyArray = historyOfTracks.split("XX88XX88XX");
+            for (String nextSongFileName : historyArray) {
+                nextSongFileName = nextSongFileName.trim();
+                Logger.d(TAG, "----->" + nextSongFileName);
+                nextSongs.add(SongHelper.getSongByFileName(nextSongFileName));
             }
-            history.remove(history.size()-1);
+            history.remove(history.size() - 1);
         }
     }
 }

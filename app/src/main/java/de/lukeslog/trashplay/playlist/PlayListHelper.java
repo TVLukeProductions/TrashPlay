@@ -110,7 +110,7 @@ public class PlayListHelper {
         throw new TrashPlayServiceNotRunningException();
     }
 
-    public static void activated(PlayList playList, boolean b) {
+    public static void setActivated(PlayList playList, boolean b) {
         List<Song> songsInPlayList = MusicCollectionManager.getInstance().getSongsByPlayList(playList);
         try {
             Logger.d(TAG, "setActivated to " + b);
@@ -133,6 +133,7 @@ public class PlayListHelper {
             Logger.e(TAG, "error in activaeted in PlayListHelper");
         }
         MusicCollectionManager.getInstance().determineNumberOfActivatedPlayLists();
+        SongHelper.determineNumberOfViableSongs();
     }
 
     public static List<PlayList> getAllPlayLists() {
@@ -148,5 +149,17 @@ public class PlayListHelper {
 
         }
         return playlists;
+    }
+
+    public static int getNumberOfSongsInPlayList(PlayList playList) {
+        int n=0;
+        List<Song> songs =SongHelper.getAllSongs();
+        String playListString = PlayListHelper.getPlayListEncodingString(playList);
+        for(Song song : songs){
+            if(song.getPlayLists().contains(playListString)){
+                n++;
+            }
+        }
+        return n;
     }
 }

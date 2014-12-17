@@ -172,7 +172,9 @@ public class SongHelper {
     }
 
     public static String getTitleInfoAsString(Song song) {
+        Logger.d(TAG, "getTitleInfoAsString(Song)");
         if(song!=null) {
+            Logger.d(TAG, "not null"+song.getFileName());
             try {
                 if (song.getSongName().equals("") && song.getArtist().equals("")) {
                     SongHelper.getMetaData(song);
@@ -183,9 +185,11 @@ public class SongHelper {
                     return song.getFileName();
                 }
             } catch (Exception e) {
+                Logger.e(TAG, "exception cought...");
               return null;
             }
         }
+        Logger.e(TAG, "NULL");
         return null;
     }
 
@@ -353,5 +357,10 @@ public class SongHelper {
             Logger.e(TAG, "exception when retrieving palylists");
         }
         return result;
+    }
+
+    public static void setDuration(Song song, int p) {
+        song.setDurationInSeconds(p);
+        song.save();
     }
 }

@@ -25,6 +25,16 @@ public class EqualPlaySongSelector extends SongSelector {
         return null;
     }
 
+    @Override
+    public String getSelectorName() {
+        return "Equal Play Selector";
+    }
+
+    @Override
+    public String getSelectorDescription() {
+        return "Mostly random but with a preference for songs played less.";
+    }
+
     private List<Song> getSongsWithTheLeastPlay(List<Song> songs) {
         ArrayList<Song> songsWithLeastPlay = new ArrayList<Song>();
         if(songs.size()>0) {

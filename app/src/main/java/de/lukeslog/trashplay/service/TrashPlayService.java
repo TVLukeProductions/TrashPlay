@@ -28,6 +28,7 @@ import de.lukeslog.trashplay.playlist.MusicCollectionManager;
 import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.support.SettingsConstants;
 import de.lukeslog.trashplay.ui.MainControl;
+import de.lukeslog.trashplay.ui.Settings;
 
 public class TrashPlayService extends Service {
 
@@ -35,6 +36,9 @@ public class TrashPlayService extends Service {
     public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 
     private Updater updater;
+
+    private static int MAIN_NOTIFICATION_NUMBER =5646;
+    private static int RADIO_NOTIFICATION_NUMBER =5647;
 
     public static boolean wifi = false;
     WifiBroadcastReceiver wbr = new WifiBroadcastReceiver();
@@ -64,8 +68,7 @@ public class TrashPlayService extends Service {
             //resetSyncFlagForRemote();
             registerWifiReceiver();
 
-            Notification notification = createNotification("... running");
-            startForeground(5646, notification);
+            createNotification("... running");
 
             startUpdater();
 
@@ -144,10 +147,36 @@ public class TrashPlayService extends Service {
         }
     }
 
-    private Notification createNotification(String notificationText) {
-        int icon = R.drawable.recopen;
+    public Notification createNotification(String notificationText) {
+        return createNotification("Trash Player", notificationText);
+    }
+
+    public Notification createNotification(String bigText, String smallText) {
+        stopNotification();
+        Logger.d(TAG, "createNotification");
+        int icon = R.drawable.recopen_small;
         Notification note = new Notification(icon, "TrashPlayer", System.currentTimeMillis());
         Intent i = new Intent(this, MainControl.class);
+
+        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+        PendingIntent pi = PendingIntent.getActivity(this, 0,
+                i, 0);
+
+        note.setLatestEventInfo(this, bigText,
+                smallText,
+                pi);
+        note.flags |= Notification.FLAG_ONGOING_EVENT
+                | Notification.FLAG_NO_CLEAR;
+        startForeground(MAIN_NOTIFICATION_NUMBER, note);
+        return note;
+    }
+
+    public Notification createRadioNotification(String notificationText) {
+        int icon = R.drawable.radio_small;
+        Notification note = new Notification(icon, "New Radio Station", System.currentTimeMillis());
+        Intent i = new Intent(this, Settings.class);
 
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
                 Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -158,8 +187,8 @@ public class TrashPlayService extends Service {
         note.setLatestEventInfo(this, "TrashPlayer",
                 notificationText,
                 pi);
-        note.flags |= Notification.FLAG_ONGOING_EVENT
-                | Notification.FLAG_NO_CLEAR;
+        note.flags |= Notification.FLAG_ONLY_ALERT_ONCE;
+        startForeground(RADIO_NOTIFICATION_NUMBER, note);
         return note;
     }
 
@@ -177,7 +206,7 @@ public class TrashPlayService extends Service {
     private void stopNotification() {
         NotificationManager notificationManager = (NotificationManager)
                 getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.cancel(5646);
+        notificationManager.cancel(MAIN_NOTIFICATION_NUMBER);
     }
 
     public void toast(String s) {
