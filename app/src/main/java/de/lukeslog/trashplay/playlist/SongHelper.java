@@ -216,15 +216,19 @@ public class SongHelper {
     }
 
     public static void determineNumberOfViableSongs() {
+        Logger.d(TAG, "===================================================");
         SongHelper.removeSongsThatAreToBeDeleted();
         List<Song> songs = SongHelper.getAllSongs();
         int n = 0;
         for (Song s : songs) {
+            Logger.d(TAG, s.getFileName());
+            Logger.d(TAG, ""+s.isInActiveUse());
             if (!s.isToBeDeleted() && !s.isToBeUpdated() && s.isInActiveUse()) {
                 n++;
             }
         }
         numberOfViableSongs = n;
+        Logger.d(TAG, "===================================================");
     }
 
 
@@ -332,16 +336,20 @@ public class SongHelper {
         List<PlayList> result = new ArrayList<PlayList>();
 
         try {
-            String playListString = song.getPlayLists();
-            String[] playListStrings = playListString.split(",");
+            String pls = song.getPlayLists();
+            String[] playListStrings = pls.split(",");
             for (String playlistString : playListStrings) {
-                playlistString = playListString.trim();
+                playlistString = playlistString.trim();
                 Logger.d(TAG, "playListString: "+playlistString);
                 if (playlistString.length() > 5) { //O.M.G
-                    String[] parts = playListString.split("/");
+                    String[] parts = playlistString.split("/");
                     if(parts.length==2) {
                         String remotestorage = parts[0];
                         String remotepath = parts[1];
+                        remotepath = remotepath.replace(",", "");
+                        remotestorage = remotestorage.replace(",", "");
+                        remotepath = remotepath.trim();
+                        remotestorage = remotestorage.trim();
                         Logger.d(TAG, "remotestorage=" + remotestorage);
                         Logger.d(TAG, "remotepath=" + remotepath);
                         List<PlayList> playlists = PlayListHelper.getAllPlayLists();
@@ -360,7 +368,15 @@ public class SongHelper {
     }
 
     public static void setDuration(Song song, int p) {
-        song.setDurationInSeconds(p);
-        song.save();
+        Song theSong = getSongByFileName(song.getFileName());
+        Logger.d(TAG, "SET DURATION!");
+        theSong.setDurationInSeconds(p);
+        theSong.save();
+    }
+
+    public static void setActive(Song song, boolean active) {
+        Song theSong = getSongByFileName(song.getFileName());
+        theSong.setInActiveUse(active);
+        theSong.save();
     }
 }

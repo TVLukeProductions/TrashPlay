@@ -45,7 +45,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     private static Service ctx;
     private static Song currentlyPlayingSong = null;
 
-    private static long timeStampAtLastPlayOrCompletion=0;
+    private static long timeStampAtLastPlayOrCompletion = 0;
 
     private String title = "";
     private String artist = "";
@@ -96,7 +96,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     }
 
     private void playmp3(Song song) {
-        timeStampAtLastPlayOrCompletion=new DateTime().getMillis();
+        timeStampAtLastPlayOrCompletion = new DateTime().getMillis();
         if (song == null) {
             Logger.d(TAG + "_MEDIAPLAYER", "playmp3 got null");
             TrashPlayService.getContext().toast("Something went wrong.");
@@ -223,7 +223,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         int duration = mpx.getDuration();
         if (duration > 0) {
             if (currentlyPlayingSong.getDurationInSeconds() != duration) {
-                currentlyPlayingSong.setDurationInSeconds(duration);
+                SongHelper.setDuration(currentlyPlayingSong, duration);
                 try {
                     MusicCollectionManager.getInstance().updateRadioFile();
                 } catch (Exception e) {
@@ -258,8 +258,8 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     public void onCompletion(MediaPlayer mpx) {
         long now = new DateTime().getMillis();
         Logger.d(TAG + "_MEDIAPLAYER", "MEDIAPLAYER: on Completetion!");
-        Logger.d(TAG + "_MEDIAPLAYER", "" + (now-timeStampAtLastPlayOrCompletion));
-        if(now-timeStampAtLastPlayOrCompletion>1000){
+        Logger.d(TAG + "_MEDIAPLAYER", "" + (now - timeStampAtLastPlayOrCompletion));
+        if (now - timeStampAtLastPlayOrCompletion > 1000) {
             MusicCollectionManager.getInstance().finishedSong();
             stop();
             try {
@@ -316,7 +316,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                 Logger.d(TAG + "_MEDIAPLAYER", "STOooooooooP");
                 //String newactionID = intent.getStringExtra("AmbientActionID");
                 stop();
-                if(am!=null) {
+                if (am != null) {
                     am.abandonAudioFocus(afChangeListener);
                 }
                 actionID = "";
@@ -452,7 +452,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                 if (p == 0l) {
                     try {
                         p = mp.getDuration();
-                        currentlyPlayingSong.setDurationInSeconds(p);
+                        SongHelper.setDuration(currentlyPlayingSong, p);
                     } catch (Exception e) {
                         Logger.d(TAG + "_MEDIAPLAYER", "stupid length exceptione");
                         p = 180;

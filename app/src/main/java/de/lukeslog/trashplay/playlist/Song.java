@@ -35,15 +35,21 @@ public class Song extends Model {
     @Column(name = "plays")
     private int plays = 0;
 
+    @Column(name = "reasonForRepl")
+    private String reasonForReplacementInNextPlays = "";
+
+    @Column(name = "toBeUpdated")
+    private boolean toBeUpdated=false;
+
+    @Column(name = "toBeDeleted")
+    private boolean toBeDeleted=false;
+
+    @Column(name = "inActiveUse")
+    private boolean inActiveUse = true;
+
     public Song() {
 
     }
-
-    private String reasonForReplacementInNextPlays = "";
-
-    private boolean toBeUpdated=false;
-    private boolean toBeDeleted=false;
-    private boolean inActiveUse = true;
 
     private static final String TAG = TrashPlayConstants.TAG;
 

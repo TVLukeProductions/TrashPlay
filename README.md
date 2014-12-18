@@ -113,6 +113,13 @@ Over time I will find out what kind of usage the app has and will update this in
 
 ### Current
 
+#### 1.0.9
+* Select Type of Random selection
+* Complete New Design
+* Radio now kinda works
+
+### Older Versions
+
 #### 1.0.4 b / 1.0.5 b - Like A Boss (14.12.2014)
 
 * Rewrote entire code base
@@ -127,7 +134,6 @@ Over time I will find out what kind of usage the app has and will update this in
 <img src="https://raw.githubusercontent.com/TVLukeProductions/TrashPlay/LikeABoss/screenshots/trashplay105b.png" alt="Screenshot 2"/>
 </p>
 
-### Older Versions
 #### v 0.2.b Hund im Betastadium (17.01.2014) 
 * Some UI Improvements
 * **BUG FIXES**
@@ -289,6 +295,19 @@ Over time I will find out what kind of usage the app has and will update this in
 
 -> Release 1.0.9
 
+* OK, Songlänge war immernoch nicht persitent... sollte aber jetzt
+ 
+### 18.12.2014
+* Bugfix: "Some data fields in the Song class where not represented in the database"
+* Aktivieren und deaktivieren von Playlists sollte jetzt auch tatsächlich funktionieren
+* Songliste hat nun keine "Default Texte" mehr
+* Keine Notifications über neue Radiostationen wenn alle Stationen weg sind...
+
+Für das Release 1.0.10 ist ein volständiger Reset der Datenbank nötig, alle mp3s müssen 
+neu syncronisiert werden.
+
+-> Release 1.0.10
+
 ## ToDo
 * Sammeln von persönlichen Statistiken
 * bessere sync animation
@@ -321,4 +340,9 @@ Over time I will find out what kind of usage the app has and will update this in
 * [Active Android](http://www.activeandroid.com/)
 
 # License
-[CC-BY-NC](http://creativecommons.org/licenses/by-nc/4.0/)
+<p align="center"><a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a></p>
+
+<span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">Trash Player</span> by 
+<a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/TVLukeProductions/TrashPlay" property="cc:attributionName" rel="cc:attributionURL">Lukas Ruge</a> 
+is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.<br />Permissions beyond the scope of this license may be available at <a xmlns:cc="http://creativecommons.org/ns#" href="http://www.lukeslog.de/" rel="cc:morePermissions">http://www.lukeslog.de/</a>.

@@ -139,6 +139,7 @@ public class SettingsFragment extends PreferenceFragment {
                 if (!x.isChecked()) {
                     Logger.d(TAG, "YOU JUST ACTIVATED RADIO MODE");
                     try {
+                        storePlayListToTemp();
                         MusicCollectionManager.getInstance().updateRadioFile();
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -146,6 +147,7 @@ public class SettingsFragment extends PreferenceFragment {
 
                 } else {
                     Logger.d(TAG, "YOU JUST DEACTIVATED RADIO MODE");
+                    restorePlayListFromTemp();
                 }
                 return true;
             }
@@ -167,8 +169,13 @@ public class SettingsFragment extends PreferenceFragment {
             }
         });
 
+
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
         String radioNameFromSettings = settings.getString(SettingsConstants.APP_SETTING_RADIO_NAME, "");
+        boolean trashmode = settings.getBoolean(SettingsConstants.APP_SETTINGS_TRASHMODE, true);
+        if(!trashmode) {
+            return false;
+        }
         radioName.setText(radioNameFromSettings);
 
         if (!radioNameFromSettings.equals("")) {
@@ -243,6 +250,16 @@ public class SettingsFragment extends PreferenceFragment {
     public void trashModeListener() {
 
         CheckBoxPreference useTrashMode = (CheckBoxPreference) getPreferenceManager().findPreference("pref_appdata_trashmode");
+
+        SharedPreferences settings = TrashPlayService.getDefaultSettings();
+        boolean listenalong = settings.getBoolean("listenalong", false);
+        boolean radioMode = settings.getBoolean(SettingsConstants.APP_SETTING_RADIO_MODE, false);
+
+        if(listenalong || radioMode) {
+            useTrashMode.setEnabled(false);
+        } else {
+            useTrashMode.setEnabled(true);
+        }
         useTrashMode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
@@ -252,30 +269,38 @@ public class SettingsFragment extends PreferenceFragment {
 
                     TrashPlayService.getContext().sendBroadcastToStopMusic();
                     MusicCollectionManager.getInstance().resetNextSongs();
-                    SharedPreferences settings = TrashPlayService.getDefaultSettings();
-                    if (settings != null) {
-                        SharedPreferences.Editor edit = settings.edit();
-                        for (int i = 0; i < 10; i++) {
-                            String nextSongFileName = settings.getString("nextSongTEMP_" + i, "");
-                            edit.putString("nextSong_" + i, nextSongFileName);
-                        }
-                        edit.commit();
-                        TrashPlayService.getContext().sendBroadcastToStartMusic();
-                    }
+                    storePlayListToTemp();
+                    TrashPlayService.getContext().sendBroadcastToStartMusic();
 
                 } else {
-                    SharedPreferences settings = TrashPlayService.getDefaultSettings();
-                    if (settings != null) {
-                        SharedPreferences.Editor edit = settings.edit();
-                        for (int i = 0; i < 10; i++) {
-                            String nextSongFileName = settings.getString("nextSong_" + i, "");
-                            edit.putString("nextSongTEMP_" + i, nextSongFileName);
-                        }
-                        edit.commit();
-                    }
+                    restorePlayListFromTemp();
                 }
                 return true;
             }
         });
+    }
+
+    private void storePlayListToTemp(){
+        SharedPreferences settings = TrashPlayService.getDefaultSettings();
+        if (settings != null) {
+            SharedPreferences.Editor edit = settings.edit();
+            for (int i = 0; i < 10; i++) {
+                String nextSongFileName = settings.getString("nextSong_" + i, "");
+                edit.putString("nextSongTEMP_" + i, nextSongFileName);
+            }
+            edit.commit();
+        }
+    }
+
+    private void restorePlayListFromTemp() {
+        SharedPreferences settings = TrashPlayService.getDefaultSettings();
+        if (settings != null) {
+            SharedPreferences.Editor edit = settings.edit();
+            for (int i = 0; i < 10; i++) {
+                String nextSongFileName = settings.getString("nextSongTEMP_" + i, "");
+                edit.putString("nextSong_" + i, nextSongFileName);
+            }
+            edit.commit();
+        }
     }
 }

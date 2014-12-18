@@ -61,6 +61,9 @@ public class PlayListHelper {
                         Logger.d(TAG, "is in Collection but does it need to be renewed");
                         if (TrashPlayService.wifi) {
                             Song oldSong = SongHelper.getSongByFileName(localFileName);
+                            if(!SongHelper.localFileExists(oldSong)) {
+                                oldSong.setLastUpdate(0l);
+                            }
                             String x = storage.downloadFileIfNewerVersion(playList.getRemotePath(), localFileName, new DateTime(oldSong.getLastUpdate()));
                             if (!x.equals("")) {
                                 try {
@@ -117,6 +120,7 @@ public class PlayListHelper {
             playList.setActivated(b);
             playList.save();
             for (Song song : songsInPlayList) {
+                Logger.d(TAG, "->"+song.getFileName());
                 List<PlayList> isInPlayLists = SongHelper.getAllPlayListsFromSong(song);
                 Logger.d(TAG, "This song is in "+isInPlayLists.size()+" playlists.");
                 boolean active = false;
@@ -126,8 +130,7 @@ public class PlayListHelper {
                         active = true;
                     }
                 }
-                song.setInActiveUse(active);
-                song.save();
+                SongHelper.setActive(song, active);
             }
         } catch (Exception e) {
             Logger.e(TAG, "error in activaeted in PlayListHelper");
