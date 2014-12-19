@@ -324,7 +324,7 @@ neu syncronisiert werden.
 * Some Christamas fun with Icons
 * Some Statistics Collection
 
--> Release 1.0.12
+-> Release 1.0.12 
 
 ## ToDo
 * Sammeln von persönlichen Statistiken
