@@ -225,13 +225,8 @@ public class DropBox extends StorageManager {
             for (Entry file : folder.contents) {
                 if (!file.isDir) {
                     String filename = file.fileName();
-
-                    Logger.d(TAG, file.path);
-                    Logger.d(TAG, file.modified);
-
                     boolean allowed = hasAllowedFileEnding(listOfAllowedFileEndings, filename);
                     if (allowed) {
-                        Logger.d(TAG, filename);
                         fileList.add(filename);
                     }
                 }
@@ -256,19 +251,20 @@ public class DropBox extends StorageManager {
         }
         createTrashPlayFolderIFNotExisting();
         String filePath = "/" + path + "/" + fileName;
-        Logger.d(TAG, "Download " + filePath);
-        Entry folder = mDBApi.metadata(filePath, 0, null, true, null);
-        Logger.d(TAG, "->");
-        String modified = folder.modified;
-        Logger.d(TAG, "->2");
-        DateTime actualModificationTime = getDateTimeFromDropBoxModificationTimeString(modified);
-        Logger.d(TAG, "->3");
-        Logger.d(TAG, actualModificationTime.getDayOfMonth() + "." + actualModificationTime.getMonthOfYear() + "." + actualModificationTime.getYear() + " " + actualModificationTime.getHourOfDay() + " " + actualModificationTime.getMinuteOfHour());
-        if (actualModificationTime.isAfter(lastChange)) {
-            Logger.d(TAG, "->4");
-            return downloadSpecificFileFromDropBox(fileName, filePath);
+        Logger.d(TAG, "Download " + filePath+"?");
+        try {
+            Entry folder = mDBApi.metadata(filePath, 0, null, true, null);
+            String modified = folder.modified;
+            DateTime actualModificationTime = getDateTimeFromDropBoxModificationTimeString(modified);
+            Logger.d(TAG, actualModificationTime.getDayOfMonth() + "." + actualModificationTime.getMonthOfYear() + "." + actualModificationTime.getYear() + " " + actualModificationTime.getHourOfDay() + " " + actualModificationTime.getMinuteOfHour());
+            if (actualModificationTime.isAfter(lastChange)) {
+                Logger.d(TAG, "redownload...");
+                return downloadSpecificFileFromDropBox(fileName, filePath);
+            }
+            Logger.d(TAG, "Return nothing");
+        } catch (Exception e) {
+            return "";
         }
-        Logger.d(TAG, "Return nothing");
         return "";
     }
 

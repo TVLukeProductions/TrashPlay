@@ -25,10 +25,12 @@ import de.lukeslog.trashplay.cloudstorage.CloudSynchronizationService;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
+import de.lukeslog.trashplay.statistics.StatisticsCollection;
 import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.support.SettingsConstants;
 import de.lukeslog.trashplay.ui.MainControl;
 import de.lukeslog.trashplay.ui.Settings;
+import de.lukeslog.trashplay.ui.Statistics;
 
 public class TrashPlayService extends Service {
 
@@ -255,8 +257,7 @@ public class TrashPlayService extends Service {
     }
 
     private void collectStatistics() {
-        //TODO: Continuous runtime
-        //Total Runtime
+        StatisticsCollection.ping();
     }
 
     public static TrashPlayService getContext() {

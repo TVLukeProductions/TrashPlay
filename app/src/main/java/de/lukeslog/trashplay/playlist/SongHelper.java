@@ -1,13 +1,18 @@
 package de.lukeslog.trashplay.playlist;
 
+import android.content.Context;
+import android.content.Intent;
+import android.media.MediaPlayer;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.util.Log;
 
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
+import com.mpatric.mp3agic.ID3v1;
+import com.mpatric.mp3agic.ID3v2;
+import com.mpatric.mp3agic.Mp3File;
 
-import org.farng.mp3.MP3File;
-import org.farng.mp3.TagException;
-import org.farng.mp3.id3.ID3v1;
 import org.joda.time.DateTime;
 
 import java.io.File;
@@ -19,7 +24,9 @@ import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.service.TrashPlayService;
+import de.lukeslog.trashplay.statistics.StatisticsCollection;
 import de.lukeslog.trashplay.support.Logger;
+import de.lukeslog.trashplay.support.TrashPlayUtils;
 
 public class SongHelper {
 
@@ -27,13 +34,15 @@ public class SongHelper {
 
     private static int numberOfViableSongs = 0;
 
+    private MediaScannerConnection mConnection;
+    private String mPath;
+    private String mMimeType;
+
     public static boolean localFileExists(Song song) {
         return StorageManager.doesFileExists(song);
     }
 
     public static void addSongToPlayList(Song song, PlayList playList) {
-        Logger.d(TAG, "Add Song To PlayList "+playList.getRemotePath());
-        Logger.d(TAG, "Current Playlist encoding: "+song.getPlayLists());
         if(song.getPlayLists()!=null) {
             String playlistString = PlayListHelper.getPlayListEncodingString(playList);
             if (song.getPlayLists().contains(playlistString)) {
@@ -48,7 +57,6 @@ public class SongHelper {
         {
             song.setPlayLists(PlayListHelper.getPlayListEncodingString(playList) + " ");
         }
-        Logger.d(TAG, "NOW: "+song.getPlayLists());
     }
 
     public static void refreshLastUpdate(String songFileName) {
@@ -74,90 +82,45 @@ public class SongHelper {
 
     public static void getMetaData(Song song)
     {
+
         File file = new File(StorageManager.LOCAL_STORAGE+song.getFileName());
         String[] metadata = new String[2];
         //first, get stuff from the filename
 
         metadata[0]=file.getName();
         metadata[1]=" ";
-
-        String tempsong="";
-        String tempartist ="";
-        String fn = file.getName();
-        if(fn.contains("-") && fn.endsWith("mp3"))
-        {
-            fn=fn.replace(".mp3", "");
-            String[] spl = fn.split("-");
-            if(spl.length==2)
-            {
-                metadata[0]=spl[0];
-                metadata[0]=metadata[0].trim();
-                metadata[1]=spl[1];
-                metadata[1]=metadata[1].trim();
-                Logger.d(TAG, "----------->ARTIST():"+spl[0]);
-                Logger.d(TAG, "----------->SONG():"+spl[1]);
-                tempsong=metadata[1];
-                tempartist = metadata[0];
+        Logger.d(TAG, "olol");
+        try {
+            Mp3File mp3file = new Mp3File(file.getAbsolutePath());
+            if (mp3file.hasId3v2Tag()) {
+                ID3v2 id3v2Tag = mp3file.getId3v2Tag();
+                Logger.d(TAG, "Title: " + id3v2Tag.getTitle());
+                Logger.d(TAG, "===Artist: " + id3v2Tag.getArtist());
+                song.setArtist(id3v2Tag.getArtist());
+                song.setSongName(id3v2Tag.getTitle());
+                song.save();
+                return;
+            } else if (mp3file.hasId3v1Tag()) {
+                ID3v1 id3v1Tag = mp3file.getId3v1Tag();
+                Logger.d(TAG, "Title: " + id3v1Tag.getTitle());
+                Logger.d(TAG, "---Artist: " + id3v1Tag.getArtist());
+                song.setArtist(id3v1Tag.getArtist());
+                song.setSongName(id3v1Tag.getTitle());
+                song.save();
+                return;
+            } else {
+                metadata = getSongNameFromFile(file);
             }
+        } catch(Exception e) {
+            metadata = getSongNameFromFile(file);
         }
-         //try to get the ID3 Tag... but this is mostly shit...
-        try
-        {
-            //Logger.d(TAG, "md1");
-            MP3File mp3 = new MP3File(file);
-
-            //Logger.d(TAG, "md2");
-            ID3v1 id3 = mp3.getID3v1Tag();
-            //Logger.d(TAG, "md3");
-            //Logger.d(TAG, "md3d");
-            metadata[0] = id3.getArtist();
-            //Logger.d(TAG, "md4");
-            //Logger.d(TAG, "----------->ARTIST:"+metadata[0]);
-            metadata[1] = id3.getSongTitle();
-            //Logger.d(TAG, "md5");
-            //Logger.d(TAG, "----------->SONG:"+metadata[1]);
-            //Logger.d(TAG, "md6");
-        }
-        catch (IOException e1)
-        {
-            e1.printStackTrace();
-            metadata[0]=file.getName();
-            metadata[1]=" ";
-            //Logger.d(TAG, "----------->ARTIST():"+metadata[0]);
-            //Logger.d(TAG, "----------->SONG():"+metadata[1]);
-        }
-        catch (TagException e1)
-        {
-            e1.printStackTrace();
-            metadata[0]=file.getName();
-            metadata[1]=" ";
-            //Logger.d(TAG, "----------->ARTIST():"+metadata[0]);
-            //Logger.d(TAG, "----------->SONG():"+metadata[1]);
-        }
-        catch(Exception ex)
-        {
-            Logger.e(TAG, "There has been an exception while extracting ID3 Tag Information from the MP3");
-            fn = file.getName();
-            if(fn.contains("-") && fn.endsWith("mp3"))
-            {
-                metadata[0]=tempartist;
-                metadata[1]=tempsong;
-            }
-            else
-            {
-                metadata[0]=file.getName();
-                metadata[1]=" ";
-                Logger.d(TAG, "----------->ARTIST():"+metadata[0]);
-                Logger.d(TAG, "----------->SONG():"+metadata[1]);
-            }
-        }
-        if(metadata[0].length()<tempartist.length() || metadata[1].length()<tempsong.length()) {
-            metadata[0]=tempartist;
-            metadata[1]=tempsong;
-        }
-        //This is unsafe insofar as that songs or artists names might actually have on a vowel + "?" but thats less likely than it being a
-        //false interpretation of the good damn id3 lib given that (at least right now) lots of German stuff is in the
+        //This is unsafe insofar as that songs or artists names might actually have on a vowel + "?"
+        // but that's less likely than it being a
+        //false interpretation of the good damn id3 lib given that (at least right now) lots of
+        // German stuff is in the
         //trashplaylist
+
+        //also, if the id3 lib works well, this code is never executed...
         for(int i=0; i<metadata.length; i++)
         {
             metadata[i]=metadata[i].replace("A?", "Ä");
@@ -169,6 +132,27 @@ public class SongHelper {
         }
         song.setArtist(metadata[0]);
         song.setSongName(metadata[1]);
+        song.save();
+    }
+
+    private static String[] getSongNameFromFile(File file) {
+        String fn = file.getName();
+        String[] metadata = new String[2];
+        if (fn.contains("-") && fn.endsWith("mp3")) {
+            fn = fn.replace(".mp3", "");
+            String[] spl = fn.split("-");
+            if (spl.length == 2) {
+                metadata[0] = spl[0];
+                metadata[0] = metadata[0].trim();
+                metadata[1] = spl[1];
+                metadata[1] = metadata[1].trim();
+                Logger.d(TAG, "----------->ARTIST():" + spl[0]);
+                Logger.d(TAG, "----------->SONG():" + spl[1]);
+                metadata[1] = spl[1];
+                metadata[0] = spl[0];
+            }
+        }
+        return metadata;
     }
 
     public static String getTitleInfoAsString(Song song) {
@@ -216,19 +200,15 @@ public class SongHelper {
     }
 
     public static void determineNumberOfViableSongs() {
-        Logger.d(TAG, "===================================================");
         SongHelper.removeSongsThatAreToBeDeleted();
         List<Song> songs = SongHelper.getAllSongs();
         int n = 0;
         for (Song s : songs) {
-            Logger.d(TAG, s.getFileName());
-            Logger.d(TAG, ""+s.isInActiveUse());
             if (!s.isToBeDeleted() && !s.isToBeUpdated() && s.isInActiveUse()) {
                 n++;
             }
         }
         numberOfViableSongs = n;
-        Logger.d(TAG, "===================================================");
     }
 
 
@@ -278,6 +258,20 @@ public class SongHelper {
         return songs;
     }
 
+    public static List<Song> getAllSongsOrderedByPlays() {
+        Logger.d(TAG, "get all songs");
+        List<Song> songs = new ArrayList<Song>();
+        try {
+            if (TrashPlayService.serviceRunning()) {
+                songs = new Select().from(Song.class).orderBy("plays DESC").execute();
+            }
+        } catch (Exception e) {
+
+            Log.e(TAG, "Invalid Databse. Delete everything 1");
+        }
+        return songs;
+    }
+
     public static void resetPlayList(Song song) {
         song.setPlayLists("");
     }
@@ -302,6 +296,11 @@ public class SongHelper {
                 refreshLastUpdate(newSong);
                 newSong.setInActiveUse(true);
                 newSong.save();
+                try {
+                    metaDataUpdate(newSong);
+                } catch(Exception e) {
+                    Logger.e(TAG, "error while tring to fix metadata");
+                }
                 return newSong;
             }
         }
@@ -324,9 +323,13 @@ public class SongHelper {
         long lastPlayed = song.getLastPlayed();
         DateTime now = new DateTime();
         long nowInMillis = now.getMillis();
+        if(lastPlayed==0){
+            lastPlayed=nowInMillis;
+        }
         song.setLastPlayed(nowInMillis);
-        //TODO: change the overall playcount
-        //TODO: get the average time between plays
+        if(TrashPlayService.getContext().isInTrashMode()) {
+            StatisticsCollection.finishedSong(songName, nowInMillis - lastPlayed);
+        }
         song.save();
         //Generate other global statistics...
     }
@@ -340,7 +343,6 @@ public class SongHelper {
             String[] playListStrings = pls.split(",");
             for (String playlistString : playListStrings) {
                 playlistString = playlistString.trim();
-                Logger.d(TAG, "playListString: "+playlistString);
                 if (playlistString.length() > 5) { //O.M.G
                     String[] parts = playlistString.split("/");
                     if(parts.length==2) {
@@ -350,8 +352,6 @@ public class SongHelper {
                         remotestorage = remotestorage.replace(",", "");
                         remotepath = remotepath.trim();
                         remotestorage = remotestorage.trim();
-                        Logger.d(TAG, "remotestorage=" + remotestorage);
-                        Logger.d(TAG, "remotepath=" + remotepath);
                         List<PlayList> playlists = PlayListHelper.getAllPlayLists();
                         for (PlayList playlist : playlists) {
                             if (playlist.getRemotePath().equals(remotepath) && playlist.getRemoteStorage().equals(remotestorage)) {
@@ -370,7 +370,7 @@ public class SongHelper {
     public static void setDuration(Song song, int p) {
         Song theSong = getSongByFileName(song.getFileName());
         Logger.d(TAG, "SET DURATION!");
-        theSong.setDurationInSeconds(p);
+        theSong.setDuration(p);
         theSong.save();
     }
 
@@ -379,4 +379,63 @@ public class SongHelper {
         theSong.setInActiveUse(active);
         theSong.save();
     }
+
+    public static void metaDataUpdate(final Song song) throws IOException {
+        Logger.d(TAG, "METADATA UPDATE");
+        if(song.getDuration()==0){
+            File mediafile = new File(StorageManager.LOCAL_STORAGE + song.getFileName());
+            String musicPath = mediafile.getAbsolutePath();
+            final MediaPlayer mplocal = new MediaPlayer();
+            mplocal.setDataSource(musicPath);
+            mplocal.prepareAsync();
+            mplocal.setOnPreparedListener( new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mediaPlayer) {
+                    Logger.d(TAG, "on Prepared for "+song.getFileName());
+                    int duration = mediaPlayer.getDuration();
+                    Logger.d(TAG, "->"+duration);
+                    Logger.d(TAG, "->"+ TrashPlayUtils.getStringFromIntInMilliSeconds(duration));
+                    song.setDuration(duration);
+                    song.save();
+                }
+            });
+        }
+        if(song.getSongName().equals("") || song.getArtist().equals("")) {
+            getMetaData(song);
+        }
+    }
+
+    private static class MediaScannerNotifier implements
+            MediaScannerConnection.MediaScannerConnectionClient {
+        private Context mContext;
+        private MediaScannerConnection mConnection;
+        private String mPath;
+        private String mMimeType;
+
+        public MediaScannerNotifier(Context context, String path, String mimeType) {
+            mContext = context;
+            mPath = path;
+            mMimeType = mimeType;
+            mConnection = new MediaScannerConnection(context, this);
+            mConnection.connect();
+        }
+
+        public void onMediaScannerConnected() {
+            Logger.d(TAG, "MEDIASCANNER CONNECTED!");
+            mConnection.scanFile(mPath, mMimeType);
+        }
+
+        public void onScanCompleted(String path, Uri uri) {
+            Logger.d(TAG, "MEDIASCANNER COMPLETED");
+            MediaPlayer mplocal = new MediaPlayer();
+            try {
+                mplocal.setDataSource(path);
+                int duration = mplocal.getDuration();
+                Logger.d(TAG, path+" DURATION"+duration);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

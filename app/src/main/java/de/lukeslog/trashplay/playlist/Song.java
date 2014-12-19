@@ -30,7 +30,7 @@ public class Song extends Model {
     private long lastPlayed =0l;
 
     @Column(name = "durationInSeconds")
-    private int durationInSeconds = 0;
+    private int duration = 0;
 
     @Column(name = "plays")
     private int plays = 0;
@@ -97,12 +97,12 @@ public class Song extends Model {
         this.songName = songName;
     }
 
-    public void setDurationInSeconds(int durationInSeconds) {
-        this.durationInSeconds = durationInSeconds;
+    public void setDuration(int durationInSeconds) {
+        this.duration = durationInSeconds;
     }
 
-    public int getDurationInSeconds() {
-        return durationInSeconds;
+    public int getDuration() {
+        return duration;
     }
 
     public void setPlayLists(String list) {

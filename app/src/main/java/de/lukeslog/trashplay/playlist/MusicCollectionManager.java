@@ -254,7 +254,7 @@ public class MusicCollectionManager {
             long nowlong = startTimeOfCurrentSong;
             for (Song song : nextSongs) {
                 nextSongsinRadioWithTimeStamps = nextSongsinRadioWithTimeStamps + song.getFileName() + " " + nowlong + "\n";
-                nowlong = nowlong + song.getDurationInSeconds();
+                nowlong = nowlong + song.getDuration();
             }
             Logger.d(TAG, nextSongsinRadioWithTimeStamps);
             String oldRadioString = settings.getString("radioSongs", "");

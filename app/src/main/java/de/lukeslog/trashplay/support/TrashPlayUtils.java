@@ -2,7 +2,7 @@ package de.lukeslog.trashplay.support;
 
 public class TrashPlayUtils {
 
-    public static String getStringFromIntInSeconds(int p) {
+    public static String getStringFromIntInMilliSeconds(int p) {
         String result="";
         int m = 0;
         p = p / 1000;

@@ -308,6 +308,24 @@ neu syncronisiert werden.
 
 -> Release 1.0.10
 
+* Probleme mit langen Songtiteln beim Scrobbeln ersteinmal so mittelmäßig gefixt, Libraray muss ersetzte werden
+
+### 19.12.2014
+* Animation für das RadioIcon
+* Iconauswahl in eine Helper-Klasse verschoben
+* Bugfix: https://github.com/TVLukeProductions/TrashPlay/issues/16
+* Bugfix: https://github.com/TVLukeProductions/TrashPlay/issues/15
+* Bugfix: https://github.com/TVLukeProductions/TrashPlay/issues/12
+* Some UI Improvements
+* Neue ID3-Tag Library und Scan der Dateilänge auch vor dem ersten abspielen
+
+-> Release 1.0.11
+
+* Some Christamas fun with Icons
+* Some Statistics Collection
+
+-> Release 1.0.12
+
 ## ToDo
 * Sammeln von persönlichen Statistiken
 * bessere sync animation

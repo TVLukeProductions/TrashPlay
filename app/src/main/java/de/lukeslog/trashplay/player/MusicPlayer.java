@@ -13,9 +13,6 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.os.PowerManager;
 
-import org.farng.mp3.MP3File;
-import org.farng.mp3.TagException;
-import org.farng.mp3.id3.ID3v1;
 import org.joda.time.DateTime;
 
 import java.io.File;
@@ -139,21 +136,10 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     }
 
     private void setTrackInfo(Song song) {
-        try {
-            File file = getFileFromSong(song);
-            MP3File mp3 = new MP3File(file);
-            ID3v1 id3 = mp3.getID3v1Tag();
-            artist = id3.getArtist();
-            //Logger.d(TAG, "----------->ARTIST:" + artist);
-            title = id3.getSongTitle();
+            SongHelper.getMetaData(song);
+            artist = song.getArtist();
+            title = song.getSongName();
             TrashPlayService.getContext().createNotification(title, artist);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        } catch (TagException e1) {
-            e1.printStackTrace();
-        } catch (Exception ex) {
-            //Log.e(TAG, "There has been an exception while extracting ID3 Tag Information from the MP3");
-        }
     }
 
     private void scrobbleTrack() {
@@ -208,6 +194,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         } catch (Exception e) {
 
         }
+        currentlyPlayingSong=null;
         mp = null;
     }
 
@@ -222,7 +209,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         mpx.setOnCompletionListener(this);
         int duration = mpx.getDuration();
         if (duration > 0) {
-            if (currentlyPlayingSong.getDurationInSeconds() != duration) {
+            if (currentlyPlayingSong.getDuration() != duration) {
                 SongHelper.setDuration(currentlyPlayingSong, duration);
                 try {
                     MusicCollectionManager.getInstance().updateRadioFile();
@@ -416,8 +403,9 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         int p = 0;
         if (mp != null) {
             try {
-                p = currentlyPlayingSong.getDurationInSeconds();
-                if (p == 0) {
+                p = currentlyPlayingSong.getDuration();
+                int p2 = mp.getDuration();
+                if (p == 0 || p2!=p) {
                     p = mp.getDuration();
                     SongHelper.setDuration(currentlyPlayingSong, p);
                 }
@@ -433,7 +421,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         if (mp != null) {
             try {
                 int p = mp.getCurrentPosition();
-                result = TrashPlayUtils.getStringFromIntInSeconds(p);
+                result = TrashPlayUtils.getStringFromIntInMilliSeconds(p);
             } catch (Exception e) {
                 if (TrashPlayService.serviceRunning()) {
                     TrashPlayService.getContext().toast("Error1");
@@ -448,7 +436,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         String result = "";
         if (mp != null) {
             try {
-                int p = currentlyPlayingSong.getDurationInSeconds();
+                int p = currentlyPlayingSong.getDuration();
                 if (p == 0l) {
                     try {
                         p = mp.getDuration();
@@ -458,7 +446,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                         p = 180;
                     }
                 }
-                result = TrashPlayUtils.getStringFromIntInSeconds(p);
+                result = TrashPlayUtils.getStringFromIntInMilliSeconds(p);
             } catch (Exception e) {
                 if (TrashPlayService.serviceRunning()) {
                     TrashPlayService.getContext().toast("Error2");

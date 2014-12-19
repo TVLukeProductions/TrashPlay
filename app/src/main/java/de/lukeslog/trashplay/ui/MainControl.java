@@ -13,7 +13,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -21,6 +20,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.activeandroid.ActiveAndroid;
+
+import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,7 @@ import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
+import de.lukeslog.trashplay.playlist.PlayListHelper;
 import de.lukeslog.trashplay.playlist.Song;
 import de.lukeslog.trashplay.playlist.SongHelper;
 import de.lukeslog.trashplay.service.TrashPlayService;
@@ -58,9 +60,6 @@ public class MainControl extends Activity {
 
     private UIUpdater uiUpdater;
 
-    ArrayAdapter<String> adapter;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,7 +68,6 @@ public class MainControl extends Activity {
         setContentView(R.layout.activity_main_control);
 
         ctx = this;
-        final SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         startService(new Intent(ctx, TrashPlayService.class));
 
         final ImageView playpause = (ImageView) findViewById(R.id.imageView1);
@@ -77,8 +75,8 @@ public class MainControl extends Activity {
         final ImageView backimg = (ImageView) findViewById(R.id.back);
         ImageView sync = (ImageView) findViewById(R.id.imageView2);
         ImageView wifi = (ImageView) findViewById(R.id.imageView3);
-        sync.setImageResource(R.drawable.transp);
-        wifi.setImageResource(R.drawable.transp);
+        sync.setImageResource(IconHelper.getIcon(IconHelper.ICON_SYNC_INVISIBLE, 0));
+        wifi.setImageResource(IconHelper.getIcon(IconHelper.ICON_WIFI_INVISIBLE, 0));
         SharedPreferences defSetting = PreferenceManager.getDefaultSharedPreferences(this);
         boolean trashmode = defSetting.getBoolean(SettingsConstants.APP_SETTINGS_TRASHMODE, true);
         if (trashmode) {
@@ -99,7 +97,7 @@ public class MainControl extends Activity {
                     } else {
                         TrashPlayService.getContext().sendBroadcastToStartMusic();
 
-                        playpause.setImageResource(R.drawable.pause);
+                        playpause.setImageResource(IconHelper.getIcon(IconHelper.ICON_STOP, 0));
                         setPlayButtonClicked(true);
 
                         setDisplayStringForCurrentTrackInformation("");
@@ -234,7 +232,8 @@ public class MainControl extends Activity {
                 toast("sooon...");
                 return true;
             case R.id.action_statistics:
-                toast("soooon...");
+                Intent i = new Intent(this, Statistics.class);
+                startActivity(i);
                 return true;
             case R.id.action_social:
                 toast("Not in this version buddy. I'm not your buddy guy. I'm not your guy, man.");
@@ -366,22 +365,30 @@ public class MainControl extends Activity {
         ImageView radio = (ImageView) findViewById(R.id.radioimg);
         if (radioMode) {
             radio.setVisibility(View.VISIBLE);
-            radio.setImageResource(R.drawable.radio);
+            if(MusicPlayer.getCurrentlyPlayingSong()==null) {
+                radio.setImageResource(IconHelper.getIcon(IconHelper.ICON_RADIO, 0));
+            }
+            radio.setImageResource(IconHelper.getIcon(IconHelper.ICON_RADIO, counter));
         } else {
-            radio.setImageResource(R.drawable.transp);
+            radio.setImageResource(IconHelper.getIcon(IconHelper.ICON_RADIO_INVISIBLE, 0));
         }
     }
 
     private void setButtonToStopButton() {
         ImageView playpause = (ImageView) findViewById(R.id.imageView1);
-        playpause.setImageResource(R.drawable.pause);
+        DateTime now = new DateTime();
+        if(now.getMonthOfYear()==12 && now.getDayOfMonth()>20 && now.getDayOfMonth()<27){
+            playpause.setImageResource(IconHelper.getIcon(IconHelper.SANTA, counter));
+        } else {
+            playpause.setImageResource(IconHelper.getIcon(IconHelper.ICON_STOP, 0));
+        }
         playpause.setClickable(true);
     }
 
 
     private void setButtonToPlayButton() {
         ImageView playpause = (ImageView) findViewById(R.id.imageView1);
-        playpause.setImageResource(R.drawable.play);
+        playpause.setImageResource(IconHelper.getIcon(IconHelper.ICON_PLAY, 0));
         if (!playpause.isClickable()) {
             playpause.setClickable(true);
 
@@ -393,9 +400,9 @@ public class MainControl extends Activity {
             boolean wificonnected = TrashPlayService.wifi;
             ImageView wifi = (ImageView) findViewById(R.id.imageView3);
             if (wificonnected) {
-                wifi.setImageResource(R.drawable.wifi);
+                wifi.setImageResource(IconHelper.getIcon(IconHelper.ICON_WIFI, 0));
             } else {
-                wifi.setImageResource(R.drawable.transp);
+                wifi.setImageResource(IconHelper.getIcon(IconHelper.ICON_WIFI_INVISIBLE, 0));
             }
         }
     }
@@ -447,24 +454,13 @@ public class MainControl extends Activity {
     }
 
     private void setSyncInProgressAnimation() {
-        if (StorageManager.syncInProgress) {
+        if (StorageManager.syncInProgress || PlayListHelper.sync) {
             ImageView sync = (ImageView) findViewById(R.id.imageView2);
-            if (counter % 4 == 0) {
-                sync.setImageResource(R.drawable.synchronize1);
-            }
-            if (counter % 4 == 1) {
-                sync.setImageResource(R.drawable.synchronize2);
-            }
-            if (counter % 4 == 2) {//TODO: more synchronize grafics
-                sync.setImageResource(R.drawable.synchronize1);
-            }
-            if (counter % 4 == 3) {
-                sync.setImageResource(R.drawable.synchronize2);
-            }
+            sync.setImageResource(IconHelper.getIcon(IconHelper.ICON_SYNC, counter));
             sync.setVisibility(View.VISIBLE);
         } else {
             ImageView sync = (ImageView) findViewById(R.id.imageView2);
-            sync.setImageResource(R.drawable.transp);
+            sync.setImageResource(IconHelper.getIcon(IconHelper.ICON_SYNC_INVISIBLE, 0));
         }
     }
 

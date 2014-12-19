@@ -88,6 +88,7 @@ public class SettingsFragment extends PreferenceFragment {
                                 CheckBoxPreference x = (CheckBoxPreference) preference;
                                 if (!x.isChecked()) {
                                     Logger.d(TAG, "YOU JUST ACTIVATED A RADIO");
+                                    storePlayListToTemp();
                                     SharedPreferences.Editor edit = settings.edit();
                                     edit.putBoolean("listenalong", true);
                                     edit.putString("radiostation", "Radio_" + activeRemotePlayList.getRemoteStorage() + "_" + activeRemotePlayList.getRemotePath() + "_" + station);
@@ -106,6 +107,7 @@ public class SettingsFragment extends PreferenceFragment {
                                     }).start();
                                 } else {
                                     Logger.d(TAG, "YOU JUST DEACTIVATED A RADIO");
+                                    restorePlayListFromTemp();
                                     SharedPreferences.Editor edit = settings.edit();
                                     edit.putBoolean("listenalong", false);
                                     edit.commit();
@@ -139,15 +141,13 @@ public class SettingsFragment extends PreferenceFragment {
                 if (!x.isChecked()) {
                     Logger.d(TAG, "YOU JUST ACTIVATED RADIO MODE");
                     try {
-                        storePlayListToTemp();
+
                         MusicCollectionManager.getInstance().updateRadioFile();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
                 } else {
                     Logger.d(TAG, "YOU JUST DEACTIVATED RADIO MODE");
-                    restorePlayListFromTemp();
                 }
                 return true;
             }

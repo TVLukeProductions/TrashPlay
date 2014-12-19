@@ -74,10 +74,10 @@ public class SongListAdapter  extends BaseAdapter {
         songname.setText(song.getSongName());
         artistname.setText(song.getArtist());
         String additionalinfo = "";
-        if(song.getDurationInSeconds()>0){
-            additionalinfo=additionalinfo+TrashPlayUtils.getStringFromIntInSeconds(song.getDurationInSeconds());
+        if(song.getDuration()>0){
+            additionalinfo=additionalinfo+TrashPlayUtils.getStringFromIntInMilliSeconds(song.getDuration());
         }
-        additionalinfo=additionalinfo+"|"+song.getPlays()+"|";
+        additionalinfo=additionalinfo+" | "+song.getPlays()+" | ";
         if(song.getLastPlayed()>0){
             DateTime now = new DateTime();
             DateTime then = new DateTime(song.getLastPlayed());
