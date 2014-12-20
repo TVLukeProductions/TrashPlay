@@ -326,6 +326,9 @@ neu syncronisiert werden.
 
 -> Release 1.0.12 
 
+* Bugfix: https://github.com/TVLukeProductions/TrashPlay/issues/17
+* BADGES
+
 ## ToDo
 * Sammeln von persönlichen Statistiken
 * bessere sync animation

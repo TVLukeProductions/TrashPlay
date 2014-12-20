@@ -7,6 +7,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.activeandroid.ActiveAndroid;
+import com.jjoe64.graphview.GraphView.*;
+import com.jjoe64.graphview.GraphViewSeries;
 
 import java.util.List;
 
@@ -30,33 +32,41 @@ public class Statistics extends Activity {
         setContentView(R.layout.statistics_activity);
 
         String text = "";
-        text = ""+(((StatisticsCollection.getPlayTime()/1000)/60)/60)+" Stunden TrashPlay.\n";
+        text = "" + (((StatisticsCollection.getPlayTime() / 1000) / 60) / 60) + " Stunden TrashPlay.\n";
 
-        text = text+"Charts\n";
+        text = text + "Charts\n";
         List<Song> songsByPlay = SongHelper.getAllSongsOrderedByPlays();
-        int counter=0;
-        int max =0;
-        for(Song song: songsByPlay){
+        int counter = 0;
+        int max = 0;
+        for (Song song : songsByPlay) {
             counter++;
-            text = text+ song.getPlays()+". "+song.getArtist()+" - "+song.getSongName()+"\n";
-            if(counter==1){
+            text = text + song.getPlays() + ". " + song.getArtist() + " - " + song.getSongName() + "\n";
+            if (counter == 1) {
                 max = song.getPlays();
             }
-            if(counter==10){
+            if (counter == 10) {
                 break;
             }
         }
 
-        int[] playdist = new int[max+1];
-        if(max>0){
-            for(Song song: songsByPlay){
+        // init example series data
+        GraphViewSeries exampleSeries = new GraphViewSeries(new GraphViewData[]{
+                new GraphViewData(1, 2.0d)
+                , new GraphViewData(2, 1.5d)
+                , new GraphViewData(3, 2.5d)
+                , new GraphViewData(4, 1.0d)
+        });
+
+        int[] playdist = new int[max + 1];
+        if (max > 0) {
+            for (Song song : songsByPlay) {
                 playdist[song.getPlays()]++;
             }
         }
 
-        text = text +" Play Distribution. \n";
-        for(int i=0; i<playdist.length; i++){
-            text = text+" "+i+" = "+playdist[i]+"\n";
+        text = text + " Play Distribution. \n";
+        for (int i = 0; i < playdist.length; i++) {
+            text = text + " " + i + " = " + playdist[i] + "\n";
         }
 
 
