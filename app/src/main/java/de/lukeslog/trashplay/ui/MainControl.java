@@ -229,10 +229,11 @@ public class MainControl extends Activity {
                 startSettingsActivity();
                 return true;
             case R.id.action_badges:
-                toast("sooon...");
+                Intent i1 = new Intent(this, Badges.class);
+                startActivity(i1);
                 return true;
             case R.id.action_statistics:
-                Intent i = new Intent(this, Statistics.class);
+                Intent i = new Intent(this, StatisticsActivity.class);
                 startActivity(i);
                 return true;
             case R.id.action_social:
@@ -254,7 +255,7 @@ public class MainControl extends Activity {
     }
 
     private void startSettingsActivity() {
-        final Intent intent = new Intent(this, Settings.class);
+        final Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
     }
 
@@ -311,7 +312,7 @@ public class MainControl extends Activity {
                 ImageView playpause = (ImageView) findViewById(R.id.imageView1);
                 playpause.setClickable(true);
 
-            } else if (MusicCollectionManager.getInstance().collectionNotEmpty()) {
+            } else if (MusicCollectionManager.getInstance().collectionGreater10()) {
                 setButtonToPlayButton();
             }
 
@@ -454,7 +455,8 @@ public class MainControl extends Activity {
     }
 
     private void setSyncInProgressAnimation() {
-        if (StorageManager.syncInProgress || PlayListHelper.sync) {
+        //if (StorageManager.syncInProgress || PlayListHelper.sync) {
+        if (StorageManager.syncInProgress) {
             ImageView sync = (ImageView) findViewById(R.id.imageView2);
             sync.setImageResource(IconHelper.getIcon(IconHelper.ICON_SYNC, counter));
             sync.setVisibility(View.VISIBLE);

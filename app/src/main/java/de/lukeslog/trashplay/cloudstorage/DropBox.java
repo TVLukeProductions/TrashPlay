@@ -32,6 +32,7 @@ import de.lukeslog.trashplay.playlist.MusicCollectionManager;
 import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.support.SettingsConstants;
+import de.lukeslog.trashplay.support.TrashPlayUtils;
 
 public class DropBox extends StorageManager {
 
@@ -211,7 +212,11 @@ public class DropBox extends StorageManager {
     //TODO: Users should not be calling this directly.
     @Override
     public ArrayList<String> getFileNameListWithEndingsFromRemoteStorage(List<String> listOfAllowedFileEndings, String folderPath) throws Exception {
-        Logger.d(TAG, "getListOfFiles With Allowed Ending");
+        return getFileNameFromRemoteStorageAndCreateSubFolders(listOfAllowedFileEndings, folderPath, true);
+    }
+
+    private ArrayList<String> getFileNameFromRemoteStorageAndCreateSubFolders(List<String> listOfAllowedFileEndings, String folderPath, boolean createSubfolders) throws Exception {
+        Logger.d(TAG, "getListOfFiles With Allowed Ending from " + folderPath);
         ArrayList<String> fileList = new ArrayList<String>();
         String givenPath = "/" + folderPath;
         if (mDBApi == null) {
@@ -219,20 +224,31 @@ public class DropBox extends StorageManager {
         }
         Logger.d(TAG, "olol");
         Entry folder = mDBApi.metadata(givenPath, 0, null, true, null);
-        checkAndCreateNecessarySubFolders(folder);
-        getRadioStations(folder);
+        if(createSubfolders) {
+            checkAndCreateNecessarySubFolders(folder);
+            getRadioStations(folder);
+        }
         if (folder.isDir) {
-            for (Entry file : folder.contents) {
-                if (!file.isDir) {
-                    String filename = file.fileName();
-                    boolean allowed = hasAllowedFileEnding(listOfAllowedFileEndings, filename);
-                    if (allowed) {
-                        fileList.add(filename);
+            if(folder.contents!=null) {
+                for (Entry file : folder.contents) {
+                    if (!file.isDir) {
+                        String filename = file.fileName();
+                        Logger.d(TAG, filename);
+                        boolean allowed = hasAllowedFileEnding(listOfAllowedFileEndings, filename);
+                        if (allowed) {
+                            fileList.add(filename);
+                        }
                     }
                 }
             }
         }
-        //TODO: Check for Christmas songs
+        if(TrashPlayUtils.isChristmasTime() && createSubfolders){
+            ArrayList<String> christmasSongs = getFileNameFromRemoteStorageAndCreateSubFolders(listOfAllowedFileEndings, folderPath + "/" + PATH_CHRISTMAS, false);
+            for(int i=0; i<christmasSongs.size(); i++){
+                christmasSongs.set(i, PATH_CHRISTMAS+"/"+christmasSongs.get(i));
+            }
+            fileList.addAll(christmasSongs);
+        }
         return fileList;
     }
 
@@ -249,7 +265,7 @@ public class DropBox extends StorageManager {
         if (mDBApi == null) {
             getDropBoxAPI();
         }
-        createTrashPlayFolderIFNotExisting();
+        findOrCreateLocalTrashPlayMusicFolder();
         String filePath = "/" + path + "/" + fileName;
         Logger.d(TAG, "Download " + filePath+"?");
         try {
@@ -302,6 +318,9 @@ public class DropBox extends StorageManager {
     private String downloadSpecificFileFromDropBox(String fileName, String filePath) throws DropboxException {
         Logger.d(TAG, "try to download a file");
         FileOutputStream outputStream = null;
+        if(fileName.startsWith(PATH_CHRISTMAS+"/")){
+            fileName=fileName.replace(PATH_CHRISTMAS+"/", "");
+        }
         File file = new File(LOCAL_STORAGE + fileName);
         Logger.d(TAG, "have new file");
         try {
@@ -333,20 +352,6 @@ public class DropBox extends StorageManager {
                 replace("Dec", "12");
         modifiedDate = modifiedDate.trim();
         return modifiedDate;
-    }
-
-    private void createTrashPlayFolderIFNotExisting() {
-        File folder = new File(LOCAL_STORAGE);
-        folder.mkdirs();
-    }
-
-    private boolean hasAllowedFileEnding(List<String> listOfAllowedFileEndings, String filename) {
-        for (String ending : listOfAllowedFileEndings) {
-            if (filename.endsWith(ending)) {
-                return true;
-            }
-        }
-        return false;
     }
 
 

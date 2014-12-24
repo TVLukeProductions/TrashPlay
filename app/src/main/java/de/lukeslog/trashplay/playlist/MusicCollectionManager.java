@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.lukeslog.trashplay.cloudstorage.CloudSynchronizationService;
 import de.lukeslog.trashplay.cloudstorage.DropBox;
 import de.lukeslog.trashplay.cloudstorage.StorageManager;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
@@ -419,12 +420,10 @@ public class MusicCollectionManager {
             new Thread(new Runnable() {
                 public void run() {
                     try {
-                        if (lookForNewPlayLists || MusicCollectionManager.getInstance().getNumberOfActivePlayLists() == 0) {
-                            findRemotePlayListFoldersAndCreateNewPlayLists();
-                        }
+                        findRemotePlayListFoldersAndCreateNewPlayLists(lookForNewPlayLists);
                         synchronizePlayLists();
                     } catch (Exception e) {
-                        Logger.e(TAG, "Exception while trying to sync.");
+                        Logger.e(TAG, "Exception while trying to sync."+e);
                         syncRemoteStorageWithDevice(lookForNewPlayLists);
                         e.printStackTrace();
                     }
@@ -459,24 +458,36 @@ public class MusicCollectionManager {
         Logger.d(TAG, "ok.");
     }
 
-    private void findRemotePlayListFoldersAndCreateNewPlayLists() throws Exception {
-        Logger.d(TAG, "findRemotePlayListFoldersAndCreateNewPlayLists()");
-        if (DropBox.getInstance().isConnected()) {
+    private void findRemotePlayListFoldersAndCreateNewPlayLists(boolean lookForNewPlayLists) throws Exception {
+        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
+        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
+        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
+        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
+        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
+        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
+        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
+        List<StorageManager> services = CloudSynchronizationService.getRegisteredCloudStorageServices();
+        boolean onlyuselocal=true;
+        if (lookForNewPlayLists || MusicCollectionManager.getInstance().getNumberOfActivePlayLists() == 0) {
+            onlyuselocal=false;
+        }
+        Logger.d(TAG, "HOW MANY SERVICES: "+services.size());
+        for(StorageManager service : services) {
+            if (service.isConnected() && (!onlyuselocal || service.getStorageType().equals(StorageManager.STORAGE_TYPE_LOCAL))) {
 
-            DropBox newDropBox = DropBox.getInstance();
-
-            List<String> folderNames = newDropBox.getAllPlayListFolders();
-            Logger.d(TAG, "Done with the search");
-            Logger.d(TAG, "returned with a list of " + folderNames.size());
-            for (String folderName : folderNames) {
-                Logger.d(TAG, folderName);
-                if (!knownPlaylist(folderName)) {
-                    if (!TrashPlayService.getContext().isInRadioMode()) {
-                        Logger.d(TAG, "create New PlayList since we are not in radiomode");
-                        PlayListHelper.createNewPlayList(newDropBox, folderName);
-                    } else {
-                        Logger.d(TAG, "a new playlist was found but not downloaded since we are in radiomode");
-                        TrashPlayService.getContext().toast("a new playlist was found but not downloaded since we are in radiomode");
+                List<String> folderNames = service.getAllPlayListFolders();
+                Logger.d(TAG, "Done with the search");
+                Logger.d(TAG, "returned with a list of " + folderNames.size());
+                for (String folderName : folderNames) {
+                    Logger.d(TAG, folderName);
+                    if (!knownPlaylist(folderName)) {
+                        if (!TrashPlayService.getContext().isInRadioMode()) {
+                            Logger.d(TAG, "create New PlayList since we are not in radiomode");
+                            PlayListHelper.createNewPlayList(service, folderName);
+                        } else {
+                            Logger.d(TAG, "a new playlist was found but not downloaded since we are in radiomode");
+                            TrashPlayService.getContext().toast("a new playlist was found but not downloaded since we are in radiomode");
+                        }
                     }
                 }
             }
@@ -513,6 +524,10 @@ public class MusicCollectionManager {
 
     public boolean collectionNotEmpty() {
         return !(SongHelper.getNumberOfViableSongs() == 0);
+    }
+
+    public boolean collectionGreater10() {
+        return !(SongHelper.getNumberOfViableSongs() > 10);
     }
 
     public int getNumberOfActivePlayLists() {

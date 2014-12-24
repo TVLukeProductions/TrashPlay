@@ -11,7 +11,6 @@ import java.util.List;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.support.Logger;
 
-//TODO: This may not be a service
 public class CloudSynchronizationService extends Service {
 
     public static final String TAG = TrashPlayConstants.TAG;
@@ -38,6 +37,7 @@ public class CloudSynchronizationService extends Service {
         if (DropBox.getInstance().isConnected()) {
             registerService(DropBox.getInstance());
         }
+        registerService(LocalStorage.getInstance());
     }
 
     public static void registerService(StorageManager cloudStorageService) {
@@ -59,23 +59,16 @@ public class CloudSynchronizationService extends Service {
     }
 
     public static List<StorageManager> getRegisteredCloudStorageServices() {
+        updateRegisteredCloudStorageSystems();
         return registeredCloudStorageServices;
     }
 
     public static boolean atLeastOneCloudStorageServiceIsConnected() {
         for (StorageManager c : registeredCloudStorageServices) {
-            if (c.isConnected()) {
+            if (c.isConnected() && !c.getStorageType().equals(StorageManager.STORAGE_TYPE_LOCAL)) {
                 return true;
             }
         }
         return false;
-    }
-
-    public static void resetSyncFlag() {
-        Logger.d(TAG, "resetAllSyncFlags");
-        updateRegisteredCloudStorageSystems();
-        for (StorageManager c : registeredCloudStorageServices) {
-            c.resetSyncInProgress();
-        }
     }
 }

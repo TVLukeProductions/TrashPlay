@@ -328,9 +328,24 @@ neu syncronisiert werden.
 
 * Bugfix: https://github.com/TVLukeProductions/TrashPlay/issues/17
 * BADGES
+* Removed some isses with songs not beeing played
+
+-> Release 1.0.13
+
+* UI für Statistiken
+* Bugfix: "Songs without Artist or title in ID3 would crash the app after playing"
+* Version unten in den Settings angegeben
+
+-> Release 1.0.14
+
+* Play Button erst ab > 10 Songs. 'Cause.
+* Mehr statistiken (longest Streak, Distanz in km, Play-Distribution)
+* Download von Weihnachtsliedern
+* Lokale MP3s können in Unterordnern von "Local" auf dem Handy abgelegt werden und werden als weitere Playlists verstanden
+* PlayLists können gelöscht werden
+* Bugfix: "Removing Songs from Playlists does actually nothing"
 
 ## ToDo
-* Sammeln von persönlichen Statistiken
 * bessere sync animation
 * Local Storage als Speicherort
 * Exportfunktion (z.B. für Handywechsel oder sowas)

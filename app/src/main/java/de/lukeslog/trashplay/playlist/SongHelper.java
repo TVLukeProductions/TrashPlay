@@ -43,19 +43,19 @@ public class SongHelper {
     }
 
     public static void addSongToPlayList(Song song, PlayList playList) {
-        if(song.getPlayLists()!=null) {
-            String playlistString = PlayListHelper.getPlayListEncodingString(playList);
-            if (song.getPlayLists().contains(playlistString)) {
-                song.setPlayLists(song.getPlayLists().replace(playlistString, ""));
+        if(song!=null) {
+            if (song.getPlayLists() != null) {
+                String playlistString = PlayListHelper.getPlayListEncodingString(playList);
+                if (song.getPlayLists().contains(playlistString)) {
+                    song.setPlayLists(song.getPlayLists().replace(playlistString, ""));
+                }
+                if (!song.getPlayLists().contains(playlistString)) {
+                    song.setPlayLists(song.getPlayLists() + PlayListHelper.getPlayListEncodingString(playList) + " ");
+                    song.save();
+                }
+            } else {
+                song.setPlayLists(PlayListHelper.getPlayListEncodingString(playList) + " ");
             }
-            if (!song.getPlayLists().contains(playlistString)) {
-                song.setPlayLists(song.getPlayLists() + PlayListHelper.getPlayListEncodingString(playList) + " ");
-                song.save();
-            }
-        }
-        else
-        {
-            song.setPlayLists(PlayListHelper.getPlayListEncodingString(playList) + " ");
         }
     }
 
@@ -73,7 +73,9 @@ public class SongHelper {
     }
 
     public static void removeFromPlayList(Song song, PlayList playList) {
-        song.getPlayLists().replace("", PlayListHelper.getPlayListEncodingString(playList));
+        song.setPlayLists(song.getPlayLists().replace(PlayListHelper.getPlayListEncodingString(playList), ""));
+        song.setPlayLists(song.getPlayLists().replace(" ", ""));
+        Logger.d(TAG, "->"+song.getPlayLists()+"<-");
         if(song.getPlayLists().isEmpty()) {
             song.setToBeDeleted(true);
         }
@@ -84,6 +86,7 @@ public class SongHelper {
     {
 
         File file = new File(StorageManager.LOCAL_STORAGE+song.getFileName());
+        Logger.d(TAG, StorageManager.LOCAL_STORAGE+song.getFileName());
         String[] metadata = new String[2];
         //first, get stuff from the filename
 
@@ -220,9 +223,7 @@ public class SongHelper {
     }
 
     static void removeSongsThatAreToBeDeleted() {
-        Logger.d(TAG, "removeSongsThatAreToBeDeleted()");
         if (TrashPlayService.serviceRunning()) {
-            Logger.d(TAG, "service is running()");
             try {
 
                 List<Song> result = new Select().from(Song.class).where("toBeDeleted = ?", "1").execute();
@@ -245,7 +246,6 @@ public class SongHelper {
     }
 
     static List<Song> getAllSongs() {
-        Logger.d(TAG, "get all songs");
         List<Song> songs = new ArrayList<Song>();
         try {
             if (TrashPlayService.serviceRunning()) {
@@ -278,30 +278,34 @@ public class SongHelper {
 
     public static Song createSong(String localFileName, PlayList playList) {
         if(playList!=null) {
-            Logger.d(TAG, "lets first find out if we know this song");
-            Song s = getSongByFileName(localFileName);
-            if (s != null) {
-                addSongToPlayList(s, playList);
-                return s;
-            } else {
-                Logger.d(TAG, "create Song");
-                Song newSong = new Song();
-                Logger.d(TAG, "1");
-                newSong.setFileName(localFileName);
-                Logger.d(TAG, "2");
-                getMetaData(newSong);
-                Logger.d(TAG, "3");
-                addSongToPlayList(newSong, playList);
-                Logger.d(TAG, "4");
-                refreshLastUpdate(newSong);
-                newSong.setInActiveUse(true);
-                newSong.save();
-                try {
-                    metaDataUpdate(newSong);
-                } catch(Exception e) {
-                    Logger.e(TAG, "error while tring to fix metadata");
+            try {
+                Logger.d(TAG, "lets first find out if we know this song");
+                Song s = getSongByFileName(localFileName);
+                if (s != null) {
+                    addSongToPlayList(s, playList);
+                    return s;
+                } else {
+                    Logger.d(TAG, "create Song" + localFileName);
+                    Song newSong = new Song();
+                    Logger.d(TAG, "1");
+                    newSong.setFileName(localFileName);
+                    Logger.d(TAG, "2");
+                    getMetaData(newSong);
+                    Logger.d(TAG, "3");
+                    addSongToPlayList(newSong, playList);
+                    Logger.d(TAG, "4");
+                    refreshLastUpdate(newSong);
+                    newSong.setInActiveUse(true);
+                    newSong.save();
+                    try {
+                        metaDataUpdate(newSong);
+                    } catch (Exception e) {
+                        Logger.e(TAG, "error while tring to fix metadata");
+                    }
+                    return newSong;
                 }
-                return newSong;
+            } catch (Exception ex){
+                Logger.e(TAG, "creating Song had a problem "+ex);
             }
         }
         return null;
@@ -369,7 +373,6 @@ public class SongHelper {
 
     public static void setDuration(Song song, int p) {
         Song theSong = getSongByFileName(song.getFileName());
-        Logger.d(TAG, "SET DURATION!");
         theSong.setDuration(p);
         theSong.save();
     }
@@ -381,7 +384,6 @@ public class SongHelper {
     }
 
     public static void metaDataUpdate(final Song song) throws IOException {
-        Logger.d(TAG, "METADATA UPDATE");
         if(song.getDuration()==0){
             File mediafile = new File(StorageManager.LOCAL_STORAGE + song.getFileName());
             String musicPath = mediafile.getAbsolutePath();
@@ -391,10 +393,7 @@ public class SongHelper {
             mplocal.setOnPreparedListener( new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mediaPlayer) {
-                    Logger.d(TAG, "on Prepared for "+song.getFileName());
                     int duration = mediaPlayer.getDuration();
-                    Logger.d(TAG, "->"+duration);
-                    Logger.d(TAG, "->"+ TrashPlayUtils.getStringFromIntInMilliSeconds(duration));
                     song.setDuration(duration);
                     song.save();
                 }
@@ -421,17 +420,14 @@ public class SongHelper {
         }
 
         public void onMediaScannerConnected() {
-            Logger.d(TAG, "MEDIASCANNER CONNECTED!");
             mConnection.scanFile(mPath, mMimeType);
         }
 
         public void onScanCompleted(String path, Uri uri) {
-            Logger.d(TAG, "MEDIASCANNER COMPLETED");
             MediaPlayer mplocal = new MediaPlayer();
             try {
                 mplocal.setDataSource(path);
                 int duration = mplocal.getDuration();
-                Logger.d(TAG, path+" DURATION"+duration);
             } catch (IOException e) {
                 e.printStackTrace();
             }

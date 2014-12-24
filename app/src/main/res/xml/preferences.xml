@@ -85,4 +85,11 @@
             android:defaultValue="false">
         </CheckBoxPreference>
     </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/pref_information"
+        android:key="pref_developers_information">
+    <Preference
+        android:key="pref_infoemation_on_app"
+        android:selectable="false"/>
+    </PreferenceCategory>
 </PreferenceScreen>

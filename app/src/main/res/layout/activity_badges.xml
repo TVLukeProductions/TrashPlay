@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/scrollView" >
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="PlayTimeBadges"
+                android:id="@+id/textView" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:id="@+id/playtimescroll"
+                android:layout_gravity="center_horizontal"
+                android:fillViewport="false">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hoursbadge1"
+                        android:src="@drawable/hour1"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hoursbadge2"
+                        android:src="@drawable/hour10"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hoursbadge3"
+                        android:src="@drawable/hour23"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hoursbadge4"
+                        android:src="@drawable/hour42"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hoursbadge5"
+                        android:src="@drawable/hour100"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hoursbadge6"
+                        android:src="@drawable/hour1000"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hoursbadge7"
+                        android:src="@drawable/hour5000"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hoursbadge8"
+                        android:src="@drawable/hour9000"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hoursbadge9"
+                        android:src="@drawable/hour10000"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hoursbadge10"
+                        android:src="@drawable/hour15000"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hoursbadge11"
+                        android:src="@drawable/hour20000"/>
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Tetris Badges"
+                android:id="@+id/textView2" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:id="@+id/tetriscroll"
+                android:layout_gravity="center_horizontal"
+                android:fillViewport="false">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/tetrisbadge1"
+                        android:src="@drawable/tetris1"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/tetrisbadge2"
+                        android:src="@drawable/tetris2"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/tetrisbadge3"
+                        android:src="@drawable/tetris3"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/tetrisbadge4"
+                        android:src="@drawable/tetris4"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/tetrisbadge5"
+                        android:src="@drawable/tetris5"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/tetrisbadge6"
+                        android:src="@drawable/tetris6"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/tetrisbadge7"
+                        android:src="@drawable/tetris7"/>
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Repetition Badgess"
+                android:id="@+id/textView3" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:id="@+id/timescroll"
+                android:layout_gravity="center_horizontal"
+                android:fillViewport="false">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/timesbadge2"
+                        android:src="@drawable/times2"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/timesbadge3"
+                        android:src="@drawable/times3"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/timesbadge4"
+                        android:src="@drawable/times4"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/timesbadge5"
+                        android:src="@drawable/times5"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/timesbadge6"
+                        android:src="@drawable/times6"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/timesbadge7"
+                        android:src="@drawable/times7"/>
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Radio Time Badges"
+                android:id="@+id/textView4" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:id="@+id/radiocroll"
+                android:layout_gravity="center_horizontal"
+                android:fillViewport="false">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hourradiobadge1"
+                        android:src="@drawable/hourraadio1"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hourradiobadge10"
+                        android:src="@drawable/hourraadio10"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/hourradiobadge100"
+                        android:src="@drawable/hourraadio100"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/timesbadge1000"
+                        android:src="@drawable/hourraadio1000"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/timesbadge5000"
+                        android:src="@drawable/hourraadio5000"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/timesbadge10000"
+                        android:src="@drawable/hourraadio10000"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/timesbadge15000"
+                        android:src="@drawable/hourraadio15000"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/timesbadge20000"
+                        android:src="@drawable/hourraadio20000"/>
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Radio Time Badges"
+                android:id="@+id/textView9" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:id="@+id/ferienscroll"
+                android:layout_gravity="center_horizontal"
+                android:fillViewport="false">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/ferienbadge1"
+                        android:src="@drawable/ferien1"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/ferienbadge2"
+                        android:src="@drawable/ferien2"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/ferienbadge3"
+                        android:src="@drawable/ferien3"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/ferienbadge4"
+                        android:src="@drawable/ferien4"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/ferienbadge5"
+                        android:src="@drawable/ferien5"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/ferienbadge6"
+                        android:src="@drawable/ferien6"/>
+
+                    <ImageView
+                        android:layout_width="99dip"
+                        android:layout_height="99dip"
+                        android:alpha=".20"
+                        android:id="@+id/ferienbadge7"
+                        android:src="@drawable/ferien7"/>
+                </LinearLayout>
+            </HorizontalScrollView>
+
+        </LinearLayout>
+
+        </ScrollView>
+
+
+
+
+
+</LinearLayout>

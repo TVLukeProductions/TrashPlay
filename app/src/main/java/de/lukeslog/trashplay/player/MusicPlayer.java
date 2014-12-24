@@ -94,6 +94,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
 
     private void playmp3(Song song) {
         timeStampAtLastPlayOrCompletion = new DateTime().getMillis();
+        currentlyPlayingSong = song;
         if (song == null) {
             Logger.d(TAG + "_MEDIAPLAYER", "playmp3 got null");
             TrashPlayService.getContext().toast("Something went wrong.");
@@ -114,9 +115,6 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                 mExternalStorageAvailable = false;
             }
             if (mExternalStorageAvailable) {
-                if (needToScrobble()) {
-                    scrobbleTrack();
-                }
                 setTrackInfo(song);
                 try {
                     playMusic(song);
@@ -132,7 +130,10 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     }
 
     private boolean needToScrobble() {
-        return (!artist.equals("") && !title.equals(""));
+        if(artist!=null && title!=null) {
+            return (!artist.equals("") && !title.equals(""));
+        }
+        return false;
     }
 
     private void setTrackInfo(Song song) {
@@ -144,12 +145,13 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
 
     private void scrobbleTrack() {
         Logger.d(TAG + "_MEDIAPLAYER", "scrobble....");
-        TrashPlayLastFM.scrobble(artist, title);
-        if (TrashPlayService.serviceRunning()) {
-            Logger.d(TAG + "_MEDIAPLAYER", "Service Running...");
-            PersonalLastFM.scrobble(artist, title, TrashPlayService.getContext().settings);
+        if(artist!=null && title!=null) {
+            TrashPlayLastFM.scrobble(artist, title);
+            if (TrashPlayService.serviceRunning()) {
+                Logger.d(TAG + "_MEDIAPLAYER", "Service Running...");
+                PersonalLastFM.scrobble(artist, title, TrashPlayService.getContext().settings);
+            }
         }
-
     }
 
     private void playMusic(Song song) throws Exception {
@@ -167,7 +169,6 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             mp.setOnPreparedListener(this);
             Logger.d(TAG, ".....");
             mp.prepareAsync();
-            currentlyPlayingSong = song;
         } catch (IllegalStateException e) {
             Logger.d(TAG + "_MEDIAPLAYER", "illegalStateException");
             mp = null;
@@ -243,10 +244,16 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
 
     @Override
     public void onCompletion(MediaPlayer mpx) {
+        Song lastsong = currentlyPlayingSong;
         long now = new DateTime().getMillis();
         Logger.d(TAG + "_MEDIAPLAYER", "MEDIAPLAYER: on Completetion!");
+
         Logger.d(TAG + "_MEDIAPLAYER", "" + (now - timeStampAtLastPlayOrCompletion));
-        if (now - timeStampAtLastPlayOrCompletion > 1000) {
+        if ((now - timeStampAtLastPlayOrCompletion) > 2000 || lastsong.getDuration()<2000) {
+            Logger.d(TAG, "ok.. we are don with this song... probably");
+            if (needToScrobble()) {
+                scrobbleTrack();
+            }
             MusicCollectionManager.getInstance().finishedSong();
             stop();
             try {
@@ -255,8 +262,9 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                 e.printStackTrace();
             }
         } else {
+            Logger.d(TAG + "_MEDIAPLAYER", "I don't think we played that song yet");
             stop();
-            playmp3(currentlyPlayingSong);
+            playmp3(lastsong);
         }
     }
 

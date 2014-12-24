@@ -1,6 +1,7 @@
 package de.lukeslog.trashplay.ui;
 
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
@@ -9,6 +10,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.util.Log;
+import android.view.View;
 
 import java.util.List;
 
@@ -39,6 +41,8 @@ public class SettingsFragment extends PreferenceFragment {
 
         radioSettings();
 
+        appInformation();
+
         try {
             playlistactivationsettings();
         } catch (Exception e) {
@@ -47,6 +51,26 @@ public class SettingsFragment extends PreferenceFragment {
 
 
         PreferenceManager.setDefaultValues(getActivity(), R.xml.preferences, false);
+    }
+
+    private void appInformation() {
+        Preference pref = getPreferenceManager().findPreference("pref_infoemation_on_app");
+
+        PackageInfo pinfo = getPackageInfo();
+
+        String versionName = pinfo.versionName;
+
+        pref.setSummary("You are using TrashPlay " + versionName + ".");
+    }
+
+    private PackageInfo getPackageInfo() {
+        PackageInfo pInfo = null;
+        try {
+            pInfo = TrashPlayService.getContext().getPackageManager().getPackageInfo(TrashPlayService.getContext().getPackageName(), 0);
+        } catch (Exception e) {
+
+        }
+        return pInfo;
     }
 
     private void radioSettings() {
@@ -173,7 +197,7 @@ public class SettingsFragment extends PreferenceFragment {
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
         String radioNameFromSettings = settings.getString(SettingsConstants.APP_SETTING_RADIO_NAME, "");
         boolean trashmode = settings.getBoolean(SettingsConstants.APP_SETTINGS_TRASHMODE, true);
-        if(!trashmode) {
+        if (!trashmode) {
             return false;
         }
         radioName.setText(radioNameFromSettings);
@@ -197,7 +221,7 @@ public class SettingsFragment extends PreferenceFragment {
             if (playList.isActivated()) {
                 activeRemotePlayList = playList;
             }
-            if (playList.getRemoteStorage().equals(StorageManager.LOCAL_STORAGE) && playList.isActivated()) {
+            if (playList.getRemoteStorage().equals(StorageManager.STORAGE_TYPE_LOCAL) && playList.isActivated()) {
                 return false;
             }
         }
@@ -208,7 +232,7 @@ public class SettingsFragment extends PreferenceFragment {
         PreferenceScreen pref = (PreferenceScreen) getPreferenceManager().findPreference("pref_app_playlistusage_settings");
         List<PlayList> playLists = PlayListHelper.getAllPlayLists();
         for (final PlayList playList : playLists) {
-            Logger.d(TAG, "playlistactivationsettings() for Playlist "+playList.getRemotePath());
+            Logger.d(TAG, "playlistactivationsettings() for Playlist " + playList.getRemotePath());
             new Thread(new Runnable() {
                 public void run() {
                     try {
@@ -218,27 +242,52 @@ public class SettingsFragment extends PreferenceFragment {
                     }
                 }
             }).start();
-            CheckBoxPreference playlistActivationSetting = new CheckBoxPreference(getActivity());
+            final CheckBoxPreference playlistActivationSetting = new CheckBoxPreference(getActivity());
             playlistActivationSetting.setKey("pref_activateplaylist_" + playList.getRemoteStorage() + "_" + playList.getRemotePath());
             playlistActivationSetting.setEnabled(true);
-            int n=0;
-            n= PlayListHelper.getNumberOfSongsInPlayList(playList);
-            playlistActivationSetting.setSummary("Check if you want to use this playlist\n"+n+" songs.");
+            int n = 0;
+            n = PlayListHelper.getNumberOfSongsInPlayList(playList);
+            playlistActivationSetting.setSummary("Check if you want to use this playlist\n" + n + " songs.");
             playlistActivationSetting.setTitle(playList.getRemotePath() + " (" + playList.getRemoteStorage() + ")");
             playlistActivationSetting.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object o) {
                     CheckBoxPreference x = (CheckBoxPreference) preference;
                     if (!x.isChecked()) {
-                        PlayListHelper.setActivated(playList, true);
+                        new Thread(new Runnable() {
+                            public void run() {
+                                PlayListHelper.setActivated(playList, true);
+                            }
+                        }).start();
                     } else {
-                        PlayListHelper.setActivated(playList, false);
+                        new Thread(new Runnable() {
+                            public void run() {
+                                PlayListHelper.setActivated(playList, false);
+                            }
+                        }).start();
                     }
                     return true;
                 }
             });
             playlistActivationSetting.setChecked(playList.isActivated());
+
             pref.addPreference(playlistActivationSetting);
+
+            if(!playList.isActivated()){
+                Preference deletePlaylist = new Preference(getActivity());
+                deletePlaylist.setSummary("Delete Playlist");
+                deletePlaylist.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        Logger.d(TAG, "try to delete a playlist");
+                        PlayListHelper.removePlaylist(playList);
+                        playlistActivationSetting.setEnabled(false);
+                        playlistActivationSetting.setSummary("Deleted");
+                        return true;
+                    }
+                });
+                pref.addPreference(deletePlaylist);
+            }
         }
     }
 
@@ -255,7 +304,7 @@ public class SettingsFragment extends PreferenceFragment {
         boolean listenalong = settings.getBoolean("listenalong", false);
         boolean radioMode = settings.getBoolean(SettingsConstants.APP_SETTING_RADIO_MODE, false);
 
-        if(listenalong || radioMode) {
+        if (listenalong || radioMode) {
             useTrashMode.setEnabled(false);
         } else {
             useTrashMode.setEnabled(true);
@@ -280,7 +329,7 @@ public class SettingsFragment extends PreferenceFragment {
         });
     }
 
-    private void storePlayListToTemp(){
+    private void storePlayListToTemp() {
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
         if (settings != null) {
             SharedPreferences.Editor edit = settings.edit();

@@ -9,15 +9,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import de.lukeslog.trashplay.R;
@@ -29,8 +30,7 @@ import de.lukeslog.trashplay.statistics.StatisticsCollection;
 import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.support.SettingsConstants;
 import de.lukeslog.trashplay.ui.MainControl;
-import de.lukeslog.trashplay.ui.Settings;
-import de.lukeslog.trashplay.ui.Statistics;
+import de.lukeslog.trashplay.ui.SettingsActivity;
 
 public class TrashPlayService extends Service {
 
@@ -38,6 +38,8 @@ public class TrashPlayService extends Service {
     public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 
     private Updater updater;
+
+    LocationManager locationManager;
 
     private static int MAIN_NOTIFICATION_NUMBER =5646;
     private static int RADIO_NOTIFICATION_NUMBER =5647;
@@ -67,7 +69,6 @@ public class TrashPlayService extends Service {
         ctx=this;
         if (MainControl.activityRunning()) {
 
-            //resetSyncFlagForRemote();
             registerWifiReceiver();
 
             createNotification("... running");
@@ -76,6 +77,8 @@ public class TrashPlayService extends Service {
 
             startMusicPlayerService();
 
+            registerLocationProvider();
+
             return START_STICKY;
         } else {
             stopSelf();
@@ -83,8 +86,24 @@ public class TrashPlayService extends Service {
         }
     }
 
-    private void resetSyncFlagForRemote() {
-        CloudSynchronizationService.resetSyncFlag();
+    private void registerLocationProvider() {
+
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+        LocationListener locationListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+
+                StatisticsCollection.newLocation(location);
+            }
+
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+            public void onProviderEnabled(String provider) {}
+
+            public void onProviderDisabled(String provider) {}
+        };
+
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
     }
 
     private void startMusicPlayerService() {
@@ -178,7 +197,7 @@ public class TrashPlayService extends Service {
     public Notification createRadioNotification(String notificationText) {
         int icon = R.drawable.radio_small;
         Notification note = new Notification(icon, "New Radio Station", System.currentTimeMillis());
-        Intent i = new Intent(this, Settings.class);
+        Intent i = new Intent(this, SettingsActivity.class);
 
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
                 Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -225,12 +244,12 @@ public class TrashPlayService extends Service {
         @Override
         public void run() {
        //     Logger.d(TAG, "ServiceRunner: run");
-            if(counter%60==0)
+            if(counter%60==10)
             {
-                Logger.d(TAG, "ServiceRunner: Time to try to synchronize and Stuff");
+                Logger.e(TAG, "ServiceRunner: Time to try to synchronize and Stuff");
                 try {
                     boolean lookForNewPlaylists=false;
-                    if(counter%180==0){
+                    if(counter%180==10){//TODO: 180
                         lookForNewPlaylists=true;
                     }
                     MusicCollectionManager.getInstance().syncRemoteStorageWithDevice(lookForNewPlaylists);

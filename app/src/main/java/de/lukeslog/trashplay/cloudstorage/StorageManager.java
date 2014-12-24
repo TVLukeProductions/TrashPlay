@@ -21,6 +21,8 @@ public abstract class StorageManager {
     public static final String STORAGE_TYPE_GDRIVE = "GDrive";
     public static final String STORAGE_TYPE_LOCAL ="LocalDrive";
 
+    public static final String PATH_CHRISTMAS = "Christmas";
+
     public static final String TAG = TrashPlayConstants.TAG;
 
     public static boolean syncInProgress = false;
@@ -43,9 +45,16 @@ public abstract class StorageManager {
     }
 
     protected File findOrCreateLocalTrashPlayMusicFolder() {
-        File folder = new File(LOCAL_STORAGE);
-        folder.mkdirs();
-        return folder;
+        try {
+            File folder = new File(LOCAL_STORAGE);
+            folder.mkdirs();
+            File folder2 = new File(LOCAL_STORAGE + "Local");
+            folder2.mkdirs();
+            return folder;
+        } catch(Exception e){
+            Logger.e(TAG, "findOrCreateLocalTrashPlayMusicFolder() EXCEPTION "+e);
+        }
+        return null;
     }
 
 
@@ -199,13 +208,28 @@ public abstract class StorageManager {
     }
 
     public static StorageManager getStorage(String remoteStorage) {
-        if (remoteStorage.equals(STORAGE_TYPE_DROPBOX)) {
-            return DropBox.getInstance();
+        Logger.d(TAG, "getStorage "+remoteStorage);
+        List<StorageManager> services = CloudSynchronizationService.getRegisteredCloudStorageServices();
+        Logger.d(TAG, "SERVICES? "+services.size());
+        for(StorageManager service : services){
+            if(service.getStorageType().equals(remoteStorage)){
+                return service;
+            }
         }
+        Logger.d(TAG, "RETURN NULL");
         return null;
     }
 
     public abstract void getRadioStations(String folderPath) throws Exception;
 
     public abstract void resetSyncInProgress();
+
+    protected boolean hasAllowedFileEnding(List<String> listOfAllowedFileEndings, String filename) {
+        for (String ending : listOfAllowedFileEndings) {
+            if (filename.endsWith(ending)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

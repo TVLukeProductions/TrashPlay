@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pref_songselector_names" >
+        <item>EqualPlaySongSelector</item>
+        <item>DefaultSongSelector</item>
+    </string-array>
+    <string-array name="pref_songselector_entries">
+        <item>Equals Play Selector</item>
+        <item>Totally Random Selector</item>
+    </string-array>
+</resources>

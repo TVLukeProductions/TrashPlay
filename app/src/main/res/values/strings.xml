@@ -39,5 +39,10 @@
     <string name="pref_summary_pref_appdata_radioname">You have to enter a name in order to activate your radiostation</string>
     <string name="pref_songselector_default">EqualPlaySongSelector</string>
     <string name="pref_songselector">Song Selector</string>
+    <string name="plays_last_tow_weeks">Plays Over The Last Two Weeks</string>
+    <string name="charts">Charts</string>
+    <string name="streaks">Streaks</string>
+    <string name="pref_information">Information</string>
+    <string name="distribution">Distribution</string>
 
 </resources>
