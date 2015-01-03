@@ -40,11 +40,14 @@ public class StatisticsActivity extends Activity {
         TextView playtime = (TextView) findViewById(R.id.playtime);
         TextView plays = (TextView) findViewById(R.id.playsstats);
         TextView distance = (TextView) findViewById(R.id.distance);
-        TextView longesttreak = (TextView) findViewById((R.id.streakmax));
+        TextView longesttreak = (TextView) findViewById(R.id.streakmax);
+        TextView durationSum = (TextView) findViewById(R.id.sumlength);
 
         playtime.setText(""+(((StatisticsCollection.getPlayTime() / 1000) / 60) / 60)+ " hours");
         plays.setText(""+StatisticsCollection.getPlays());
         distance.setText(""+(StatisticsCollection.getTotalDistance()/1000)+" km");
+        durationSum.setText(""+(((StatisticsCollection.durationSumAllTracks() / 1000) / 60) / 60)+ " hours");
+
         String longestStreakSongName = StatisticsCollection.getLongestStreakSongName();
         Song longestStreakSong = SongHelper.getSongByFileName(longestStreakSongName);
         if(!longestStreakSongName.equals("") && longestStreakSong!=null) {
@@ -84,6 +87,7 @@ public class StatisticsActivity extends Activity {
             if(counter<11) {
             counter++;
                 TextView s = new TextView(TrashPlayService.getContext());
+                s.setTextColor(0xFF000000);
                 s.setText(counter+" "+song.getArtist() + " - " + song.getSongName()+" ("+song.getPlays()+")");
                 if(counter%2==0){
                     s.setBackgroundColor(0xFFA4F373);

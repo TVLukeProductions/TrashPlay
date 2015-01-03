@@ -349,10 +349,11 @@ public class MusicCollectionManager {
     }
 
     private void setNextSongPlayListInSettings(int i, String fileName) {
-        Logger.d(TAG, "put into settings");
+        Logger.d(TAG+"_MusicManager", "put into settings");
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
         SharedPreferences.Editor edit = settings.edit();
         edit.putString("nextSong_" + i, fileName);
+        //TODO: what if the next line returns false?
         edit.commit();
     }
 
@@ -420,6 +421,7 @@ public class MusicCollectionManager {
             new Thread(new Runnable() {
                 public void run() {
                     try {
+                        getRadioStationsFromRemoteStorage();
                         findRemotePlayListFoldersAndCreateNewPlayLists(lookForNewPlayLists);
                         synchronizePlayLists();
                     } catch (Exception e) {
@@ -432,18 +434,22 @@ public class MusicCollectionManager {
         } else {
             new Thread(new Runnable() {
                 public void run() {
-                    List<PlayList> allPlayLists = PlayListHelper.getAllPlayLists();
-                    Logger.d(TAG, "getAll");
-                    for (PlayList playlist : allPlayLists) {
-                        StorageManager storage = StorageManager.getStorage(playlist.getRemoteStorage());
-                        try {
-                            storage.getRadioStations(playlist.getRemotePath());
-                        } catch (Exception e) {
-                            Logger.e(TAG, "Exception while trying to get Radio Stations.");
-                        }
-                    }
+                    getRadioStationsFromRemoteStorage();
                 }
             }).start();
+        }
+    }
+
+    private void getRadioStationsFromRemoteStorage() {
+        List<PlayList> allPlayLists = PlayListHelper.getAllPlayLists();
+        Logger.d(TAG, "getAll");
+        for (PlayList playlist : allPlayLists) {
+            StorageManager storage = StorageManager.getStorage(playlist.getRemoteStorage());
+            try {
+                storage.getRadioStations(playlist.getRemotePath());
+            } catch (Exception e) {
+                Logger.e(TAG, "Exception while trying to get Radio Stations.");
+            }
         }
     }
 
@@ -459,13 +465,7 @@ public class MusicCollectionManager {
     }
 
     private void findRemotePlayListFoldersAndCreateNewPlayLists(boolean lookForNewPlayLists) throws Exception {
-        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
-        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
-        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
-        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
-        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
-        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
-        Logger.e(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
+        Logger.d(TAG, "!!!!!!!!!!!!!!!!!!!findRemotePlayListFoldersAndCreateNewPlayLists()");
         List<StorageManager> services = CloudSynchronizationService.getRegisteredCloudStorageServices();
         boolean onlyuselocal=true;
         if (lookForNewPlayLists || MusicCollectionManager.getInstance().getNumberOfActivePlayLists() == 0) {
@@ -527,7 +527,7 @@ public class MusicCollectionManager {
     }
 
     public boolean collectionGreater10() {
-        return !(SongHelper.getNumberOfViableSongs() > 10);
+        return (SongHelper.getNumberOfViableSongs() > 10);
     }
 
     public int getNumberOfActivePlayLists() {

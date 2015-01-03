@@ -159,7 +159,7 @@ public abstract class StorageManager {
 
     protected abstract void updateRadioFileToRemoteStorage(String path) throws Exception;
 
-    protected abstract void deleteOldRadioFiles() throws Exception;
+    protected abstract void deleteOldRadioFiles(String path) throws Exception;
 
     public abstract boolean isConnected();
 
@@ -198,6 +198,9 @@ public abstract class StorageManager {
         Logger.d(TAG, "Song Filename given as "+song.getFileName());
         File f = new File(StorageManager.LOCAL_STORAGE + song.getFileName());
         boolean localExists = f.exists();
+        if(localExists){
+            localExists = f.length()>0;
+        }
         Logger.d(TAG, "" + localExists);
         if (!localExists) {
             Logger.d(TAG, "nope!");

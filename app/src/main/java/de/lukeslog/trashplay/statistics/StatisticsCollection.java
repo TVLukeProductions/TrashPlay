@@ -13,7 +13,6 @@ import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.playlist.Song;
 import de.lukeslog.trashplay.playlist.SongHelper;
 import de.lukeslog.trashplay.service.TrashPlayService;
-import de.lukeslog.trashplay.support.Logger;
 
 public class StatisticsCollection {
 
@@ -36,6 +35,8 @@ public class StatisticsCollection {
 
     private static String ACTIVE_SINCE = "activeSince";
 
+    private static final String SUM_DURATION = "sumDuration";
+
     private static DateTime lastPingTrashPlay;
     private static DateTime lastPingRadioPlay;
     private static DateTime lastPing = null;
@@ -47,6 +48,7 @@ public class StatisticsCollection {
     private static float currentSpeed = 0;
 
     private static Location location = null;
+    private static int durationSumAllTracks =0;
 
     public static void ping() {
         SharedPreferences settings = TrashPlayService.getContext().getDefaultSettings();
@@ -74,6 +76,9 @@ public class StatisticsCollection {
 
             }
             addToPlayTime(now);
+            if(durationSumAllTracks==0){
+                getPlays();
+            }
         }
     }
 
@@ -198,13 +203,19 @@ public class StatisticsCollection {
     public static int getPlays() {
         List<Song> songs = SongHelper.getAllSongsOrderedByPlays();
         plays = 0;
+        durationSumAllTracks=0;
         for (Song song : songs) {
+            durationSumAllTracks = durationSumAllTracks +song.getDuration();
             if (song.getPlays() > 0) {
                 plays = plays + song.getPlays();
             } else {
                 break;
             }
         }
+        SharedPreferences settings = TrashPlayService.getContext().getDefaultSettings();
+        SharedPreferences.Editor edit = settings.edit();
+        edit.putInt(SUM_DURATION, durationSumAllTracks );
+        edit.commit();
         return plays;
     }
 
@@ -275,5 +286,10 @@ public class StatisticsCollection {
 
     public static float getCurrentSpeed() {
         return currentSpeed;
+    }
+
+    public static int durationSumAllTracks() {
+        SharedPreferences settings = TrashPlayService.getContext().getDefaultSettings();
+        return settings.getInt(SUM_DURATION, 0);
     }
 }

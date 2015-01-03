@@ -25,11 +25,13 @@ import de.lukeslog.trashplay.lastfm.TrashPlayLastFM;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
 import de.lukeslog.trashplay.playlist.Song;
 import de.lukeslog.trashplay.playlist.SongHelper;
+import de.lukeslog.trashplay.service.NotificationController;
 import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.support.TrashPlayUtils;
 
 public class MusicPlayer extends Service implements OnPreparedListener, OnCompletionListener, MediaPlayer.OnErrorListener {
+
     public static final String ACTION_START_MUSIC = "trashplay_startmusic";
     public static final String ACTION_STOP_MUSIC = "trashplay_stopmusic";
     public static final String ACTION_NEXT_SONG = "trashplay_nextSong";
@@ -47,15 +49,9 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
     private String title = "";
     private String artist = "";
 
-    static MediaPlayer mp;
-    AudioManager am;
-    float currentVolume = 15.0f;
-
-    String actionID = "";
-
-    public static Song getCurrentlyPlayingSong() {
-        return currentlyPlayingSong;
-    }
+    private static MediaPlayer mp;
+    private AudioManager am;
+    private float currentVolume = 15.0f;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -72,20 +68,6 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         registerIntentFilters();
     }
 
-    private void registerIntentFilters() {
-        IntentFilter inf = new IntentFilter(ACTION_START_MUSIC);
-        IntentFilter inf2 = new IntentFilter(ACTION_STOP_MUSIC);
-        IntentFilter inf3 = new IntentFilter(ACTION_NEXT_SONG);
-        IntentFilter inf4 = new IntentFilter(ACTION_PREV_SONG);
-        IntentFilter inf5 = new IntentFilter(ACTION_PAUSE_SONG);
-        registerReceiver(mReceiver, inf);
-        registerReceiver(mReceiver, inf2);
-        registerReceiver(mReceiver, inf3);
-        registerReceiver(mReceiver, inf4);
-        registerReceiver(mReceiver, inf5);
-
-    }
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -94,7 +76,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
 
     private void playmp3(Song song) {
         timeStampAtLastPlayOrCompletion = new DateTime().getMillis();
-        currentlyPlayingSong = song;
+        setCurrentlyPlayingSong(song);
         if (song == null) {
             Logger.d(TAG + "_MEDIAPLAYER", "playmp3 got null");
             TrashPlayService.getContext().toast("Something went wrong.");
@@ -140,7 +122,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             SongHelper.getMetaData(song);
             artist = song.getArtist();
             title = song.getSongName();
-            TrashPlayService.getContext().createNotification(title, artist);
+            NotificationController.createNotification(title, artist);
     }
 
     private void scrobbleTrack() {
@@ -161,8 +143,6 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             mp = new MediaPlayer();
             mp.setDataSource(musicPath);
             mp.setLooping(false);
-            //mp.setVolume(0.99f, 0.99f);
-            Logger.d(TAG, "...");
             mp.setOnCompletionListener(this);
             mp.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
             Logger.d(TAG, "....");
@@ -195,7 +175,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         } catch (Exception e) {
 
         }
-        currentlyPlayingSong=null;
+        setCurrentlyPlayingSong(null);
         mp = null;
     }
 
@@ -210,29 +190,10 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         mpx.setOnCompletionListener(this);
         int duration = mpx.getDuration();
         if (duration > 0) {
-            if (currentlyPlayingSong.getDuration() != duration) {
-                SongHelper.setDuration(currentlyPlayingSong, duration);
-                try {
-                    MusicCollectionManager.getInstance().updateRadioFile();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            if (getCurrentlyPlayingSong().getDuration() != duration) {
+                resetSongDurationOnPreperation(duration);
             }
-            TrashPlayService.getContext().toast("time dif " + MusicCollectionManager.timeDifInMillis);
-            Logger.d(TAG + "_MEDIAPLAYER", "timedifstuff");
-            boolean c1 = MusicCollectionManager.timeDifInMillis > 0;
-            Logger.d(TAG + "_MEDIAPLAYER", "a");
-            boolean c2 = MusicCollectionManager.timeDifInMillis < duration;
-            boolean c3 = MusicCollectionManager.timeDifInMillis < 30000;
-            if (c1 && c2 && c3) {
-                Logger.d(TAG + "_MEDIAPLAYER", "seek" + (int) MusicCollectionManager.timeDifInMillis);
-                if (MusicCollectionManager.timeDifInMillis > 5000) {
-                    mpx.seekTo((int) MusicCollectionManager.timeDifInMillis - 5000);
-                } else {
-                    mpx.seekTo((int) MusicCollectionManager.timeDifInMillis);
-                }
-            }
-            Logger.d(TAG + "_MEDIAPLAYER", "continue");
+            seekTimeToStart(mpx, duration);
         }
         Logger.d(TAG + "_MEDIAPLAYER", "ok, I'v set the on Completion Listener again...");
         try {
@@ -242,9 +203,40 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         }
     }
 
+    private void seekTimeToStart(MediaPlayer mpx, int duration) {
+        if (setDiferentTimeToStart(duration)) {
+            Logger.d(TAG + "_MEDIAPLAYER", "seek" + (int) MusicCollectionManager.timeDifInMillis);
+            if (MusicCollectionManager.timeDifInMillis > 5000) {
+                mpx.seekTo((int) MusicCollectionManager.timeDifInMillis - 5000);
+            } else {
+                mpx.seekTo((int) MusicCollectionManager.timeDifInMillis);
+            }
+        }
+        Logger.d(TAG + "_MEDIAPLAYER", "continue");
+    }
+
+    private boolean setDiferentTimeToStart(int duration) {
+        TrashPlayService.getContext().toast("time dif " + MusicCollectionManager.timeDifInMillis);
+        Logger.d(TAG + "_MEDIAPLAYER", "timedifstuff");
+        boolean c1 = MusicCollectionManager.timeDifInMillis > 0;
+        Logger.d(TAG + "_MEDIAPLAYER", "a");
+        boolean c2 = MusicCollectionManager.timeDifInMillis < duration;
+        boolean c3 = MusicCollectionManager.timeDifInMillis < 30000;
+        return (c1 && c2 && c3);
+    }
+
+    private void resetSongDurationOnPreperation(int duration) {
+        SongHelper.setDuration(getCurrentlyPlayingSong(), duration);
+        try {
+            MusicCollectionManager.getInstance().updateRadioFile();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void onCompletion(MediaPlayer mpx) {
-        Song lastsong = currentlyPlayingSong;
+        Song lastsong = getCurrentlyPlayingSong();
         long now = new DateTime().getMillis();
         Logger.d(TAG + "_MEDIAPLAYER", "MEDIAPLAYER: on Completetion!");
 
@@ -273,9 +265,9 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         Logger.d(TAG + "_MEDIAPLAYER", "MEDIAPLAYER ON ERROR");
         stop();
         try {
-            if (currentlyPlayingSong != null) {
-                if (currentlyPlayingSong.isInActiveUse()) {
-                    playmp3(currentlyPlayingSong);
+            if (getCurrentlyPlayingSong() != null) {
+                if (getCurrentlyPlayingSong().isInActiveUse()) {
+                    playmp3(getCurrentlyPlayingSong());
                 }
                 return true;
             } else {
@@ -314,7 +306,6 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                 if (am != null) {
                     am.abandonAudioFocus(afChangeListener);
                 }
-                actionID = "";
             }
             if (action.equals(ACTION_NEXT_SONG)) {
                 Logger.d(TAG + "_MEDIAPLAYER", "NEXT SONG REQUESTED");
@@ -339,7 +330,7 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
                         stop();
                         Logger.d(TAG + "_MEDIAPLAYER", "restart the same song");
                         try {
-                            playmp3(currentlyPlayingSong);
+                            playmp3(getCurrentlyPlayingSong());
                         } catch (Exception e) {
                             Logger.e(TAG + "_MEDIAPLAYER", "error while getting previous song 1" + e);
                         }
@@ -373,22 +364,30 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             if (mp != null) {
                 AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
                 if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
-                    currentVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
-                    Logger.d(TAG + "_MEDIAPLAYER", "Current" + currentVolume);
-                    Logger.d(TAG + "_MEDIAPLAYER", "Audiofocus LOST");
-                    mp.setVolume(0.1f, 0.1f);
+                    ducking(audio);
                 } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
-                    Logger.d(TAG + "_MEDIAPLAYER", "Current" + currentVolume);
-                    Logger.d(TAG + "_MEDIAPLAYER", "Audiofocus GAIN");
-                    float max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-                    float p = currentVolume / (max / 100);
-                    p = p / 100;
-                    mp.setVolume(p, p);
+                    unDucking(audio);
 
                 }
             }
         }
     };
+
+    private void unDucking(AudioManager audio) {
+        Logger.d(TAG + "_MEDIAPLAYER", "Current" + currentVolume);
+        Logger.d(TAG + "_MEDIAPLAYER", "Audiofocus GAIN");
+        float max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        float p = currentVolume / (max / 100);
+        p = p / 100;
+        mp.setVolume(p, p);
+    }
+
+    private void ducking(AudioManager audio) {
+        currentVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
+        Logger.d(TAG + "_MEDIAPLAYER", "Current" + currentVolume);
+        Logger.d(TAG + "_MEDIAPLAYER", "Audiofocus LOST");
+        mp.setVolume(0.1f, 0.1f);
+    }
 
     private void selectSongAndPlay() {
         Song nextSong = null;
@@ -411,11 +410,11 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         int p = 0;
         if (mp != null) {
             try {
-                p = currentlyPlayingSong.getDuration();
+                p = getCurrentlyPlayingSong().getDuration();
                 int p2 = mp.getDuration();
                 if (p == 0 || p2!=p) {
                     p = mp.getDuration();
-                    SongHelper.setDuration(currentlyPlayingSong, p);
+                    SongHelper.setDuration(getCurrentlyPlayingSong(), p);
                 }
             } catch (Exception e) {
                 return 0;
@@ -444,11 +443,11 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
         String result = "";
         if (mp != null) {
             try {
-                int p = currentlyPlayingSong.getDuration();
+                int p = getCurrentlyPlayingSong().getDuration();
                 if (p == 0l) {
                     try {
                         p = mp.getDuration();
-                        SongHelper.setDuration(currentlyPlayingSong, p);
+                        SongHelper.setDuration(getCurrentlyPlayingSong(), p);
                     } catch (Exception e) {
                         Logger.d(TAG + "_MEDIAPLAYER", "stupid length exceptione");
                         p = 180;
@@ -463,5 +462,30 @@ public class MusicPlayer extends Service implements OnPreparedListener, OnComple
             }
         }
         return result;
+    }
+
+    public static Song getCurrentlyPlayingSong() {
+        return currentlyPlayingSong;
+    }
+
+    private void setCurrentlyPlayingSong(Song song) {
+        currentlyPlayingSong = song;
+    }
+
+    public static boolean isPlaying() {
+        return currentlyPlayingSong!=null;
+    }
+
+    private void registerIntentFilters() {
+        IntentFilter inf = new IntentFilter(ACTION_START_MUSIC);
+        IntentFilter inf2 = new IntentFilter(ACTION_STOP_MUSIC);
+        IntentFilter inf3 = new IntentFilter(ACTION_NEXT_SONG);
+        IntentFilter inf4 = new IntentFilter(ACTION_PREV_SONG);
+        IntentFilter inf5 = new IntentFilter(ACTION_PAUSE_SONG);
+        registerReceiver(mReceiver, inf);
+        registerReceiver(mReceiver, inf2);
+        registerReceiver(mReceiver, inf3);
+        registerReceiver(mReceiver, inf4);
+        registerReceiver(mReceiver, inf5);
     }
 }

@@ -20,6 +20,7 @@ import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
 import de.lukeslog.trashplay.playlist.PlayList;
 import de.lukeslog.trashplay.playlist.PlayListHelper;
+import de.lukeslog.trashplay.radio.RadioManager;
 import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.support.SettingsConstants;
@@ -107,6 +108,7 @@ public class SettingsFragment extends PreferenceFragment {
 
                         }
                         radio.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                            
                             @Override
                             public boolean onPreferenceChange(Preference preference, Object o) {
                                 CheckBoxPreference x = (CheckBoxPreference) preference;
@@ -132,9 +134,7 @@ public class SettingsFragment extends PreferenceFragment {
                                 } else {
                                     Logger.d(TAG, "YOU JUST DEACTIVATED A RADIO");
                                     restorePlayListFromTemp();
-                                    SharedPreferences.Editor edit = settings.edit();
-                                    edit.putBoolean("listenalong", false);
-                                    edit.commit();
+                                        RadioManager.setRadioMode(false);
                                 }
                                 return true;
                             }
@@ -229,7 +229,7 @@ public class SettingsFragment extends PreferenceFragment {
     }
 
     private void playlistactivationsettings() throws Exception {
-        PreferenceScreen pref = (PreferenceScreen) getPreferenceManager().findPreference("pref_app_playlistusage_settings");
+        final PreferenceScreen pref = (PreferenceScreen) getPreferenceManager().findPreference("pref_app_playlistusage_settings");
         List<PlayList> playLists = PlayListHelper.getAllPlayLists();
         for (final PlayList playList : playLists) {
             Logger.d(TAG, "playlistactivationsettings() for Playlist " + playList.getRemotePath());
@@ -243,10 +243,15 @@ public class SettingsFragment extends PreferenceFragment {
                 }
             }).start();
             final CheckBoxPreference playlistActivationSetting = new CheckBoxPreference(getActivity());
+            SharedPreferences settings = TrashPlayService.getDefaultSettings();
+            SharedPreferences.Editor edit = settings.edit();
+            edit.putBoolean("pref_activateplaylist_" + playList.getRemoteStorage() + "_" + playList.getRemotePath(), playList.isActivated());
+            edit.commit();
             playlistActivationSetting.setKey("pref_activateplaylist_" + playList.getRemoteStorage() + "_" + playList.getRemotePath());
             playlistActivationSetting.setEnabled(true);
             int n = 0;
             n = PlayListHelper.getNumberOfSongsInPlayList(playList);
+            playlistActivationSetting.setChecked(playList.isActivated());
             playlistActivationSetting.setSummary("Check if you want to use this playlist\n" + n + " songs.");
             playlistActivationSetting.setTitle(playList.getRemotePath() + " (" + playList.getRemoteStorage() + ")");
             playlistActivationSetting.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -283,6 +288,8 @@ public class SettingsFragment extends PreferenceFragment {
                         PlayListHelper.removePlaylist(playList);
                         playlistActivationSetting.setEnabled(false);
                         playlistActivationSetting.setSummary("Deleted");
+                        preference.setEnabled(false);
+                        preference.setSummary("");
                         return true;
                     }
                 });

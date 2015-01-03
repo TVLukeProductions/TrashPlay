@@ -29,6 +29,7 @@ import java.util.List;
 
 import de.lukeslog.trashplay.R;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
+import de.lukeslog.trashplay.service.NotificationController;
 import de.lukeslog.trashplay.service.TrashPlayService;
 import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.support.SettingsConstants;
@@ -37,8 +38,8 @@ import de.lukeslog.trashplay.support.TrashPlayUtils;
 public class DropBox extends StorageManager {
 
     public static final String STORAGE_TYPE = StorageManager.STORAGE_TYPE_DROPBOX;
-
     final static private Session.AccessType ACCESS_TYPE = Session.AccessType.DROPBOX;
+
     private static DropboxAPI<AndroidAuthSession> mDBApi;
 
     private static DropBox instance = null;
@@ -94,7 +95,7 @@ public class DropBox extends StorageManager {
         getRadioStations(folder);
     }
 
-    private void getRadioStations(Entry folder) throws DropboxException {
+    private void getRadioStations(Entry folder) throws Exception {
         Logger.d(TAG, "getRadioStationsRemote...");
         checkAndCreateNecessarySubFolders(folder);
         Logger.d(TAG, "getRadioStationsRemote...");
@@ -113,7 +114,7 @@ public class DropBox extends StorageManager {
                 Logger.d(TAG, "NOW" + now);
                 if (now.isAfter(actualModificationTime)) {
                     Logger.d(TAG, "DELETE RADIO? " + possibleStation.path);
-                    mDBApi.delete(possibleStation.path);
+                    deleteOldRadioFiles(possibleStation.path);
                 } else {
                     stationNames = stationNames + possibleStation.fileName() + "XX88XX88XX";
                     Logger.d(TAG, "Stationnames" + stationNames);
@@ -131,7 +132,7 @@ public class DropBox extends StorageManager {
         String newRadioString = settings.getString("Radio_" + STORAGE_TYPE + "_" + folder.fileName(), "");
         Logger.d(TAG, "newRadioString: "+newRadioString);
         if(!oldRadioString.equals(newRadioString) && !newRadioString.equals("") && !radioMode) {
-            TrashPlayService.getContext().createRadioNotification("New Radio Station");
+            NotificationController.createRadioNotification("New Radio Station");
         }
     }
 
@@ -203,10 +204,8 @@ public class DropBox extends StorageManager {
     }
 
     @Override
-    protected void deleteOldRadioFiles() throws Exception {
-        //      if(actualModificationTime.plusDays(1).isBefore(new DateTime()) && folder.fileName().endsWith(".station")) {
-        //          deleteOldRadioFile();
-        //      }
+    protected void deleteOldRadioFiles(String path) throws Exception {
+        mDBApi.delete(path);
     }
 
     //TODO: Users should not be calling this directly.

@@ -95,7 +95,9 @@ public class SongHelper {
         Logger.d(TAG, "olol");
         try {
             Mp3File mp3file = new Mp3File(file.getAbsolutePath());
+            Logger.d(TAG, "---");
             if (mp3file.hasId3v2Tag()) {
+                Logger.d(TAG, "has v2 Tag");
                 ID3v2 id3v2Tag = mp3file.getId3v2Tag();
                 Logger.d(TAG, "Title: " + id3v2Tag.getTitle());
                 Logger.d(TAG, "===Artist: " + id3v2Tag.getArtist());
@@ -104,6 +106,7 @@ public class SongHelper {
                 song.save();
                 return;
             } else if (mp3file.hasId3v1Tag()) {
+                Logger.d(TAG, "has v1 Tag");
                 ID3v1 id3v1Tag = mp3file.getId3v1Tag();
                 Logger.d(TAG, "Title: " + id3v1Tag.getTitle());
                 Logger.d(TAG, "---Artist: " + id3v1Tag.getArtist());
@@ -112,9 +115,11 @@ public class SongHelper {
                 song.save();
                 return;
             } else {
+                Logger.d(TAG, "else");
                 metadata = getSongNameFromFile(file);
             }
         } catch(Exception e) {
+            Logger.e(TAG, "exception");
             metadata = getSongNameFromFile(file);
         }
         //This is unsafe insofar as that songs or artists names might actually have on a vowel + "?"
@@ -139,6 +144,7 @@ public class SongHelper {
     }
 
     private static String[] getSongNameFromFile(File file) {
+        Logger.d(TAG, "getSongNameFromFile");
         String fn = file.getName();
         String[] metadata = new String[2];
         if (fn.contains("-") && fn.endsWith("mp3")) {

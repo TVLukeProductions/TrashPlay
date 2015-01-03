@@ -1,9 +1,7 @@
 package de.lukeslog.trashplay.service;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
+import android.bluetooth.BluetoothHeadset;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +10,7 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -21,31 +20,26 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
-import de.lukeslog.trashplay.R;
-import de.lukeslog.trashplay.cloudstorage.CloudSynchronizationService;
 import de.lukeslog.trashplay.constants.TrashPlayConstants;
 import de.lukeslog.trashplay.player.MusicPlayer;
 import de.lukeslog.trashplay.playlist.MusicCollectionManager;
+import de.lukeslog.trashplay.radio.RadioManager;
 import de.lukeslog.trashplay.statistics.StatisticsCollection;
 import de.lukeslog.trashplay.support.Logger;
 import de.lukeslog.trashplay.support.SettingsConstants;
 import de.lukeslog.trashplay.ui.MainControl;
-import de.lukeslog.trashplay.ui.SettingsActivity;
 
 public class TrashPlayService extends Service {
 
     public static final String TAG = TrashPlayConstants.TAG;
     public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 
+    private static final String STATE_HEADPHONE = "HeadphoneState";
+
     private Updater updater;
 
-    LocationManager locationManager;
-
-    private static int MAIN_NOTIFICATION_NUMBER =5646;
-    private static int RADIO_NOTIFICATION_NUMBER =5647;
-
     public static boolean wifi = false;
-    WifiBroadcastReceiver wbr = new WifiBroadcastReceiver();
+    private TrashPlayEventBroadcastReceiver wbr = new TrashPlayEventBroadcastReceiver();
     public static SharedPreferences settings;
 
     private static TrashPlayService ctx;
@@ -69,9 +63,11 @@ public class TrashPlayService extends Service {
         ctx=this;
         if (MainControl.activityRunning()) {
 
-            registerWifiReceiver();
+            RadioManager.setRadioMode(false);
 
-            createNotification("... running");
+            registerReceiver();
+
+            NotificationController.createNotification("... running");
 
             startUpdater();
 
@@ -103,7 +99,7 @@ public class TrashPlayService extends Service {
             public void onProviderDisabled(String provider) {}
         };
 
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, locationListener);
     }
 
     private void startMusicPlayerService() {
@@ -124,23 +120,34 @@ public class TrashPlayService extends Service {
             MusicPlayer.stopeverything();
             MainControl.ctx.finish();
         }
-        //TODO Broadcast to the PlayerService that it is supposed to stop!
         updater.onPause();
         stopSelf();
     }
 
     @Override
     public void onDestroy() {
-        stopForeground(true);
-        stopNotification();
+        unregisterAndStopALLTheThings();
         stopUpdater();
         ctx = null;
-        Logger.d(TAG, "bye!");
+        Logger.d(TAG, "k thx bye!");
         super.onDestroy();
         //sometimes this stuff does not close even if everything has been shut down. this is a dirty hack to end all dirty hacks.
         //TODO: from time to time I should check if I can live without this
         android.os.Process.killProcess(android.os.Process.myPid());
         crash();
+    }
+
+    private void unregisterAndStopALLTheThings() {
+        stopForeground(true);
+        NotificationController.stopNotification();
+        try {
+            unregisterReceivers();
+        } catch (Exception e) {
+            Logger.e(TAG, "small issue while unregistering receivers "+e);
+        }
+        resetHeadphoneState();
+        resetBlueToothState();
+        RadioManager.setRadioMode(false);
     }
 
     @SuppressWarnings("null")
@@ -149,11 +156,17 @@ public class TrashPlayService extends Service {
         o.hashCode();
     }
 
-    private void registerWifiReceiver() {
+    private void registerReceiver() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION);
         intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         this.registerReceiver(wbr, intentFilter);
+        this.registerReceiver(wbr, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
+        this.registerReceiver(wbr, new IntentFilter(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED));
+    }
+
+    private void unregisterReceivers() {
+        unregisterReceiver(wbr);
     }
 
     private void startUpdater() {
@@ -168,66 +181,8 @@ public class TrashPlayService extends Service {
         }
     }
 
-    public Notification createNotification(String notificationText) {
-        return createNotification("Trash Player", notificationText);
-    }
-
-    public Notification createNotification(String bigText, String smallText) {
-        stopNotification();
-        Logger.d(TAG, "createNotification");
-        int icon = R.drawable.recopen_small;
-        Notification note = new Notification(icon, "TrashPlayer", System.currentTimeMillis());
-        Intent i = new Intent(this, MainControl.class);
-
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-        PendingIntent pi = PendingIntent.getActivity(this, 0,
-                i, 0);
-
-        note.setLatestEventInfo(this, bigText,
-                smallText,
-                pi);
-        note.flags |= Notification.FLAG_ONGOING_EVENT
-                | Notification.FLAG_NO_CLEAR;
-        startForeground(MAIN_NOTIFICATION_NUMBER, note);
-        return note;
-    }
-
-    public Notification createRadioNotification(String notificationText) {
-        int icon = R.drawable.radio_small;
-        Notification note = new Notification(icon, "New Radio Station", System.currentTimeMillis());
-        Intent i = new Intent(this, SettingsActivity.class);
-
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-        PendingIntent pi = PendingIntent.getActivity(this, 0,
-                i, 0);
-
-        note.setLatestEventInfo(this, "TrashPlayer",
-                notificationText,
-                pi);
-        note.flags |= Notification.FLAG_ONLY_ALERT_ONCE;
-        startForeground(RADIO_NOTIFICATION_NUMBER, note);
-        return note;
-    }
-
-    public static void updateNotificationText(String textToBeDisplayed) {
-        if(serviceRunning()) {
-            ctx.stopNotification();
-            ctx.createNotification(textToBeDisplayed);
-        }
-    }
-
     public static boolean serviceRunning() {
         return ctx!=null;
-    }
-
-    private void stopNotification() {
-        NotificationManager notificationManager = (NotificationManager)
-                getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.cancel(MAIN_NOTIFICATION_NUMBER);
     }
 
     public void toast(String s) {
@@ -238,18 +193,16 @@ public class TrashPlayService extends Service {
 
         private Handler handler = new Handler();
         public static final int delay = 5000;
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         long counter = 0;
 
         @Override
         public void run() {
-       //     Logger.d(TAG, "ServiceRunner: run");
             if(counter%60==10)
             {
                 Logger.e(TAG, "ServiceRunner: Time to try to synchronize and Stuff");
                 try {
                     boolean lookForNewPlaylists=false;
-                    if(counter%180==10){//TODO: 180
+                    if(counter%180==10){
                         lookForNewPlaylists=true;
                     }
                     MusicCollectionManager.getInstance().syncRemoteStorageWithDevice(lookForNewPlaylists);
@@ -283,11 +236,11 @@ public class TrashPlayService extends Service {
         return ctx;
     }
 
-    class WifiBroadcastReceiver extends BroadcastReceiver {
+    class TrashPlayEventBroadcastReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Logger.d(TAG, "WIFI BROADCAST RECEIVER onReceive");
+            Logger.d(TAG, "BROADCAST RECEIVER onReceive");
 
             NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
             if (networkInfo != null) {
@@ -308,27 +261,119 @@ public class TrashPlayService extends Service {
                     }
                 }
             }
-
+            if (intent.getAction().equals(Intent.ACTION_HEADSET_PLUG)) {
+                Logger.d(TAG, "action_headset_plug");
+                processHeadPhoneStateChange(intent);
+            }
+            if(intent.getAction().equals(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED)) {
+                Logger.d(TAG, "action_sco_audio_state_updated");
+                processBlueToothStateChanged(intent);
+            }
         }
     }
 
+    private void processBlueToothStateChanged(Intent intent) {
+        Logger.d(TAG, "Bt state changed?");
+        int state = intent.getIntExtra(BluetoothHeadset.EXTRA_STATE, -1);
+        Logger.d(TAG, "state="+state);
+        SharedPreferences localSettings = getDefaultSettings();
+        if(localSettings!=null && state!=BluetoothHeadset.STATE_DISCONNECTING && state!=BluetoothHeadset.STATE_CONNECTING) {
+            int oldState = localSettings.getInt("BlueToothState", BluetoothHeadset.STATE_DISCONNECTED);
+            Logger.d(TAG, "oldstate: "+oldState);
+            if (oldState != state) {
+                Logger.d(TAG, "...");
+                bluetoothStateHasChanged(state);
+            }
+        }
+    }
+
+    private void bluetoothStateHasChanged(int newState) {
+        Logger.d(TAG, "state changed "+newState);
+        setBlueToothSettingsState(newState);
+        if(newState == BluetoothHeadset.STATE_DISCONNECTED){
+            Logger.d(TAG, "is STATE AUDIO DISC");
+            if(MusicPlayer.isPlaying()) {
+                Logger.d(TAG, "...");
+                stopEverything();
+            }
+        }
+    }
+
+    private void resetBlueToothState() {
+        setBlueToothSettingsState(-1);
+    }
+
+    private void setBlueToothSettingsState(int newState) {
+        SharedPreferences.Editor edit = getDefaultSettings().edit();
+        edit.putInt("BlueToothState", newState);
+        edit.commit();
+    }
+
+    private void processHeadPhoneStateChange(Intent intent) {
+        int state = intent.getIntExtra("state", -1);
+        Logger.d(TAG, "state: "+state);
+        SharedPreferences localSettings = getDefaultSettings();
+        if(localSettings!=null) {
+            Logger.d(TAG, "localsettings!=null");
+            int oldState = localSettings.getInt(STATE_HEADPHONE, 0);
+            Logger.d(TAG, "oldstate="+oldState);
+            if(oldState!=state) {
+                Logger.d(TAG, "olol");
+                headPhoneStateHasChanged(state);
+            }
+        }
+    }
+
+    private void headPhoneStateHasChanged(int newState) {
+        Logger.d(TAG, "---<"+newState);
+        switch (newState) {
+            case 0:
+                Logger.d(TAG, "Headset is unplugged");
+                if (MusicPlayer.isPlaying()) {
+                    Logger.d(TAG, "MusicPlayer is playing.");
+                    setHeadphoneSettings(newState);
+                    stopEverything();
+                }
+                break;
+            case 1:
+                Logger.d(TAG, "Headset is plugged");
+                setHeadphoneSettings(newState);
+                break;
+            default:
+                Logger.d(TAG, "I have no idea what the headset state is");
+        }
+    }
+
+    private void resetHeadphoneState() {
+        setHeadphoneSettings(0);
+    }
+
+    private void setHeadphoneSettings(int newState) {
+        Logger.d(TAG, "SetHeadphoneSettings: " + newState);
+        SharedPreferences.Editor edit = getDefaultSettings().edit();
+        edit.putInt(STATE_HEADPHONE, newState);
+        edit.commit();
+    }
+
+    private void stopEverything(){
+        sendBroadcastToStopMusic();
+        MainControl.stopUI();
+        TrashPlayService.getContext().onDestroy();
+    }
+
     public void sendBroadcastToPause() {
-        Logger.d(TAG, "send Broadcast to Pause");
         sendBroadcast(MusicPlayer.ACTION_PAUSE_SONG);
     }
 
     public void sendBroadcastToGoBack() {
-        Logger.d(TAG, "send Broadcast to go back");
         sendBroadcast(MusicPlayer.ACTION_PREV_SONG);
     }
 
     public void sendBroadcastToStartNextSong() {
-        Logger.d(TAG, "send Broadcast to Start the Next Song");
         sendBroadcast(MusicPlayer.ACTION_NEXT_SONG);
     }
 
     public void sendBroadcastToStartMusic() {
-        Logger.d(TAG, "send Broadcast to Start the Music");
         sendBroadcast(MusicPlayer.ACTION_START_MUSIC);
     }
 

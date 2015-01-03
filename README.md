@@ -344,6 +344,23 @@ neu syncronisiert werden.
 * Lokale MP3s können in Unterordnern von "Local" auf dem Handy abgelegt werden und werden als weitere Playlists verstanden
 * PlayLists können gelöscht werden
 * Bugfix: "Removing Songs from Playlists does actually nothing"
+* Bugfix: "Hardcoded References to DropBox"
+
+-> Release 1.0.15
+
+### 27.12.2014
+
+* Writing some code at 31c3
+
+-> Release 1.0.16
+
+### 04.01.2014
+
+* stops playing when headphone jack is ulled out
+* stops playing when bluetooth audio device is disconnected
+* lots and lots of bugs removed...
+
+-> Release 1.0.17
 
 ## ToDo
 * bessere sync animation

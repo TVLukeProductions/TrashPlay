@@ -89,6 +89,7 @@
 
             </LinearLayout>
 
+
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
@@ -107,6 +108,29 @@
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:text="0"
                     android:id="@+id/streakmax" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="Length of all tracks"
+                    android:background="#FFFFBB"
+                    android:id="@+id/sumlengthlabel" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="0"
+                    android:background="#FFFFBB"
+                    android:id="@+id/sumlength" />
 
             </LinearLayout>
 

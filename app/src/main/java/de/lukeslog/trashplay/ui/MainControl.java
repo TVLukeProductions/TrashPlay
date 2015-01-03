@@ -47,7 +47,7 @@ public class MainControl extends Activity {
     public static final String TAG = TrashPlayConstants.TAG;
     public static final String PREFS_NAME = TrashPlayConstants.PREFS_NAME;
 
-    public static Activity ctx;
+    public static MainControl ctx;
     SongListAdapter songlistadapter;
     private Menu menu = null;
     private int counter = 0;
@@ -150,14 +150,14 @@ public class MainControl extends Activity {
 
     @Override
     protected void onResume() {
-        super.onResume();
         Logger.d(TAG, "onResume");
+        uiUpdater.onResume();
         DropBox.authenticate();
         if (authenticatingDropBox) {
             authenticatingDropBox = false;
             MusicCollectionManager.getInstance().syncRemoteStorageWithDevice(true);
         }
-        uiUpdater.onResume();
+        super.onResume();
     }
 
     @Override
@@ -229,8 +229,9 @@ public class MainControl extends Activity {
                 startSettingsActivity();
                 return true;
             case R.id.action_badges:
-                Intent i1 = new Intent(this, Badges.class);
-                startActivity(i1);
+                toast("Not yet implemented.");
+                //Intent i1 = new Intent(this, Badges.class);
+                //startActivity(i1);
                 return true;
             case R.id.action_statistics:
                 Intent i = new Intent(this, StatisticsActivity.class);
@@ -304,7 +305,6 @@ public class MainControl extends Activity {
 
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctx);
             boolean listenalong = settings.getBoolean("listenalong", false);
-
             if (MusicPlayer.getCurrentlyPlayingSong() != null) {
                 setButtonToStopButton();
             } else if (listenalong && MusicCollectionManager.getInstance().radiofile != null && MusicPlayer.getCurrentlyPlayingSong() != null) {
@@ -315,7 +315,6 @@ public class MainControl extends Activity {
             } else if (MusicCollectionManager.getInstance().collectionGreater10()) {
                 setButtonToPlayButton();
             }
-
             if (menu != null) {
                 setMenuIcons();
             }
@@ -517,6 +516,12 @@ public class MainControl extends Activity {
                     item.setIcon(myIcon);
                 }
             }
+        }
+    }
+
+    public static void stopUI(){
+        if(ctx!=null){
+            ctx.onDestroy();
         }
     }
 }
