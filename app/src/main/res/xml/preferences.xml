@@ -23,6 +23,12 @@
                 android:summary="@string/pref_summary_pref_appdata_trashmode"
                 android:defaultValue="true">
             </CheckBoxPreference>
+            <CheckBoxPreference
+                android:title="@string/pref_appdata_childprotect"
+                android:key="pref_appdata_childprotect"
+                android:summary="@string/pref_summary_pref_appdata_childprotect"
+                android:defaultValue="false">
+            </CheckBoxPreference>
             <ListPreference
                 android:key="pref_songselector"
                 android:title="@string/pref_songselector"

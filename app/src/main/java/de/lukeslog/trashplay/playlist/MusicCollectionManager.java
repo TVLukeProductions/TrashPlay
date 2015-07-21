@@ -410,6 +410,9 @@ public class MusicCollectionManager {
             if (!possibleSong.isInActiveUse()) {
                 return pickASong();
             }
+            if(!ChildProtection.isSongOk(possibleSong)) {
+
+            }
             return possibleSong;
             //TODO: check if the user wants to avoid repeating songs, replace song if its the not the next song but equals to the next song
         }

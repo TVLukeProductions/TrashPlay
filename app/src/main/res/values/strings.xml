@@ -44,5 +44,7 @@
     <string name="streaks">Streaks</string>
     <string name="pref_information">Information</string>
     <string name="distribution">Distribution</string>
+    <string name="pref_appdata_childprotect">Child Protection</string>
+    <string name="pref_summary_pref_appdata_childprotect">Exclude Songs With Violence</string>
 
 </resources>
