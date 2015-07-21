@@ -20,17 +20,17 @@ public class ChildProtection {
     public static boolean isSongOk(Song possibleSong) {
 
         SharedPreferences settings = TrashPlayService.getDefaultSettings();
-        Boolean childProtectionActivated = settings.getBoolean("pref_childprotect", false);
+        Boolean childProtectionActivated = settings.getBoolean("pref_appdata_childprotect", false);
         if(!childProtectionActivated) {
             return true;
         }
         updateLists();
         if(blackListArtist.contains(possibleSong.getArtist())){
-            Logger.e(TAG, "removed file "+possibleSong.getFileName());
+            Logger.d(TAG, "removed file "+possibleSong.getFileName());
             return false;
         }
         if(blackListFiles.contains(possibleSong.getFileName())) {
-            Logger.e(TAG, "removed file "+possibleSong.getFileName());
+            Logger.d(TAG, "removed file "+possibleSong.getFileName());
             return false;
         }
         return true;

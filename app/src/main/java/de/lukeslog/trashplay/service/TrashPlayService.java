@@ -46,7 +46,7 @@ public class TrashPlayService extends Service {
 
     public static SharedPreferences getDefaultSettings() {
         if(TrashPlayService.serviceRunning()) {
-            return PreferenceManager.getDefaultSharedPreferences(TrashPlayService.getContext());
+            return PreferenceManager.getDefaultSharedPreferences(ctx);
         }
         return null;
     }

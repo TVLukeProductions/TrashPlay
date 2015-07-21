@@ -138,8 +138,11 @@ public class StatisticsCollection {
 
     public static long getPlayTime() {
         SharedPreferences settings = TrashPlayService.getContext().getDefaultSettings();
-        long tppt = settings.getLong(PLAY_TIME, 0l);
-        return tppt;
+        if(settings!=null) {
+            long tppt = settings.getLong(PLAY_TIME, 0l);
+            return tppt;
+        }
+        return 0l;
     }
 
     public static void finishedSong(String songName, long timeDifBetweenPlays) {
